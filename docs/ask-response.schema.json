@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://khula-gyan.example/schemas/ask-response.schema.json",
+  "title": "Khula Gyan AskResponse",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "language",
+    "answer",
+    "checklist",
+    "citations",
+    "confidence",
+    "disclaimer"
+  ],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["answered", "not_found"]
+    },
+    "language": {
+      "type": "string",
+      "enum": ["ne", "en", "mixed"]
+    },
+    "answer": {
+      "type": "string"
+    },
+    "checklist": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["documents", "fees", "steps", "where"],
+      "properties": {
+        "documents": {"type": "array", "items": {"type": "string"}},
+        "fees": {"type": "array", "items": {"type": "string"}},
+        "steps": {"type": "array", "items": {"type": "string"}},
+        "where": {"type": "string"}
+      }
+    },
+    "citations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source", "page", "quote"],
+        "properties": {
+          "source": {"type": "string"},
+          "page": {"type": "integer", "minimum": 1},
+          "quote": {"type": "string"}
+        }
+      }
+    },
+    "confidence": {
+      "type": "string",
+      "enum": ["high", "medium", "low"]
+    },
+    "disclaimer": {
+      "type": "string"
+    }
+  }
+}
