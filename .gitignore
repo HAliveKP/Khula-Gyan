@@ -228,3 +228,4 @@ data/processed/*
 !data/processed/.gitkeep
 chroma_db/
 artifacts/
+
