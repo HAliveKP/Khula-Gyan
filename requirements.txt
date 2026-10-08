@@ -1,0 +1,13 @@
+# Initial project dependencies from the blueprint. Pin tested versions after the
+# team has a working environment and records the exact versions.
+sentence-transformers
+chromadb
+rank_bm25
+pymupdf
+pdfplumber
+fastapi
+uvicorn
+streamlit
+pyyaml
+python-dotenv
+pytesseract
