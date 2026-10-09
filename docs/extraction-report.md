@@ -23,3 +23,7 @@ Rating guide: **good** = readable text and structure in the available web extrac
 - Local source files downloaded: 0 of 10 (the connection was forcibly closed).
 - Local PDF/HTML extraction pipeline runs completed: 0 of 10.
 - Do not mark Member 1's collection/extraction task complete until the originals are obtained through an approved route and the extractor is run against each one. Keep copies out of Git while reuse terms are unclear.
+
+## Day 2 processing implementation
+
+Added `src/ingest/extract.py`, `src/ingest/clean.py`, and `scripts/process_document.py`. The processor supports local HTML and PDF, keeps one page-linked record per PDF page, normalizes text to Unicode NFC, removes repeated page-edge headers/footers, and writes JSONL into ignored `data/processed/`. Scanned pages use Tesseract with Nepali and English when OCR is installed. A synthetic HTML smoke check passed for extraction, normalization, repeated-header cleanup, JSONL metadata, and rating output. No official source file was available to process; PDF extraction was not run in this environment because PyMuPDF is not installed here. The ten official-source ratings above remain preliminary browser review only.
