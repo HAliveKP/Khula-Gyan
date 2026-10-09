@@ -6,7 +6,7 @@ Khula Gyan is an open-source project to help people understand government proced
 
 ## Project status
 
-We are starting with one service: driving-license renewal. The first milestone is a local app that can show a cited answer from one official source. Citizenship and passport support come after that flow works.
+We are starting with one service: driving-license renewal. The app shell and pipeline contract are in place, but real retrieval and answer modules are still being built. Until those modules and reviewed source text are available, the app returns `not_found`; it does not invent an answer or citation.
 
 ## Getting started
 
@@ -61,6 +61,26 @@ python scripts/smoke_test_embedding.py
 
 The first run downloads the embedding model and may take several minutes. The script checks that it can create vectors for five Nepali and five English examples. OCR also needs the separate Tesseract application and Nepali (`nep`) and English (`eng`) language data; OCR is optional for the first text-based PDF.
 
+### Run the current app
+
+After installing the requirements, start the UI from the repository root:
+
+```bash
+streamlit run frontend/app.py
+```
+
+The screen currently shows a clear not-found message until `src/retrieval/search.py`, `src/generation/answer.py`, and reviewed processed source text are available.
+
+### Prepare a local source document
+
+Keep a source copy in `data/raw/` only after checking its reuse terms. The Day 2 processor supports PDF and HTML and keeps one JSONL row per source page. To see its options from a clean checkout, run:
+
+```bash
+python scripts/process_document.py --help
+```
+
+Scanned PDFs use Tesseract OCR when the text layer is empty or very short. Install Tesseract with Nepali (`nep`) and English (`eng`) language data before processing a scanned document.
+
 ## Project map
 
 ```text
@@ -72,6 +92,8 @@ frontend/          Streamlit user interface
 scripts/            Setup and data helper scripts
 src/                Application code
 ```
+
+Document extraction and Unicode cleanup live in `src/ingest/`; `scripts/process_document.py` writes cleaned, page-linked JSONL records into the ignored `data/processed/` folder.
 
 ## Safety and source policy
 
@@ -89,5 +111,4 @@ Use small branches and pull requests. The user-selected working branch is `Hkp`.
 - First service: driving-license renewal.
 - Initial sources are candidates listed in `docs/data-sources.md`; verify their currentness before answering procedural questions.
 - LLM provider and model are not selected yet. The application must not treat placeholder values in `.env.example` as credentials.
-- The Day 0 task board is in `docs/user-story-board.md`.
-
+- The task board is in `docs/user-story-board.md`; checked commit history and measured evaluation results are tracked in `docs/results.md`.
