@@ -40,7 +40,7 @@ def _validated_chunks(chunks: Iterable[Mapping[str, Any]]) -> list[dict[str, Any
 def index_chunks(
     chunks: Iterable[Mapping[str, Any]],
     *,
-    persist_directory: str | Path = "data/index/chroma",
+    persist_directory: str | Path = "chroma_db",
     collection_name: str = "khula_gyan",
     model_name: str = "BAAI/bge-m3",
     batch_size: int = 32,
