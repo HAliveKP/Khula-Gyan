@@ -1,0 +1,35 @@
+{
+  "status": "answered",
+  "language": "en",
+  "answer": "MOCK: Submit a copy of the citizenship certificate, the old driving license and a medical certificate. Fill the application online first.",
+  "checklist": {
+    "documents": [
+      "Citizenship certificate (copy)",
+      "Old driving license",
+      "Medical certificate"
+    ],
+    "fees": [
+      "See the transport office fee schedule"
+    ],
+    "steps": [
+      "Fill the application online",
+      "Give biometrics",
+      "Pay the fee at the counter"
+    ],
+    "where": "Transport management office"
+  },
+  "citations": [
+    {
+      "source": "mock_dl_renewal.pdf",
+      "page": 2,
+      "quote": "the applicant must submit a copy of the citizenship certificate, the old driving license and a medical certificate"
+    },
+    {
+      "source": "mock_dl_renewal.pdf",
+      "page": 4,
+      "quote": "Pay the fee at the counter after biometrics"
+    }
+  ],
+  "confidence": "high",
+  "disclaimer": "This explains official procedures only, not legal advice. Verify with the official office before submitting."
+}

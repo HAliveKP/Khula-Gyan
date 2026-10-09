@@ -1,0 +1,10 @@
+{"id": "q001", "q": "सवारी चालक अनुमतिपत्र नवीकरण गर्न के गर्नुपर्छ?", "lang": "ne", "service": "driving_license", "type": "answerable", "expected": [], "must_cite": null, "verified": false}
+{"id": "q002", "q": "लाइसेन्स नवीकरणका लागि कुन कागजात चाहिन्छ?", "lang": "ne", "service": "driving_license", "type": "answerable", "expected": [], "must_cite": null, "verified": false}
+{"id": "q003", "q": "नवीकरणको प्रक्रिया अनलाइनबाट सुरु गर्न मिल्छ?", "lang": "ne", "service": "driving_license", "type": "answerable", "expected": [], "must_cite": null, "verified": false}
+{"id": "q004", "q": "How do I start renewing a Nepali driving license?", "lang": "en", "service": "driving_license", "type": "answerable", "expected": [], "must_cite": null, "verified": false}
+{"id": "q005", "q": "Which official portal should I use to renew my driving license?", "lang": "en", "service": "driving_license", "type": "answerable", "expected": [], "must_cite": null, "verified": false}
+{"id": "q006", "q": "What should I check before following a license-renewal instruction online?", "lang": "en", "service": "driving_license", "type": "answerable", "expected": [], "must_cite": null, "verified": false}
+{"id": "q007", "q": "Driving license renew garna kun documents chahincha?", "lang": "mixed", "service": "driving_license", "type": "answerable", "expected": [], "must_cite": null, "verified": false}
+{"id": "q008", "q": "license renew garne process k ho?", "lang": "mixed", "service": "driving_license", "type": "answerable", "expected": [], "must_cite": null, "verified": false}
+{"id": "q009", "q": "What medicine should I take for blurred vision before a driving test?", "lang": "en", "service": "other", "type": "out_of_scope", "expected": [], "must_cite": null, "verified": false}
+{"id": "q010", "q": "Give me legal advice about appealing a traffic-crash case.", "lang": "en", "service": "other", "type": "out_of_scope", "expected": [], "must_cite": null, "verified": false}
