@@ -9,8 +9,8 @@ st.set_page_config(page_title="Khula Gyan", page_icon="📄")
 st.title("Khula Gyan")
 st.caption("Cited answers from official Nepali documents")
 st.info(
-    "Answers appear only when the connected official sources support them. "
-    "Search and answer modules are still being connected."
+    "Answers use passages from official sources. If the sources do not support "
+    "a response, Khula Gyan says it cannot find the answer."
 )
 
 service = st.selectbox(

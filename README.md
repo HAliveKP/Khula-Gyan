@@ -112,3 +112,4 @@ Use small branches and pull requests. The user-selected working branch is `Hkp`.
 - Initial sources are candidates listed in `docs/data-sources.md`; verify their currentness before answering procedural questions.
 - LLM provider and model are not selected yet. The application must not treat placeholder values in `.env.example` as credentials.
 - The task board is in `docs/user-story-board.md`; checked commit history and measured evaluation results are tracked in `docs/results.md`.
+
