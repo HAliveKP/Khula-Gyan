@@ -25,6 +25,8 @@ Historical commit metadata, diffs, and combined statuses were rechecked on Hkp. 
 
 | 2026-10-10 | `7e7801d8638323f12fe56ad4aa521862dd0d2641` | Harikrishna Pokhrel | feat: add dense retrieval search contract | Day 2 Member 2: dense search and score scale | Python syntax compilation passed. No embedding model or Chroma package is installed; no data/index means no retrieval run or hit@5. |
 | 2026-10-10 | `025ef81beaf12b61b6264e1100cde972ae4c157e` | Harikrishna Pokhrel | docs: describe current Hkp retrieval status | Leader: correct README status/run expectations | README descriptions checked against Hkp and main/dev; setup/runtime not executed. |
+| 2026-10-10 | `a8cc68519c4213d7247011596946a3f885c73608` | Harikrishna Pokhrel | docs: audit Day 0-2 member task status | Day 0–2 cross-member audit | Branch contents and local prerequisites rechecked; source permissions, data/index, and runtime checks remain blocked. |
+| 2026-10-10 | `139c757aeae1667e8cecff57ed7b21b27aaa4b4f` | Harikrishna Pokhrel | fix: format Day 0-2 audit as markdown | Day 0–2 audit formatting | Re-fetched Markdown now has real table/line breaks; content rechecked. |
 
 ## Day checklist and evidence
 
@@ -32,16 +34,16 @@ Historical commit metadata, diffs, and combined statuses were rechecked on Hkp. 
 |---|---|---|---|
 | Day 0 | Member 1 — Data & Documents | Partial | Source register exists. No originals are in `data/raw/`; usage terms and a first local extraction remain to be confirmed. |
 | Day 0 | Member 2 — Retrieval | Partial | Dependency list and embedding smoke script exist. A successful local model smoke run is not recorded. |
-| Day 0 | Member 3 — Generation & Evaluation | Partial | Response contract and starter question drafts exist. Provider choice and a successful LLM call remain pending. |
+| Day 0 | Member 3 — Generation & Evaluation | Partial on Hkp; done on main/dev | Response contract and answer implementation exist on main/dev; OpenRouter smoke check is recorded there. Hkp has not incorporated those commits. |
 | Day 0 | Leader — Integration, UI & Repository | Partial | Setup files and README exist; Hkp is the selected branch. `dev` was created from `main` on 2026-10-10; end-to-end app run remains blocked on source/index and Hkp generation module. |
 | Day 1 | Member 1 — Data & Documents | Partial | Ten sources are registered and a preliminary extraction report exists. No files were downloaded or locally extracted. |
 | Day 1 | Member 2 — Retrieval | Partial | Chunking and Chroma index code exist. A sample dataset and populated index have not been produced. |
-| Day 1 | Member 3 — Generation & Evaluation | Pending | `src/generation/answer.py` and the 15-question Day 1 set are not present. |
+| Day 1 | Member 3 — Generation & Evaluation | Done for answer code on main/dev; question set partial | `answer.py` is on main/dev, but there are 10 unverified question drafts and no 15 verified questions; Hkp lacks the generation commits. |
 | Day 1 | Leader — Integration, UI & Repository | Done for mock | `ask()` and the initial Streamlit screen were added; the screen was not launched in this environment. |
 | Day 2 | Member 1 — Data & Documents | In progress | PDF/HTML extraction, NFC cleanup, repeated header/footer removal, and page-linked JSONL output are implemented. Synthetic HTML checks passed. Process a permitted official source and inspect each page when the download and PyMuPDF prerequisites are available. |
 | Day 2 | Member 2 — Retrieval | Partial | `src/retrieval/search.py` now implements dense search and 0–1 cosine similarity. No source chunks/index exist; embedding smoke test failed because `sentence-transformers` is missing; hit@5 is not measured. |
 | Day 2 | Member 3 — Generation & Evaluation | Partial on Hkp; code ready on main/dev | `answer.py` and `run_eval.py` are in `main`/`dev` (merged PR #5); Hkp does not contain them. Ten questions are drafts, zero verified; the required 25-question set and real retrieval eval are incomplete. |
-| Day 2 | Leader — Integration, UI & Repository | In progress | `ask()` now connects to the documented `search()` and `answer()` interfaces when available; the UI has citation display, loading, and friendly error states. It safely returns `not_found` until those modules and reviewed source text exist. Optional FastAPI was skipped. |
+| Day 2 | Leader — Integration, UI & Repository | Partial | Hkp `ask()` and UI are connected to the contracts and dense search now exists, but `answer.py`, approved source text, and a populated index are missing from Hkp. `dev` exists from main; end-to-end Streamlit run remains unverified. Optional FastAPI was skipped. |
 
 ## Evaluation results
 
