@@ -9,6 +9,12 @@ start as `?` / `not checked` and are filled in after reviewing the commit.
 
 | Date | Hash | Author | Message | Blueprint task | Check result |
 |---|---|---|---|---|---|
+| 2026-10-06 | fcb094b | Harikrishna Pokhrel | Initial commit | ? | not checked |
+| 2026-10-08 | 01527a8 | Harikrishna Pokhrel | feat: scaffold Khula Gyan Day 0 setup | ? | not checked |
+| 2026-10-08 | 2394b88 | Harikrishna Pokhrel | fix: preserve gitignore line endings | ? | not checked |
+| 2026-10-08 | 521830d | Harikrishna Pokhrel | Merge pull request #1 from HAliveKP/Hkp | ? | not checked |
+| 2026-10-09 | d2aa3fb | aash-crest01 | feat: Member 3 generation + eval starter (answer, guard, run_eval) | ? | not checked |
+| 2026-10-10 | c0603ca | aash-crest01 | eval: three-section results log (commit log, task checklist, eval table) + update_log.py | ? | not checked |
 
 ## Task checklist
 
