@@ -1,0 +1,3 @@
+{"id":"fixture_verified","q":"Which documents are listed in the synthetic mock passage?","lang":"en","service":"driving_license","type":"answerable","expected":["citizenship certificate"],"must_cite":{"source":"mock_dl_renewal.pdf","page":2},"verified":true,"verification_status":"verified"}
+{"id":"fixture_draft","q":"Where is the synthetic blue drum?","lang":"en","service":"driving_license","type":"answerable","expected":["TODO"],"must_cite":null,"verified":false,"status":"draft","verification_status":"draft"}
+

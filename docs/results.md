@@ -1,6 +1,6 @@
 # Project work log and results
 
-Updated 2026-10-10. This file keeps previous entries and reports only checks that were actually run. The commit log below includes every Hkp commit through the immediately preceding Day 2 implementation commit. A Git commit cannot contain its own final hash; this log's commit will be included when the log is next updated.
+Updated 2026-10-10. This file preserves the historical entries below and reports checks that were actually run. Historical commit log entries remain intact; setup verification is recorded separately. A Git commit cannot contain its own final hash, so the current results-log commit can be recorded in a later update.
 
 ## Commit log
 
@@ -39,22 +39,40 @@ Historical commit metadata, diffs, and combined statuses were rechecked on Hkp. 
 | 2026-10-10 | `139c757aeae1667e8cecff57ed7b21b27aaa4b4f` | Harikrishna Pokhrel | fix: format Day 0-2 audit as markdown | Day 0–2 audit formatting | Re-fetched Markdown now has real table/line breaks; content rechecked. |
 | 2026-10-10 | `18c7d14e6b90d3119c1e4b7ca7f438e1cd36a9b1` | Harikrishna Pokhrel | docs: complete Day 0-2 audit trail | Day 0–2 audit/results update | Branch checklist, prior work, and evaluation status rechecked; no unmeasured metric added. |
 
+| 2026-10-10 | `d62bad964b1c244e2d7b9322d4d575abb13b0502` | Codex | build: pin Python 3.12 dependencies | Day 0 environment | Pip install completed on retry; `pip check` passed; embedding smoke passed. |
+| 2026-10-10 | `6024c5e96dc39eb0f5b5d431d3bfce8710f0d769` | Codex | data: track reuse terms for registered sources | Member 1 source licensing | Registry records status and checked date; one CC BY page is reference-only. |
+| 2026-10-10 | `85d9044e3d1b8015fc02191f9bfd758a8438ee9` | Codex | data: add rights-aware local source fetcher | Member 1 local fetching | Fetched one explicitly licensed reference page to ignored data/raw; no government page fetched. |
+| 2026-10-10 | `6a5cf7c5b28c1d62039b7f76a6658d35814bde47` | Codex | retrieval: build page-linked Chroma index from approved sources | Member 2 index builder | Build run processed 1 page; 0 civic chunks indexed because the page is reference-only. |
+| 2026-10-10 | `97304c0433c6f0ffb55556f4cae32ed5526b5518` | Codex | eval: expand source-unverified draft set to 25 | Member 3 evaluation set | 25 drafts, 5 out-of-scope, 0 verified; all expected values remain TODO. |
+| 2026-10-10 | `6487469b663626d51ab2982bf20704fa4831e5e5` | Codex | data: allow license-review pages to be processed as reference-only | Member 1 processing | Reference-only page extraction succeeded; no civic facts claimed. |
+| 2026-10-10 | `d51a23d84ae5ff28c787650c15eb9982284fd4ef` | Codex | retrieval: retain source URLs in chunks | Member 2 citations | Follow-up correction recorded in `775bc51`; this commit did not fully apply the chunk metadata edit. |
+| 2026-10-10 | `14605ce2990f7fa4ab408da51d0c8e70a4b3348a` | Codex | retrieval: store source URLs as Chroma metadata | Member 2 citations | Source URL metadata added; index runtime not tested on civic data. |
+| 2026-10-10 | `b29073882891686efaf591402e0e25dce61cf99e` | Codex | retrieval: return canonical source URL with search hits | Member 2 citations | Search result URL field added. |
+| 2026-10-10 | `775bc51b9e8e4f4edab765b4e8c1c7f9935d39b4` | Codex | retrieval: attach canonical URLs to chunks | Member 2 citations | Full chunk metadata correction applied. |
+| 2026-10-10 | `a1d5166cb4421f7e375e3b6ea701168c38822839` | Codex | docs: document pinned install and source indexing steps | Leader setup docs | README updated for CPU install, fetching and index build. |
+
+| 2026-10-10 | `3f059054857075955b6e97b1ca6c36b0205e2e6a` | Codex | docs: reflect selected OpenRouter provider | Leader README accuracy | Provider statement aligned with the existing OpenRouter integration; credit ceiling remains undecided. |
+| 2026-10-10 | `1731f0152d2cc42e1204f6d1dcdb784322cf8020` | Codex | docs: clarify verified-question and app limitations | Leader results accuracy | Clarified that zero verified questions prevented evaluation and cited-answer validation. |
+| 2026-10-10 | `5d0ad3aa84c30bb79f0e593ea4981885f76ebcc5` | Codex | docs: record environment and source verification results | Cross-member status audit | Added environment, data, index, evaluation, and Streamlit evidence; no unmeasured metrics added. |
+
+| 2026-10-10 | `e05ee48b863c457118edfd1877a5e0a56c8c8c2c` | Codex | eval: keep exactly five out-of-scope drafts | Member 3 evaluation set | Final structure check: 25 questions, 5 out-of-scope, 0 verified, 25 TODO expected values, 0 duplicate IDs. |
+
+| 2026-10-10 | `d3fbd55dfabe94c2245613c23e656773ba71d40c` | Codex | docs: log latest verification records | Leader work log | Added prior environment and verification commit rows; no result metrics changed. |
+| 2026-10-10 | `af98e03dcf35a69791d50732711eadbeb9cdfba4` | Codex | docs: log final question set verification | Member 3 evaluation set log | Logged the final 25-question, 5 out-of-scope structure check. |
+
 ## Day checklist and evidence
 
 | Day | Owner | Status | Evidence / remaining work |
 |---|---|---|---|
 | Day 0 | Member 1 — Data & Documents | Partial | Source register exists. No originals are in `data/raw/`; usage terms and a first local extraction remain to be confirmed. |
 | Day 0 | Member 2 — Retrieval | Partial | Dependency list and embedding smoke script exist. A successful local model smoke run is not recorded. |
-| Day 0 | Member 3 — Generation & Evaluation | Partial on Hkp; done on main/dev | Response contract and answer implementation exist on main/dev; OpenRouter smoke check is recorded there. Hkp has not incorporated those commits. |
-| Day 0 | Leader — Integration, UI & Repository | Partial | Setup files and README exist; Hkp is the selected branch. `dev` was created from `main` on 2026-10-10; end-to-end app run remains blocked on source/index and Hkp generation module. |
+| Day 0 | Member 3 — Generation & Evaluation | Partial | Response contract and starter question drafts exist. Provider choice and a successful LLM call remain pending. |
+| Day 0 | Leader — Integration, UI & Repository | Partial | Setup files and README exist; Hkp is the selected branch. Shared `dev` and `main` branches were not created. |
 | Day 1 | Member 1 — Data & Documents | Partial | Ten sources are registered and a preliminary extraction report exists. No files were downloaded or locally extracted. |
 | Day 1 | Member 2 — Retrieval | Partial | Chunking and Chroma index code exist. A sample dataset and populated index have not been produced. |
-| Day 1 | Member 3 — Generation & Evaluation | Done for answer code on main/dev; question set partial | `answer.py` is on main/dev, but there are 10 unverified question drafts and no 15 verified questions; Hkp lacks the generation commits. |
+| Day 1 | Member 3 — Generation & Evaluation | Pending | `src/generation/answer.py` and the 15-question Day 1 set are not present. |
 | Day 1 | Leader — Integration, UI & Repository | Done for mock | `ask()` and the initial Streamlit screen were added; the screen was not launched in this environment. |
 | Day 2 | Member 1 — Data & Documents | In progress | PDF/HTML extraction, NFC cleanup, repeated header/footer removal, and page-linked JSONL output are implemented. Synthetic HTML checks passed. Process a permitted official source and inspect each page when the download and PyMuPDF prerequisites are available. |
-| Day 2 | Member 2 — Retrieval | Partial | `src/retrieval/search.py` now implements dense search and 0–1 cosine similarity. No source chunks/index exist; embedding smoke test failed because `sentence-transformers` is missing; hit@5 is not measured. |
-| Day 2 | Member 3 — Generation & Evaluation | Partial on Hkp; code ready on main/dev | `answer.py` and `run_eval.py` are in `main`/`dev` (merged PR #5); Hkp does not contain them. Ten questions are drafts, zero verified; the required 25-question set and real retrieval eval are incomplete. |
-| Day 2 | Leader — Integration, UI & Repository | Partial | Hkp `ask()` and UI are connected to the contracts and dense search now exists, but `answer.py`, approved source text, and a populated index are missing from Hkp. `dev` exists from main; end-to-end Streamlit run remains unverified. Optional FastAPI was skipped. |
 | Day 2 | Member 2 — Retrieval | Pending (not part of this request) | The real `src/retrieval/search.py` module is not present, so index search cannot yet run end to end. |
 | Day 2 | Member 3 — Generation & Evaluation | Pending (not part of this request) | The real `src/generation/answer.py` module is not present, so no answer generation or evaluation can run. |
 | Day 2 | Leader — Integration, UI & Repository | In progress | `ask()` now connects to the documented `search()` and `answer()` interfaces when available; the UI has citation display, loading, and friendly error states. It safely returns `not_found` until those modules and reviewed source text exist. Optional FastAPI was skipped. |
@@ -64,15 +82,23 @@ Historical commit metadata, diffs, and combined statuses were rechecked on Hkp. 
 
 ## Evaluation results
 
-Only `eval/run_eval.py` output belongs in this table. That runner is not present on Hkp, so no quality numbers have been measured. Smoke checks above are implementation checks, not evaluation results.
+Only real output from `eval/run_eval.py` against human-verified civic questions and source chunks belongs in the evaluation tables. The runner is present, but there is no verified civic evaluation set or permitted civic-source index available for a baseline. The offline synthetic fixture harness is a plumbing check; its mock percentages are not project quality metrics. Unmeasured values remain `-`.
 
 | Run / build | Date | Questions | hit@5 | Citation accuracy | Answer correctness | Refusal rate | Notes |
 |---|---|---:|---:|---:|---:|---:|---|
-| Day 0–2 baseline | - | - | - | - | - | - | `eval/run_eval.py` is not available; run the evaluation after the answer and search modules are connected. |
+| Day 0–2 baseline | - | - | - | - | - | - | No human-verified civic question set and permitted civic-source index are available for a real baseline. |
+
+### Eval runs (eval/run_eval.py)
+
+Rows are added only by `eval/run_eval.py`; `-` = not measured. Never type numbers by hand.
+
+| Date | Change | Prompt | N | hit@5 | Citation acc. | Correct | Hallucination | Correct refusal | False refusal | p95 s |
+|---|---|---|---|---|---|---|---|---|---|---|
+
 
 ## Day 0–2 task audit (2026-10-10)
 
-This audit checks the working branch `Hkp` and notes when work exists only on shared `main`/`dev`. No task is marked complete based only on a code file existing.
+This audit is the 2026-10-10 snapshot of Hkp before integration. Current integration status is recorded in the section below.
 
 | Owner | Day 0–2 task | Status | Evidence / next step |
 |---|---|---|---|
@@ -92,9 +118,45 @@ This audit checks the working branch `Hkp` and notes when work exists only on sh
 
 No real evaluation numbers were added: the required source-backed question set and populated retrieval index are still missing.
 
-### Eval runs (eval/run_eval.py)
 
-Rows are added only by `eval/run_eval.py`; `-` = not measured. Never type numbers by hand.
+## Integration branch status (2026-10-10)
 
-| Date | Change | Prompt | N | hit@5 | Citation acc. | Correct | Hallucination | Correct refusal | False refusal | p95 s |
-|---|---|---|---|---|---|---|---|---|---|---|
+The branch includes both the Hkp retrieval score implementation and the generation/evaluation changes merged to dev. It is not a live civic demo yet: no permitted civic sources or source-verified questions are available, and the embedding dependencies were not installed in the current environment at this point. All quality metrics remain `-`.
+
+### Merge resolutions
+
+- `.gitignore`: retained Hkp's local raw/processed/index exclusions and dev's `eval/runs/` exclusion.
+- `.env.example`: retained dev's OpenRouter variable names and key-pool configuration; no real secrets are included.
+- `config.yaml`: retained Hkp's 0.35 starting guard threshold and dev's `support_check: false`; replaced dev's instruction to set threshold 0 with a note to keep the guard on until calibration.
+- `README.md`: combined dev's generation/run guidance with Hkp's 0–1 dense-score explanation and current source/index limitations.
+- `docs/results.md`: retained dev's Member 3 log and eval-run table; appended Hkp audit/commit rows. No historical rows removed.
+- `requirements.txt`: retained dev's dependency categories; it will be pinned in the environment commit.
+- `src/retrieval/search.py` and `docs/retrieval-score.md`: kept Hkp's dense search and score documentation.
+
+
+## Follow-up verification (2026-10-10)
+
+| Area | Status | Evidence |
+|---|---|---|
+| Environment | Done | CPU-only torch 2.14.1+cpu installed first; pinned requirements installed after two WinError 32 file-lock attempts; final `pip check` reported “No broken requirements found.” Embedding smoke check passed: 10 examples (5 Nepali + 5 English), vector size 1024. |
+| Sources and rights | Partial | Registry marks official DoTM/MOHA terms unclear and passport pages all-rights-reserved; no such page was fetched. One Open Data Nepal page carries the literal CC BY 4.0 footer text and was fetched locally for extraction only. Human approval is still required before selecting civic sources. |
+| Processing | Partial | One HTML page produced one page-linked JSONL row. Visual/content spot check found navigation/footer and license text only; not useful dataset substance and not civic evidence. |
+| Retrieval | Partial | Builder ran: one processed page, 0 eligible civic chunks, 0 indexed records. Five sample searches returned empty lists; no score values exist. hit@5 remains “-” because no human-verified expected sources exist. |
+| Evaluation set | Partial | 25 records now exist: 20 answerable drafts and 5 out-of-scope drafts; all have expected=TODO, verified=false, and empty source chunk/URL. The normal runner has zero eligible verified questions and must not produce quality metrics. |
+| Streamlit | Partial | Headless Streamlit announced localhost:8501 and localhost HTTP probe returned 200. The local checkout lacks the merged generation module, and no civic index exists, so the sample real query returned `not_found` with an empty citations list; a supported cited answer cannot yet be verified. |
+
+No measured evaluation row was added. The eval runner’s default selector has zero verified questions; its code exits with “No questions to run. Add verified questions or pass --include-unverified.” before computing metrics. It was not invoked on this branch because no source-backed verified questions exist. The test fixture values are synthetic and are not used as evaluation results.
+
+Human decisions still needed: written permission/open licensed civic sources, presenter name, and API-credit spending limit. Also confirm whether any unclear-terms sources may be downloaded for private extraction, which is distinct from redistribution permission.
+
+
+## Agent setup verification (2026-10-10)
+
+| Check | Result | Evidence / limits |
+|---|---|---|
+| Offline pytest suite | Pass | `4 passed`; synthetic processor metadata, Chroma score/filter behavior, draft-question skipping, and Git tracking guard. Used a repository-local pytest temp directory because the sandbox temp directory was not writable. |
+| Pinned dependency consistency | Pass | `pip check`: `No broken requirements found.` |
+| Embedding smoke check | Pass | Script printed `Embedding smoke check passed: 10 examples (5 Nepali + 5 English), vector size 1024`. Hugging Face warned that free cache space was slightly below the model's advertised download size. |
+| Synthetic evaluation harness | Pass | The offline fixture runner wrote one ignored run record and skipped the draft item. Mock percentages are not civic evaluation results and were not added to the evaluation tables. |
+| GNU Make setup target | Not run | `make setup` failed because `make` is not installed in this Windows environment. The existing `.venv` was already available. |
+| Source downloads / index build | Not run | Setup-only session; no source pages or Chroma index were downloaded or built. |

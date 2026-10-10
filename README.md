@@ -1,115 +1,42 @@
 # Khula Gyan
 
-Cited answers from official Nepali documents, in Nepali and English.
+Khula Gyan is a Nepali civic-document assistant that retrieves passages from public service documents and answers with page-linked citations. It should refuse when the available evidence does not support an answer and is not a source of legal advice.
 
-Khula Gyan is an open-source project to help people understand government procedures from official documents. It should show the document and page behind each answer, and say when the available sources do not support an answer. It is not a source of legal advice.
+## Current status
 
-## Project status
+The repository contains the Streamlit app, document processing, Chroma indexing, dense search, citation-aware generation, and an evaluation runner. The source register currently has no confirmed-open civic answer source; MOHA sources are unclear and Department of Passports pages state all rights reserved. Those sources are fetched locally only when permitted and are not included in the index. The checked-in openly licensed dataset page is unrelated to civic procedures and is excluded from answer evidence. No performance metric is claimed until measured on verified questions.
 
-We are starting with one service: driving-license renewal. The dense retrieval adapter and pipeline contract are in place, but there are no approved source files or populated index yet. The generation implementation is available on `main`/`dev` but has not been merged into `Hkp`. Until reviewed source text, an index, and the answer module are available on this branch, the app returns `not_found`; it does not invent an answer or citation.
+## Requirements and setup
 
-## Getting started
+Use Python 3.12, Git, and GNU Make. The first setup installs pinned Python packages and the CPU-only PyTorch wheel. It needs network access and enough disk space for the embedding model.
 
-### Requirements
+Run these from the repository root:
 
-- Python 3.12
-- Git
-- Internet access for installing packages and downloading the embedding model on its first run
-- An LLM provider and API key, once the team chooses one (do not commit the key)
-
-On Windows, check that `py -3.12 -V` prints a Python 3.12 version. If `py` is not recognized, install Python 3.12 from the official Python downloads page, enable the launcher option if offered, then reopen PowerShell.
-
-### Windows PowerShell
-
-```powershell
-py -3.12 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-Copy-Item .env.example .env
+```sh
+make setup
+make test
+make run
 ```
 
-Open `.env` and fill in the provider settings after the team agrees on a provider. Never share the completed `.env` file or commit it.
+The first embedding run downloads `BAAI/bge-m3`:
 
-If PowerShell blocks activation, run the commands in a new Command Prompt instead:
-
-```bat
-py -3.12 -m venv .venv
-.venv\Scripts\activate.bat
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-copy .env.example .env
+```sh
+.venv/bin/python scripts/smoke_test_embedding.py
 ```
 
-### macOS or Linux
+On Windows, use `.venv/Scripts/python.exe scripts/smoke_test_embedding.py` instead. OCR of scanned documents additionally requires the Tesseract application and Nepali (`nep`) and English (`eng`) language packs.
 
-```bash
-python3.12 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-cp .env.example .env
-```
+## Local source workflow
 
-### Check the setup
+`data/sources.yaml` records source URLs and reuse status. `make fetch` downloads only entries marked `confirmed open` into ignored `data/raw/`. `make index` processes locally present, eligible sources into ignored `data/processed/` and `chroma_db/`. Never commit raw data, processed copies, generated indexes, `.env` files, or API keys. Do not use a source as answer evidence unless its reuse terms and content have been reviewed.
 
-With the virtual environment active, run:
+## Run commands
 
-```bash
-python scripts/smoke_test_embedding.py
-```
+- `make fetch` downloads sources whose terms are confirmed open.
+- `make index` processes eligible local sources and builds the ignored Chroma index.
+- `make test` runs offline tests using synthetic fixtures.
+- `make eval` runs the offline mock evaluator and fake generator on a synthetic fixture and writes an ignored run record. This is a harness check, not a civic quality metric.
+- `make run` starts the Streamlit interface.
 
-The first run downloads the embedding model and may take several minutes. The script checks that it can create vectors for five Nepali and five English examples. OCR also needs the separate Tesseract application and Nepali (`nep`) and English (`eng`) language data; OCR is optional for the first text-based PDF.
-
-### Run the current app
-
-After installing the requirements, start the UI from the repository root:
-
-```bash
-streamlit run frontend/app.py
-```
-
-The screen currently shows a clear not-found message until approved processed source text is indexed and `src/generation/answer.py` is present on this branch. Dense similarity scores are normalized to 0–1; they are not probabilities, and the guard threshold has not been calibrated. The search interface is `search(query, k=5, service=None)`.
-
-### Prepare a local source document
-
-Keep a source copy in `data/raw/` only after checking its reuse terms. The Day 2 processor supports PDF and HTML and keeps one JSONL row per source page. To see its options from a clean checkout, run:
-
-```bash
-python scripts/process_document.py --help
-```
-
-Scanned PDFs use Tesseract OCR when the text layer is empty or very short. Install Tesseract with Nepali (`nep`) and English (`eng`) language data before processing a scanned document.
-
-## Project map
-
-```text
-data/raw/          Official source files; add only when usage terms allow
-data/processed/    Extracted, cleaned text and chunks
-docs/              Data sources, contracts, and project notes
-eval/              Draft and verified evaluation questions
-frontend/          Streamlit user interface
-scripts/            Setup and data helper scripts
-src/                Application code
-```
-
-Document extraction and Unicode cleanup live in `src/ingest/`; `scripts/process_document.py` writes cleaned, page-linked JSONL records into the ignored `data/processed/` folder.
-
-## Safety and source policy
-
-- Answer from retrieved passages only. Keep each passage connected to its document and page.
-- Show citations beside supported answers. Return `not_found` when evidence is absent or weak.
-- Do not commit API keys, `.env`, generated indexes, or source documents with unclear redistribution terms.
-- Confirm a document is current and check its usage terms before relying on it or redistributing it.
-
-## Team workflow
-
-Use small branches and pull requests. The user-selected working branch is `Hkp`; shared `dev` was created from `main` on 2026-10-10. Keep the response contract in `docs/ask-response.schema.json` stable so work can proceed in parallel.
-
-## Current project notes
-
-- First service: driving-license renewal.
-- Initial sources are candidates listed in `docs/data-sources.md`; verify their currentness before answering procedural questions.
-- On `Hkp`, provider and model settings are still placeholders. `main`/`dev` has an OpenRouter implementation; coordinate before copying provider settings across branches. The application must not treat placeholder values in `.env.example` as credentials.
-- The task board is in `docs/user-story-board.md`; checked commit history and measured evaluation results are tracked in `docs/results.md`.
+See `AGENTS.md` for branch rules, source handling requirements, and the repository map. Keep `docs/results.md` limited to checks and evaluation results that were actually observed.
 

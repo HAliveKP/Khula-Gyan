@@ -9,6 +9,7 @@ Examples
 
 import argparse
 import json
+import os
 import statistics
 import sys
 import time
@@ -31,7 +32,13 @@ RUNS_DIR = REPO / "eval" / "runs"
 
 def load_questions(path: Path, include_unverified: bool) -> list[dict]:
     qs = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
-    return qs if include_unverified else [q for q in qs if q.get("verified")]
+    eligible = [
+        q for q in qs
+        if q.get("status") != "draft"
+        and q.get("verification_status") != "draft"
+        and not q.get("draft", False)
+    ]
+    return eligible if include_unverified else [q for q in eligible if q.get("verified")]
 
 
 def get_retriever(mock: bool, use_service: bool):
@@ -90,8 +97,10 @@ def pct(values: list[bool]) -> str:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--questions", default=str(REPO / "eval" / "questions.jsonl"))
+    ap.add_argument("--runs-dir", default=str(RUNS_DIR), help="directory for per-question JSONL output")
     ap.add_argument("--note", required=True, help="what changed since the last row")
     ap.add_argument("--mock", action="store_true", help="use tests/fixtures chunks instead of search()")
+    ap.add_argument("--fake-llm", action="store_true", help="use the local fake generator; no API key needed")
     ap.add_argument("--judge", action="store_true", help="use the LLM judge for correctness + hallucination")
     ap.add_argument("--retrieval-only", action="store_true", help="only measure hit@5")
     ap.add_argument("--use-service-filter", action="store_true")
@@ -99,6 +108,8 @@ def main() -> None:
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--no-write", action="store_true", help="print only; do not touch docs/results.md")
     args = ap.parse_args()
+    if args.fake_llm:
+        os.environ["LLM_PROVIDER"] = "fake"
 
     questions = load_questions(Path(args.questions), args.include_unverified or args.mock)
     if args.limit:
@@ -163,10 +174,15 @@ def main() -> None:
         print("Failures by category:", json.dumps(dict(sorted(cats.items(), key=lambda x: -x[1])), indent=2))
 
     stamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
-    RUNS_DIR.mkdir(parents=True, exist_ok=True)
-    run_file = RUNS_DIR / f"{stamp}.jsonl"
+    runs_dir = Path(args.runs_dir)
+    runs_dir.mkdir(parents=True, exist_ok=True)
+    run_file = runs_dir / f"{stamp}.jsonl"
     run_file.write_text("\n".join(json.dumps(r, ensure_ascii=False) for r in records) + "\n", encoding="utf-8")
-    print(f"Per-question details: {run_file.relative_to(REPO)}")
+    try:
+        display_path = run_file.relative_to(REPO)
+    except ValueError:
+        display_path = run_file
+    print(f"Per-question details: {display_path}")
 
     if args.no_write or args.mock:
         print("(not written to docs/results.md)")
@@ -180,3 +196,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
