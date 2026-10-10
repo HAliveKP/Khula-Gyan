@@ -147,14 +147,33 @@ sources:
   filename: opendatanepal_ncd_dataset_page.html
   service: reference
   lang: en
-  license: CC BY 4.0
+  license: null
   terms_url: https://opendatanepal.com/privacy-policy
   answer_evidence: false
-  relevance: Openly licensed page, but health data is unrelated to civic procedure
-    answers. Excluded from the retrieval index.
+  relevance: Health data is unrelated to civic procedure answers. The dataset metadata
+    says License Not specified, so it is excluded from the retrieval index and not approved
+    as confirmed open.
+  licence_status: unclear
+  terms_quote: 'Dataset metadata: "License Not specified." Data Policy: "Unless otherwise
+    stated, datasets are made available under an open license (such as Creative Commons
+    Attribution 4.0)." https://opendatanepal.com/privacy-policy'
+  date_checked: '2026-10-10'
+  local_only: true
+- id: opendatanepal_environment_statistics_2019
+  title: Datasets from the Environment Statistics of Nepal 2019 report
+  publisher: Open Knowledge Nepal, Open Data Nepal; source data credited to Central Bureau of Statistics
+  url: https://opendatanepal.com/dataset/environment-statistics-of-nepal-2019
+  filename: opendatanepal_environment_statistics_2019.html
+  service: reference
+  lang: en
+  license: Creative Commons Attribution Share-Alike
+  terms_url: https://opendatanepal.com/privacy-policy
+  answer_evidence: false
+  relevance: Explicitly licensed environmental data, not civic procedure. Retained only as
+    an open-licence reference; do not include in the civic retrieval index.
   licence_status: confirmed open
-  terms_quote: All content is licensed under a Creative Commons Attribution 4.0 International
-    License
+  terms_quote: 'Users are free to use, modify, and share datasets, provided they give appropriate
+    attribution. https://opendatanepal.com/privacy-policy'
   date_checked: '2026-10-10'
   local_only: false
 

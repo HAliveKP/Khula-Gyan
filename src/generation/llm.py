@@ -25,6 +25,7 @@ import time
 from pathlib import Path
 
 from dotenv import load_dotenv
+from .spend import SpendLimitError, max_output_tokens, reserve, settle
 
 load_dotenv()
 
@@ -83,8 +84,14 @@ def _call_with_keys(kwargs: dict, keys: list[str], base_url: str | None, max_rou
             if _rest_until.get(key, 0) > time.time():
                 continue  # this key is resting or invalid
             try:
+                reservation = reserve(kwargs["messages"])
+                kwargs["max_tokens"] = reservation.output_limit
                 reply = _make_client(key, base_url).chat.completions.create(**kwargs)
-                return reply.choices[0].message.content or ""
+                response_text = reply.choices[0].message.content or ""
+                settle(reservation, getattr(reply, "usage", None), response_text)
+                return response_text
+            except SpendLimitError:
+                raise
             except Exception as err:  # rate limit, no credit, bad key, timeout, no JSON mode
                 status = getattr(err, "status_code", None)
                 last_error = f"{type(err).__name__} (status {status}) on key {mask(key)}"
@@ -123,6 +130,7 @@ def complete(
         return json.loads(path.read_text(encoding="utf-8"))["text"]
 
     kwargs = {"model": model, "messages": messages, "temperature": temperature}
+    kwargs["max_tokens"] = max_output_tokens()
     if json_mode:
         kwargs["response_format"] = {"type": "json_object"}
     text = _call_with_keys(kwargs, keys, base_url, max_rounds)
@@ -131,3 +139,4 @@ def complete(
         CACHE_DIR.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps({"text": text}, ensure_ascii=False), encoding="utf-8")
     return text
+
