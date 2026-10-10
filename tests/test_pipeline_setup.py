@@ -5,7 +5,6 @@ import subprocess
 import sys
 
 import chromadb
-import numpy as np
 
 from scripts.process_document import process_document
 from src.ingest.chunk import chunk_text
@@ -54,7 +53,12 @@ def test_search_limits_scores_and_service_filter(tmp_path, monkeypatch):
 
     class FixedQueryEmbedding:
         def encode(self, _texts, **_kwargs):
-            return np.asarray([[1.0, 0.0, 0.0]])
+            class Embedding:
+                @staticmethod
+                def tolist():
+                    return [[1.0, 0.0, 0.0]]
+
+            return Embedding()
 
     monkeypatch.setattr(search_module, "PERSIST_DIRECTORY", tmp_path / "chroma")
     monkeypatch.setattr(search_module, "_load_model", lambda: FixedQueryEmbedding())
