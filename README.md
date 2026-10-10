@@ -22,7 +22,7 @@ Khula Gyan is intended for people who need help finding information in Nepali pu
 
 ### Working in the repository
 
-- PDF/HTML document processing code preserves page and source metadata; the HTML processor has a synthetic fixture test.
+- PDF/HTML document processing preserves page and source metadata. It now flags corrupted Nepali PDF text as unusable and attempts OCR instead of treating Latin-like garbage as good text; a synthetic regression test covers the missing-OCR case.
 - Dense Chroma retrieval code supports service filtering and reports a 0–1 similarity score. A small synthetic Chroma test checks result limits, score range, and filtering. Scores are similarities, not probabilities.
 - The answer schema, citation guard, and provider adapter are implemented. Provider calls are protected by a per-process spend cap and fail closed if paid-provider rates are not configured.
 - The Streamlit question-and-answer screen exists. Its recorded headless launch returned HTTP 200; a source-backed answer remains unverified.
@@ -108,7 +108,7 @@ Observed status in this setup environment:
 |---|---|
 | make setup | Attempted and failed before setup: GNU Make is unavailable. PowerShell reported: “The term 'make' is not recognized as a name of a cmdlet, function, script file, or executable program.” |
 | make fetch | Make target not run. It downloads only sources currently marked confirmed open. |
-| make index | Make target not run. A separately recorded builder run processed one page, found 0 eligible civic chunks, and indexed 0 records. |
+| make index | Make target not run. The latest direct builder run reported 0 processed page records, 0 eligible civic chunks, and 0 indexed records; it skipped the local-only MOHA PDF and unclear-license dataset. |
 | make test | Make target not run because GNU Make is unavailable. The equivalent local pytest command below ran and passed. |
 | make eval | Make target not run. The offline fixture runner was exercised by the passing test suite; this is not a civic evaluation. |
 | make run | Make target not run. A separate headless Streamlit launch returned HTTP 200, but its query returned not_found without citations. |
@@ -119,7 +119,7 @@ The latest direct test command run in this checkout was:
 .\.venv\Scripts\python.exe -m pytest -q --basetemp=.pytest_tmp
 ~~~
 
-Observed output: **6 passed in 4.28s** (latest close-out run). To use the documented setup commands on Windows, first install GNU Make and Python 3.12. The embedding smoke command is:
+Observed output: **7 passed in 4.54s** (latest run, including the PDF text-quality regression). To use the documented setup commands on Windows, first install GNU Make and Python 3.12. The embedding smoke command is:
 
 ~~~powershell
 .\.venv\Scripts\python.exe scripts/smoke_test_embedding.py
@@ -203,7 +203,7 @@ make test
 
 The suite covers synthetic HTML processing and source/service metadata, top-k and score-range checks plus service filtering with a temporary Chroma index, evaluation output and draft skipping, a Git tracking guard for raw/processed/index data, and pre-send API spend-cap behavior.
 
-The direct pytest command was run in this setup environment and reported **6 passed**. GNU Make is not installed here, so the Makefile test target itself was not run.
+The latest direct pytest command reported **7 passed**. GNU Make is not installed here, so the Makefile test target itself was not run.
 
 ## 14. Known limitations and caveats
 
@@ -213,7 +213,7 @@ The direct pytest command was run in this setup environment and reported **6 pas
 - Source freshness and page-specific procedural accuracy have not been checked through an end-to-end indexed answer.
 - Search similarities are not calibrated probabilities; the refusal threshold is not calibrated against verified questions.
 - Answers may be wrong. Verify any procedure with the responsible official office. This project is not legal advice.
-- OCR needs Tesseract and its language packs. No official PDF/page visual QA is recorded.
+- OCR needs Tesseract and the Nepali/English language packs. A local-only MOHA PDF was visually checked on pages 1, 3, and 5: Devanagari appears legible, but printed page numbers were not visible. Its embedded text is corrupted; all five pages are now marked unusable because Tesseract is unavailable. This source is not approved for indexing or redistribution.
 - The Streamlit process can start, but without an eligible civic index it returns not_found rather than a supported cited answer.
 
 ## 15. Roadmap
