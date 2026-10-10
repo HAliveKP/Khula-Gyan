@@ -82,6 +82,13 @@ Historical commit metadata, diffs, and combined statuses were rechecked on Hkp. 
 | 2026-10-10 | `a2d5c4b0474895101f014c2bb3080693e4f57258` | Codex | docs: add decision close-out changelog | Close-out documentation | Changelog records evidence and pending human actions; no source permissions or decisions were inferred. |
 | 2026-10-10 | `6773a58e3d2974344d4d9b21814e35cfb73a4e47` | Codex | docs: track project next steps | Close-out planning | Next steps mapped to the Markdown story board; no Excel workbook found. |
 
+| 2026-10-10 | `230e7e4e667b7649dee5d5ff07ce55c380bd00af` | Codex | fix: reject corrupted Nepali PDF text | Member 1 extraction safeguard | Nepali PDFs with replacement characters or low Devanagari share now trigger OCR; failed/mismatched OCR marks text unusable. Verified with synthetic regression and full suite. |
+| 2026-10-10 | `e1e866eeb0d01e90100505eb9733cdec54bfecb3` | Codex | fix: report unusable extracted pages | Member 1 page processing | Processor carries extraction status/note and reports unusable page counts; local MOHA source recheck identified five unusable pages. |
+| 2026-10-10 | `8ca72b1cc104e022690b9b894d764a5c9afa8b9f` | Codex | test: cover corrupted Nepali PDF extraction | Member 1 extraction regression | Synthetic no-OCR fixture covered; full local suite passed 7 tests. |
+| 2026-10-10 | `3de68358b62a1f6ad3f29ccd6865587ac25ce069` | Codex | docs: update Day 2 source and app status | Leader README status | README reflects the unusable local PDF, empty index, and observed app refusal. |
+| 2026-10-10 | `26085903f11ee8d0243f92e1549623fce5132a52` | Codex | docs: update Day 2 task status | Day 2 team board | Day 2 marked partial/blocked on a usable approved source, based on current checks. |
+| 2026-10-10 | `ca25543732f1822eebfe9b14df0b96a8dd4f8f33` | Codex | docs: record source extraction blockers | Member 1 and Member 2 handoff | Notes local visual review, OCR dependency, empty search results, and pending permission. |
+
 ## Day checklist and evidence
 
 | Day | Owner | Status | Evidence / remaining work |
@@ -189,3 +196,15 @@ Human decisions still needed: written permission/open licensed civic sources, pr
 The independent close-out review found no Khula-Gyan Excel storyboard workbook; the project plan remains `docs/user-story-board.md`. No spreadsheet rows were changed. The reviewer re-ran the local suite with a workspace-local temporary directory: `pytest -q --basetemp=.pytest_tmp\verification` → **6 passed**. The primary close-out rerun used `pytest -q --basetemp=.pytest_tmp\closeout` → **6 passed in 4.28s**. The default pytest temp location produced 4 errors because it attempted to write under a sandbox-inaccessible AppData temp directory; using a repository-local temp directory passed. GNU Make is unavailable in this environment, so the Make targets themselves were not run during close-out. This result does not measure civic retrieval, answer quality, or evaluation metrics; those remain `-`.
 
 Human actions remain: send the source permission requests, confirm presenter and backup, confirm or change the provisional USD $1.00 API cap, configure current provider rates before paid calls, and provide the correct storyboard workbook if spreadsheet updates are expected.
+
+
+## Day 2 source, retrieval, and leader verification (2026-10-10)
+
+| Owner | Task | Status | Evidence / remaining work |
+|---|---|---|---|
+| Member 1 — Data | Find, fetch, process, and visually inspect a usable source | Partial / blocked | No explicitly open-licensed civic procedure source was found. One MOHA Kathmandu citizenship checklist PDF was downloaded to ignored local storage for this user-requested check; no redistribution/indexing permission is on file. Rendered pages 1, 3, and 5 show legible Devanagari, but printed page numbers were not visible. Its embedded text is corrupted Latin-like output. After the processor fix, all five pages are marked unusable with blank text because Nepali/English Tesseract OCR is unavailable. |
+| Member 1 — Processor safeguard | Prevent corrupted Nepali text from being treated as valid | Done | Nepali PDF pages with replacement characters or very low Devanagari proportion now trigger OCR; if OCR is unavailable or still mismatched, page text is blank and marked unusable. Synthetic regression covers the missing-OCR case. |
+| Member 2 — Retrieval | Build and query an approved civic index | Blocked on source | Builder reported 0 processed pages, 0 eligible civic chunks, 0 indexed records; it skipped the unclear-license dataset and local-only source. Five sample searches (3 English, 2 Nepali) returned empty arrays. The embedding smoke check passed (10 examples, vector size 1024). Empty-index checks do not measure retrieval quality; hit@5 remains `-`. |
+| Leader — End-to-end app check | Run the app and try a query | Partial | Headless Streamlit started; the browser rendered Khula Gyan. “How do I renew a driving license?” returned `not_found`: “The available official sources do not contain a matching passage.” No citations were returned. This verifies the refusal path, not a supported cited answer. |
+
+Latest verification after the processor change: `pytest -q --basetemp=.pytest_tmp\\leader` → **7 passed in 4.54s**. No verified question or civic evaluation number was added. Day 2 remains incomplete until an approved, readable civic source can be indexed and a supported query returns a correct page-linked citation. The local source files remain gitignored and were not committed.
