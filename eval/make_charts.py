@@ -17,15 +17,19 @@ METRICS = ["hit@5", "Citation acc.", "Correct", "Hallucination", "Correct refusa
 
 
 def read_rows() -> tuple[list[str], list[list[str]]]:
-    lines = [ln for ln in (REPO / "docs" / "results.md").read_text(encoding="utf-8").splitlines()
-             if ln.startswith("|")]
-    header = [c.strip() for c in lines[0].strip("|").split("|")]
-    rows = [[c.strip() for c in ln.strip("|").split("|")] for ln in lines[2:]]
+    """Header and rows of the "Eval runs (eval/run_eval.py)" table only."""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from results_log import EVAL_HEADER, EVAL_SECTION, table_rows
+    header = [c.strip() for c in EVAL_HEADER.splitlines()[0].strip("|").split("|")]
+    rows = table_rows(EVAL_SECTION)
+    if not rows:
+        sys.exit("The eval runs table has no rows yet. Run eval/run_eval.py first.")
     return header, rows
 
 
 def to_num(cell: str) -> float:
-    return float(cell.rstrip("%")) if cell.rstrip("%").replace(".", "").isdigit() else 0.0
+    """'85%' -> 85.0; '-' (not measured) -> nan, which draws no bar."""
+    return float(cell.rstrip("%")) if cell.rstrip("%").replace(".", "").isdigit() else float("nan")
 
 
 def main() -> None:
@@ -40,8 +44,8 @@ def main() -> None:
     ax.bar([i - 0.2 for i in x], base, width=0.4, label=f"Baseline ({rows[a][0]})", color="#9aa5b1")
     ax.bar([i + 0.2 for i in x], final, width=0.4, label=f"Final ({rows[b][0]})", color="#1f6feb")
     for i, (v0, v1) in enumerate(zip(base, final)):
-        ax.text(i - 0.2, v0 + 1, f"{v0:.0f}", ha="center", fontsize=8)
-        ax.text(i + 0.2, v1 + 1, f"{v1:.0f}", ha="center", fontsize=8)
+        ax.text(i - 0.2, (0 if v0 != v0 else v0) + 1, "-" if v0 != v0 else f"{v0:.0f}", ha="center", fontsize=8)
+        ax.text(i + 0.2, (0 if v1 != v1 else v1) + 1, "-" if v1 != v1 else f"{v1:.0f}", ha="center", fontsize=8)
     ax.set_xticks(list(x), METRICS, fontsize=9)
     ax.set_ylabel("%")
     ax.set_ylim(0, 105)
