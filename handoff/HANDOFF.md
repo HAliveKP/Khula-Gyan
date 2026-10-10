@@ -8,10 +8,11 @@
 
 ## Branch state
 
-- **VERIFIED (local Git metadata):** local HEAD is `fcb094b` on branch `branch` (`origin/branch`); local working tree already has broad modifications/untracked project files. The local branch switch to `hkp-handoff` failed with `Permission denied` creating `.git/refs/heads/hkp-handoff.lock`.
+- **VERIFIED (local Git metadata):** local HEAD is `fcb094b` on branch `branch` (`origin/branch`); local working tree already has broad modifications/untracked project files. The direct local branch switch to `hkp-handoff` failed with `Permission denied` creating `.git/refs/heads/hkp-handoff.lock`; a clean worktree from `origin/Hkp` was then created for the export.
 - **VERIFIED (remote-tracking refs in local Git):** `origin/Hkp` = `c284207` (“Merge pull request #8 from HAliveKP/hkp-setup”); `origin/main` = `f7f0291` (“Merge pull request #9 from HAliveKP/Hkp”); `origin/dev` = `870211c` (“Merge pull request #5 from HAliveKP/feature/aashish-generation”). `origin/Hkp` is the merge base of `origin/main`; the merge base of `origin/Hkp` and `origin/dev` is `870211c`.
-- **ASSUMED:** current worktree files are a later snapshot layered over an old local initial commit; the exact file-to-commit relationship is not established. Do not commit this snapshot atop the wrong ancestry. No branch rename or remote branch update was attempted.
-- **VERIFIED:** an `origin` fetch/push URL is configured. No push was attempted because the requested branch could not be created and the local checkout is not on Hkp.
+- **VERIFIED (local Git counts):** `origin/Hkp...origin/main` is `0 2` (Hkp has 0 commits unique to it; main has 2). `origin/Hkp...origin/dev` is `64 0` (Hkp has 64 commits unique to it; dev has 0). These refs show Hkp behind main, but not behind dev.
+- **ASSUMED:** current checkout files are a later snapshot layered over an old local initial commit; their exact relationship to remote commits is not established. The export was instead committed from a clean Hkp-based worktree.
+- **VERIFIED:** export commit `dcea4d4` is on `hkp-handoff` from `origin/Hkp`, and Git reported the branch tracks `origin/hkp-handoff`. The follow-up `ls-remote` check failed with `getaddrinfo() thread failed to start`, so remote visibility could not be independently confirmed.
 
 ## Day 0–2 audit by owner
 
@@ -50,6 +51,5 @@ These are current documentation claims unless explicitly labeled as prior task r
 ## Current export work and unfinished items
 
 - **VERIFIED:** wrote the OpenCode agent and command files under `handoff/opencode/` and this handoff. No app, test, install, or web search was run, per instruction.
-- **VERIFIED:** creating `hkp-handoff` failed with `fatal: cannot lock ref 'refs/heads/hkp-handoff': Unable to create 'D:/Khula-Gyan/.git/refs/heads/hkp-handoff.lock': Permission denied`.
-- **ASSUMED:** handoff file changes can be reviewed/copied from this checkout, but they cannot be committed or pushed without Git write permission and a correct Hkp-based branch. No files outside `handoff/` were intentionally changed by this export.
+- **VERIFIED:** the original checkout branch creation failed with `fatal: cannot lock ref 'refs/heads/hkp-handoff': Unable to create 'D:/Khula-Gyan/.git/refs/heads/hkp-handoff.lock': Permission denied`; a separate Hkp-based worktree was used for the export. No files outside `handoff/` were intentionally changed by this export.
 - **TOLD:** earlier task reports said the `.env` contains a local NVIDIA key; it was not opened or copied. Never stage `.env` or secrets.
