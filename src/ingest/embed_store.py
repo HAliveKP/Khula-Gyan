@@ -91,6 +91,7 @@ def index_chunks(
                     "page": item["page"],
                     "service": item["service"],
                     "lang": item["lang"],
+                    **({"source_url": item["source_url"]} if item.get("source_url") else {}),
                 }
                 for item in batch
             ],
