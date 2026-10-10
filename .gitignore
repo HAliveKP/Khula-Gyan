@@ -230,4 +230,5 @@ data/processed/*
 chroma_db/
 artifacts/
 .venv/
+.pytest_tmp/
 
