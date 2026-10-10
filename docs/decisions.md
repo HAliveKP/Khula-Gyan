@@ -37,4 +37,3 @@ Checked 2026-10-10 against the project documents, source register, and recorded 
 - Send permission requests and record any written responses; identify approved sources.
 - Confirm the presenter and backup.
 - Confirm or change the USD $1.00 spend cap and configure provider rates.
-
