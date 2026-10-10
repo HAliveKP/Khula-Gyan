@@ -24,6 +24,7 @@ from src.generation.answer import answer_with_trace  # noqa: E402
 from src.generation.guard import citations_grounded  # noqa: E402
 from src.generation.prompt import PROMPT_VERSION  # noqa: E402
 from src.generation.settings import setting  # noqa: E402
+from src.generation.spend import SpendLimitError, configured_cap, current_spend, reset_spend  # noqa: E402
 
 from results_log import EVAL_SECTION, add_rows, cell  # noqa: E402
 
@@ -110,6 +111,7 @@ def main() -> None:
     args = ap.parse_args()
     if args.fake_llm:
         os.environ["LLM_PROVIDER"] = "fake"
+    reset_spend()
 
     questions = load_questions(Path(args.questions), args.include_unverified or args.mock)
     if args.limit:
@@ -121,34 +123,38 @@ def main() -> None:
         from judge import judge
 
     records = []
-    for q in questions:
-        t0 = time.perf_counter()
-        chunks = retrieve(q)
-        mc = q.get("must_cite") or {}
-        rec = {"id": q["id"], "type": q["type"], "lang": q["lang"], "service": q["service"],
-               "hit": any(c["source"] == mc.get("source") and int(c["page"]) == mc.get("page") for c in chunks),
-               "retrieved": [f'{c["source"]}#p{c["page"]} ({float(c.get("score", 0)):.3f})' for c in chunks]}
-        if not args.retrieval_only:
-            resp, trace = answer_with_trace(q["q"], chunks)
-            rec.update(status=resp["status"], reason=trace["reason"], top_score=trace["top_score"],
-                       answer=resp["answer"],
-                       citations=resp["citations"],
-                       cited_must_page=any(c["source"] == mc.get("source") and c["page"] == mc.get("page")
-                                           for c in resp["citations"]),
-                       grounded=citations_grounded(resp, chunks) if resp["status"] == "answered" else None)
-            if args.judge and resp["status"] == "answered" and q["type"] == "answerable":
-                verdict = judge(q["q"], q.get("expected", []), resp, chunks)
-                rec.update(correct=verdict["correct"], hallucinated=verdict["hallucinated"],
-                           judge_reason=verdict["reason"])
-            elif args.judge and resp["status"] == "answered":  # out-of-scope answered: still check support
-                verdict = judge(q["q"], [], resp, chunks)
-                rec.update(correct=False, hallucinated=verdict["hallucinated"], judge_reason=verdict["reason"])
-            else:
-                rec.update(correct=resp["status"] == "answered" and keyword_correct(q.get("expected", []), resp))
-            rec["category"] = categorize(q, rec)
-        rec["seconds"] = round(time.perf_counter() - t0, 2)
-        records.append(rec)
-        print(f'{rec["id"]:6s} {rec.get("status", "-"):9s} hit={int(rec["hit"])} {rec.get("category", "")}')
+    try:
+        for q in questions:
+            t0 = time.perf_counter()
+            chunks = retrieve(q)
+            mc = q.get("must_cite") or {}
+            rec = {"id": q["id"], "type": q["type"], "lang": q["lang"], "service": q["service"],
+                   "hit": any(c["source"] == mc.get("source") and int(c["page"]) == mc.get("page") for c in chunks),
+                   "retrieved": [f'{c["source"]}#p{c["page"]} ({float(c.get("score", 0)):.3f})' for c in chunks]}
+            if not args.retrieval_only:
+                resp, trace = answer_with_trace(q["q"], chunks)
+                rec.update(status=resp["status"], reason=trace["reason"], top_score=trace["top_score"],
+                           answer=resp["answer"],
+                           citations=resp["citations"],
+                           cited_must_page=any(c["source"] == mc.get("source") and c["page"] == mc.get("page")
+                                               for c in resp["citations"]),
+                           grounded=citations_grounded(resp, chunks) if resp["status"] == "answered" else None)
+                if args.judge and resp["status"] == "answered" and q["type"] == "answerable":
+                    verdict = judge(q["q"], q.get("expected", []), resp, chunks)
+                    rec.update(correct=verdict["correct"], hallucinated=verdict["hallucinated"],
+                               judge_reason=verdict["reason"])
+                elif args.judge and resp["status"] == "answered":  # out-of-scope answered: still check support
+                    verdict = judge(q["q"], [], resp, chunks)
+                    rec.update(correct=False, hallucinated=verdict["hallucinated"], judge_reason=verdict["reason"])
+                else:
+                    rec.update(correct=resp["status"] == "answered" and keyword_correct(q.get("expected", []), resp))
+                rec["category"] = categorize(q, rec)
+            rec["seconds"] = round(time.perf_counter() - t0, 2)
+            records.append(rec)
+            print(f'{rec["id"]:6s} {rec.get("status", "-"):9s} hit={int(rec["hit"])} {rec.get("category", "")}')
+    except SpendLimitError as err:
+        print(f"Evaluation stopped: {err}", file=sys.stderr)
+        raise SystemExit(2) from err
 
     ans = [r for r in records if r["type"] == "answerable"]
     oos = [r for r in records if r["type"] == "out_of_scope"]
@@ -178,6 +184,14 @@ def main() -> None:
     runs_dir.mkdir(parents=True, exist_ok=True)
     run_file = runs_dir / f"{stamp}.jsonl"
     run_file.write_text("\n".join(json.dumps(r, ensure_ascii=False) for r in records) + "\n", encoding="utf-8")
+    estimated_spend = current_spend()
+    summary_file = runs_dir / f"{stamp}.summary.json"
+    summary_file.write_text(json.dumps({
+        "estimated_api_spend_usd": round(estimated_spend, 8),
+        "max_api_spend_usd": configured_cap(),
+        "question_count": len(records),
+    }, indent=2) + "\n", encoding="utf-8")
+    print(f"Estimated API spend: ${estimated_spend:.6f} of ${configured_cap():.2f} cap")
     try:
         display_path = run_file.relative_to(REPO)
     except ValueError:
