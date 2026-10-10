@@ -24,7 +24,7 @@ from src.generation.guard import citations_grounded  # noqa: E402
 from src.generation.prompt import PROMPT_VERSION  # noqa: E402
 from src.generation.settings import setting  # noqa: E402
 
-from results_log import add_rows, cell  # noqa: E402
+from results_log import EVAL_SECTION, add_rows, cell  # noqa: E402
 
 RUNS_DIR = REPO / "eval" / "runs"
 
@@ -174,8 +174,8 @@ def main() -> None:
     row = (f"| {stamp[:10]} | {cell(args.note)} | {PROMPT_VERSION} | {len(records)} | {metrics['hit@5']} | "
            f"{metrics['citation_acc']} | {metrics['correct']} | {metrics['hallucination']} | "
            f"{metrics['correct_refusal']} | {metrics['false_refusal']} | {metrics['p95_s']} |")
-    add_rows("Eval table", [row])
-    print('Row added to the "Eval table" in docs/results.md')
+    add_rows(EVAL_SECTION, [row])
+    print(f"Row added to \"{EVAL_SECTION}\" in docs/results.md")
 
 
 if __name__ == "__main__":

@@ -17,19 +17,13 @@ METRICS = ["hit@5", "Citation acc.", "Correct", "Hallucination", "Correct refusa
 
 
 def read_rows() -> tuple[list[str], list[list[str]]]:
-    """Header and rows of the "Eval table" section only."""
-    text = (REPO / "docs" / "results.md").read_text(encoding="utf-8").splitlines()
-    start = next(i for i, ln in enumerate(text) if ln.strip() == "## Eval table")
-    lines = []
-    for ln in text[start + 1:]:
-        if ln.startswith("## "):
-            break
-        if ln.startswith("|"):
-            lines.append(ln)
-    header = [c.strip() for c in lines[0].strip("|").split("|")]
-    rows = [[c.strip() for c in ln.strip("|").split("|")] for ln in lines[2:]]
+    """Header and rows of the "Eval runs (eval/run_eval.py)" table only."""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from results_log import EVAL_HEADER, EVAL_SECTION, table_rows
+    header = [c.strip() for c in EVAL_HEADER.splitlines()[0].strip("|").split("|")]
+    rows = table_rows(EVAL_SECTION)
     if not rows:
-        sys.exit("The Eval table has no rows yet. Run eval/run_eval.py first.")
+        sys.exit("The eval runs table has no rows yet. Run eval/run_eval.py first.")
     return header, rows
 
 
