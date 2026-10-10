@@ -19,6 +19,7 @@ def chunk_text(
     page: int,
     service: str,
     lang: str,
+    source_url: str | None = None,
     chunk_size: int = 400,
     overlap: int = 50,
     encode: Callable[[str], list[Any]] | None = None,
