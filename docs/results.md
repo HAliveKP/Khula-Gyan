@@ -74,6 +74,8 @@ Historical commit metadata, diffs, and combined statuses were rechecked on Hkp. 
 | 2026-10-10 | `0f37e3f12b547772ad19abfafa0e6441bf21ff00` | Codex | config: preserve OpenRouter setup and add spend guard | Local provider configuration | Preserved Hkp's OpenRouter URL/key-pool settings and documented cap and rates. |
 | 2026-10-10 | `2c9c9a95324eb0920b352694dd5eabf87067ab02` | Codex | docs: cite documented Member 3 backup candidate | Presenter evidence | Decision record now cites the Member 3 generation/eval history row directly. |
 
+| 2026-10-10 | `9488a4d7900d7991fdaf1f7e5c6ab5040423883e` | Codex | docs: log decision and spend guard work | Leader work log | Recorded initial decision/spend commit hashes; later corrections are separately logged above. |
+
 ## Day checklist and evidence
 
 | Day | Owner | Status | Evidence / remaining work |
