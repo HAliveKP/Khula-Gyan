@@ -1,6 +1,6 @@
 # Project work log and results
 
-Updated 2026-10-09. This file keeps previous entries and reports only checks that were actually run. The commit log below includes every Hkp commit through the immediately preceding Day 2 implementation commit. A Git commit cannot contain its own final hash; this log's commit will be included when the log is next updated.
+Updated 2026-10-10. This file keeps previous entries and reports only checks that were actually run. The commit log below includes every Hkp commit through the immediately preceding Day 2 implementation commit. A Git commit cannot contain its own final hash; this log's commit will be included when the log is next updated.
 
 ## Commit log
 
@@ -33,19 +33,28 @@ Historical commit metadata, diffs, and combined statuses were rechecked on Hkp. 
 | 2026-10-10 | `116c11c1a28f5f74752cc9411c56d3583892170f` | aash-crest01 | docs: check new commit log rows | Day 1 M3: results log | pass: docs only |
 | 2026-10-10 | `90b21cfd46ea71d5bf548bf00c3d724b14046d0e` | aash-crest01 | eval: use the team log format on main (full hashes, no merges, Day checklist, Eval runs under Evaluation results) | Day 1 M3: results log in the team format | pass: 24 tests passed; update_log.py matched the Leader's full hashes |
 
+| 2026-10-10 | `7e7801d8638323f12fe56ad4aa521862dd0d2641` | Harikrishna Pokhrel | feat: add dense retrieval search contract | Day 2 Member 2: dense search and score scale | Python syntax compilation passed. No embedding model or Chroma package is installed; no data/index means no retrieval run or hit@5. |
+| 2026-10-10 | `025ef81beaf12b61b6264e1100cde972ae4c157e` | Harikrishna Pokhrel | docs: describe current Hkp retrieval status | Leader: correct README status/run expectations | README descriptions checked against Hkp and main/dev; setup/runtime not executed. |
+| 2026-10-10 | `a8cc68519c4213d7247011596946a3f885c73608` | Harikrishna Pokhrel | docs: audit Day 0-2 member task status | Day 0–2 cross-member audit | Branch contents and local prerequisites rechecked; source permissions, data/index, and runtime checks remain blocked. |
+| 2026-10-10 | `139c757aeae1667e8cecff57ed7b21b27aaa4b4f` | Harikrishna Pokhrel | fix: format Day 0-2 audit as markdown | Day 0–2 audit formatting | Re-fetched Markdown now has real table/line breaks; content rechecked. |
+| 2026-10-10 | `18c7d14e6b90d3119c1e4b7ca7f438e1cd36a9b1` | Harikrishna Pokhrel | docs: complete Day 0-2 audit trail | Day 0–2 audit/results update | Branch checklist, prior work, and evaluation status rechecked; no unmeasured metric added. |
+
 ## Day checklist and evidence
 
 | Day | Owner | Status | Evidence / remaining work |
 |---|---|---|---|
 | Day 0 | Member 1 — Data & Documents | Partial | Source register exists. No originals are in `data/raw/`; usage terms and a first local extraction remain to be confirmed. |
 | Day 0 | Member 2 — Retrieval | Partial | Dependency list and embedding smoke script exist. A successful local model smoke run is not recorded. |
-| Day 0 | Member 3 — Generation & Evaluation | Partial | Response contract and starter question drafts exist. Provider choice and a successful LLM call remain pending. |
-| Day 0 | Leader — Integration, UI & Repository | Partial | Setup files and README exist; Hkp is the selected branch. Shared `dev` and `main` branches were not created. |
+| Day 0 | Member 3 — Generation & Evaluation | Partial on Hkp; done on main/dev | Response contract and answer implementation exist on main/dev; OpenRouter smoke check is recorded there. Hkp has not incorporated those commits. |
+| Day 0 | Leader — Integration, UI & Repository | Partial | Setup files and README exist; Hkp is the selected branch. `dev` was created from `main` on 2026-10-10; end-to-end app run remains blocked on source/index and Hkp generation module. |
 | Day 1 | Member 1 — Data & Documents | Partial | Ten sources are registered and a preliminary extraction report exists. No files were downloaded or locally extracted. |
 | Day 1 | Member 2 — Retrieval | Partial | Chunking and Chroma index code exist. A sample dataset and populated index have not been produced. |
-| Day 1 | Member 3 — Generation & Evaluation | Pending | `src/generation/answer.py` and the 15-question Day 1 set are not present. |
+| Day 1 | Member 3 — Generation & Evaluation | Done for answer code on main/dev; question set partial | `answer.py` is on main/dev, but there are 10 unverified question drafts and no 15 verified questions; Hkp lacks the generation commits. |
 | Day 1 | Leader — Integration, UI & Repository | Done for mock | `ask()` and the initial Streamlit screen were added; the screen was not launched in this environment. |
 | Day 2 | Member 1 — Data & Documents | In progress | PDF/HTML extraction, NFC cleanup, repeated header/footer removal, and page-linked JSONL output are implemented. Synthetic HTML checks passed. Process a permitted official source and inspect each page when the download and PyMuPDF prerequisites are available. |
+| Day 2 | Member 2 — Retrieval | Partial | `src/retrieval/search.py` now implements dense search and 0–1 cosine similarity. No source chunks/index exist; embedding smoke test failed because `sentence-transformers` is missing; hit@5 is not measured. |
+| Day 2 | Member 3 — Generation & Evaluation | Partial on Hkp; code ready on main/dev | `answer.py` and `run_eval.py` are in `main`/`dev` (merged PR #5); Hkp does not contain them. Ten questions are drafts, zero verified; the required 25-question set and real retrieval eval are incomplete. |
+| Day 2 | Leader — Integration, UI & Repository | Partial | Hkp `ask()` and UI are connected to the contracts and dense search now exists, but `answer.py`, approved source text, and a populated index are missing from Hkp. `dev` exists from main; end-to-end Streamlit run remains unverified. Optional FastAPI was skipped. |
 | Day 2 | Member 2 — Retrieval | Pending (not part of this request) | The real `src/retrieval/search.py` module is not present, so index search cannot yet run end to end. |
 | Day 2 | Member 3 — Generation & Evaluation | Pending (not part of this request) | The real `src/generation/answer.py` module is not present, so no answer generation or evaluation can run. |
 | Day 2 | Leader — Integration, UI & Repository | In progress | `ask()` now connects to the documented `search()` and `answer()` interfaces when available; the UI has citation display, loading, and friendly error states. It safely returns `not_found` until those modules and reviewed source text exist. Optional FastAPI was skipped. |
@@ -60,6 +69,28 @@ Only `eval/run_eval.py` output belongs in this table. That runner is not present
 | Run / build | Date | Questions | hit@5 | Citation accuracy | Answer correctness | Refusal rate | Notes |
 |---|---|---:|---:|---:|---:|---:|---|
 | Day 0–2 baseline | - | - | - | - | - | - | `eval/run_eval.py` is not available; run the evaluation after the answer and search modules are connected. |
+
+## Day 0–2 task audit (2026-10-10)
+
+This audit checks the working branch `Hkp` and notes when work exists only on shared `main`/`dev`. No task is marked complete based only on a code file existing.
+
+| Owner | Day 0–2 task | Status | Evidence / next step |
+|---|---|---|---|
+| Member 1 — Data | Download official PDFs/pages, verify reuse permission | Blocked | `data/raw/` contains only `.gitkeep`. The registered sources do not provide a confirmed reuse/redistribution grant; the blueprint directs us to keep URLs and skip files when rights are unclear. Ask each publisher before redistributing; keep source copies local only if the team confirms lawful internal use. |
+| Member 1 — Data | Process, visually inspect Nepali/page numbers, deliver processed JSONL | Partial | Processor supports PDF/HTML, NFC cleanup, page fields, OCR fallback, and synthetic HTML checks passed earlier. No official files/PyMuPDF/Tesseract data available here; `data/processed/` contains only `.gitkeep`, so no visual page QA or deliverable exists. |
+| Member 1 + Member 3 | Write and verify 15 Day 1 questions together | Pending | `eval/question-drafts.md` has 10 unverified drafts; `main/dev` has 10 JSONL records, 0 verified. Requires source pages before filling expected facts and citations. |
+| Member 2 — Retrieval | Run embedding smoke test | Blocked | Attempted `python scripts/smoke_test_embedding.py`; failed with `ModuleNotFoundError: sentence_transformers`. Install project requirements/model before rerunning. |
+| Member 2 — Retrieval | Build Chroma index from Member 1's processed files | Blocked | No processed chunks exist and Chroma is not installed. No index built. |
+| Member 2 — Retrieval | Implement `search(query, k=5, service=None)`, explain score | Partial | Hkp commit `7e7801d` implements dense Chroma search with source/page metadata and cosine-derived 0–1 similarity (not probability). Runtime retrieval is unverified; BM25/RRF/reranker remain future work. |
+| Member 2 — Retrieval | Report hit@5 | Pending | Requires permitted processed sources, populated index, and verified questions. No metric is recorded. |
+| Member 3 — Generation | Provide `answer()` and prompt/schema | Done on main/dev; absent on Hkp | Existing merged PR #5 added generation, schema/guard, tests, and a provider smoke check on main; Hkp has not incorporated those commits. |
+| Member 3 — Evaluation | Grow set to 25 including 5 off-topic | Pending | Main/dev has 10 unverified question entries only. Do not invent expected facts or mark questions verified without page evidence. |
+| Member 3 — Evaluation | First real evaluation after `search()`; Day 3 baseline | Pending | Main/dev runner supports evaluation, but no Hkp index or real search run exists. The results table correctly keeps unmeasured metrics as `-`. |
+| Leader | Answer provider/credits/threshold/intermediate stage/results owner/submission/presenter questions | Partial | Main/dev records OpenRouter as provider, but the other decisions are not answered in the checked project notes. Threshold remains uncalibrated; default 0 is only a starting configuration, not approval to disable the guard. |
+| Leader | Create shared `dev` branch | Done | Created `dev` from current `main` (2026-10-10). |
+| Leader | Run Streamlit end-to-end after search exists | Blocked | Streamlit, Chroma, embedding package, index, and Hkp generation module are missing in this runtime/branch. |
+
+No real evaluation numbers were added: the required source-backed question set and populated retrieval index are still missing.
 
 ### Eval runs (eval/run_eval.py)
 

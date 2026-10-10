@@ -6,7 +6,7 @@ Khula Gyan is an open-source project to help people understand government proced
 
 ## Project status
 
-We are starting with one service: driving-license renewal. The app shell and pipeline contract are in place, but real retrieval and answer modules are still being built. Until those modules and reviewed source text are available, the app returns `not_found`; it does not invent an answer or citation.
+We are starting with one service: driving-license renewal. The dense retrieval adapter and pipeline contract are in place, but there are no approved source files or populated index yet. The generation implementation is available on `main`/`dev` but has not been merged into `Hkp`. Until reviewed source text, an index, and the answer module are available on this branch, the app returns `not_found`; it does not invent an answer or citation.
 
 ## Getting started
 
@@ -69,7 +69,7 @@ After installing the requirements, start the UI from the repository root:
 streamlit run frontend/app.py
 ```
 
-The screen currently shows a clear not-found message until `src/retrieval/search.py`, `src/generation/answer.py`, and reviewed processed source text are available.
+The screen currently shows a clear not-found message until approved processed source text is indexed and `src/generation/answer.py` is present on this branch. Dense similarity scores are normalized to 0–1; they are not probabilities, and the guard threshold has not been calibrated. The search interface is `search(query, k=5, service=None)`.
 
 ### Prepare a local source document
 
@@ -104,12 +104,12 @@ Document extraction and Unicode cleanup live in `src/ingest/`; `scripts/process_
 
 ## Team workflow
 
-Use small branches and pull requests. The user-selected working branch is `Hkp`. Agree as a team before creating shared `dev` or `main` branches. Keep the response contract in `docs/ask-response.schema.json` stable so work can proceed in parallel.
+Use small branches and pull requests. The user-selected working branch is `Hkp`; shared `dev` was created from `main` on 2026-10-10. Keep the response contract in `docs/ask-response.schema.json` stable so work can proceed in parallel.
 
 ## Current project notes
 
 - First service: driving-license renewal.
 - Initial sources are candidates listed in `docs/data-sources.md`; verify their currentness before answering procedural questions.
-- LLM provider and model are not selected yet. The application must not treat placeholder values in `.env.example` as credentials.
+- On `Hkp`, provider and model settings are still placeholders. `main`/`dev` has an OpenRouter implementation; coordinate before copying provider settings across branches. The application must not treat placeholder values in `.env.example` as credentials.
 - The task board is in `docs/user-story-board.md`; checked commit history and measured evaluation results are tracked in `docs/results.md`.
 
