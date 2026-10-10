@@ -35,7 +35,7 @@ On Windows, use `.venv/Scripts/python.exe scripts/smoke_test_embedding.py` inste
 - `make fetch` downloads sources whose terms are confirmed open.
 - `make index` processes eligible local sources and builds the ignored Chroma index.
 - `make test` runs offline tests using synthetic fixtures.
-- `make eval` runs the offline mock evaluator on a synthetic fixture and writes an ignored run record. This is a harness check, not a civic quality metric.
+- `make eval` runs the offline mock evaluator and fake generator on a synthetic fixture and writes an ignored run record. This is a harness check, not a civic quality metric.
 - `make run` starts the Streamlit interface.
 
 See `AGENTS.md` for branch rules, source handling requirements, and the repository map. Keep `docs/results.md` limited to checks and evaluation results that were actually observed.
