@@ -29,7 +29,7 @@ Run from the repository root. Install GNU Make and Python 3.12 first.
 - `make fetch` downloads only sources marked `confirmed open` in the local registry.
 - `make index` processes eligible local sources and builds the ignored Chroma index.
 - `make test` runs the pytest suite.
-- `make eval` runs the evaluator on verified questions and writes the run record.
+- `make eval` runs the mock evaluator on the synthetic fixture question and writes an ignored run record; it is not a civic quality metric.
 - `make run` starts the Streamlit app.
 
 ## Branch and data rules
