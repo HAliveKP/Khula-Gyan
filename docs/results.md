@@ -39,6 +39,18 @@ Historical commit metadata, diffs, and combined statuses were rechecked on Hkp. 
 | 2026-10-10 | `139c757aeae1667e8cecff57ed7b21b27aaa4b4f` | Harikrishna Pokhrel | fix: format Day 0-2 audit as markdown | Day 0–2 audit formatting | Re-fetched Markdown now has real table/line breaks; content rechecked. |
 | 2026-10-10 | `18c7d14e6b90d3119c1e4b7ca7f438e1cd36a9b1` | Harikrishna Pokhrel | docs: complete Day 0-2 audit trail | Day 0–2 audit/results update | Branch checklist, prior work, and evaluation status rechecked; no unmeasured metric added. |
 
+| 2026-10-10 | `d62bad964b1c244e2d7b9322d4d575abb13b0502` | Codex | build: pin Python 3.12 dependencies | Day 0 environment | Pip install completed on retry; `pip check` passed; embedding smoke passed. |
+| 2026-10-10 | `6024c5e96dc39eb0f5b5d431d3bfce8710f0d769` | Codex | data: track reuse terms for registered sources | Member 1 source licensing | Registry records status and checked date; one CC BY page is reference-only. |
+| 2026-10-10 | `85d9044e3d1b8015fc02191f9bfd758a8438ee9` | Codex | data: add rights-aware local source fetcher | Member 1 local fetching | Fetched one explicitly licensed reference page to ignored data/raw; no government page fetched. |
+| 2026-10-10 | `6a5cf7c5b28c1d62039b7f76a6658d35814bde47` | Codex | retrieval: build page-linked Chroma index from approved sources | Member 2 index builder | Build run processed 1 page; 0 civic chunks indexed because the page is reference-only. |
+| 2026-10-10 | `97304c0433c6f0ffb55556f4cae32ed5526b5518` | Codex | eval: expand source-unverified draft set to 25 | Member 3 evaluation set | 25 drafts, 5 out-of-scope, 0 verified; all expected values remain TODO. |
+| 2026-10-10 | `6487469b663626d51ab2982bf20704fa4831e5e5` | Codex | data: allow license-review pages to be processed as reference-only | Member 1 processing | Reference-only page extraction succeeded; no civic facts claimed. |
+| 2026-10-10 | `d51a23d84ae5ff28c787650c15eb9982284fd4ef` | Codex | retrieval: retain source URLs in chunks | Member 2 citations | Follow-up correction recorded in `775bc51`; this commit did not fully apply the chunk metadata edit. |
+| 2026-10-10 | `14605ce2990f7fa4ab408da51d0c8e70a4b3348a` | Codex | retrieval: store source URLs as Chroma metadata | Member 2 citations | Source URL metadata added; index runtime not tested on civic data. |
+| 2026-10-10 | `b29073882891686efaf591402e0e25dce61cf99e` | Codex | retrieval: return canonical source URL with search hits | Member 2 citations | Search result URL field added. |
+| 2026-10-10 | `775bc51b9e8e4f4edab765b4e8c1c7f9935d39b4` | Codex | retrieval: attach canonical URLs to chunks | Member 2 citations | Full chunk metadata correction applied. |
+| 2026-10-10 | `a1d5166cb4421f7e375e3b6ea701168c38822839` | Codex | docs: document pinned install and source indexing steps | Leader setup docs | README updated for CPU install, fetching and index build. |
+
 ## Day checklist and evidence
 
 | Day | Owner | Status | Evidence / remaining work |
@@ -111,3 +123,19 @@ The branch includes both the Hkp retrieval score implementation and the generati
 - `docs/results.md`: retained dev's Member 3 log and eval-run table; appended Hkp audit/commit rows. No historical rows removed.
 - `requirements.txt`: retained dev's dependency categories; it will be pinned in the environment commit.
 - `src/retrieval/search.py` and `docs/retrieval-score.md`: kept Hkp's dense search and score documentation.
+
+
+## Follow-up verification (2026-10-10)
+
+| Area | Status | Evidence |
+|---|---|---|
+| Environment | Done | CPU-only torch 2.14.1+cpu installed first; pinned requirements installed after two WinError 32 file-lock attempts; final `pip check` reported “No broken requirements found.” Embedding smoke check passed: 10 examples (5 Nepali + 5 English), vector size 1024. |
+| Sources and rights | Partial | Registry marks official DoTM/MOHA terms unclear and passport pages all-rights-reserved; no such page was fetched. One Open Data Nepal page carries the literal CC BY 4.0 footer text and was fetched locally for extraction only. Human approval is still required before selecting civic sources. |
+| Processing | Partial | One HTML page produced one page-linked JSONL row. Visual/content spot check found navigation/footer and license text only; not useful dataset substance and not civic evidence. |
+| Retrieval | Partial | Builder ran: one processed page, 0 eligible civic chunks, 0 indexed records. Five sample searches returned empty lists; no score values exist. hit@5 remains “-” because no human-verified expected sources exist. |
+| Evaluation set | Partial | 25 records now exist: 20 answerable drafts and 5 out-of-scope drafts; all have expected=TODO, verified=false, and empty source chunk/URL. The normal runner has zero eligible verified questions and must not produce quality metrics. |
+| Streamlit | Partial | Headless Streamlit announced localhost:8501 and localhost HTTP probe returned 200. This checkout does not contain the integration pipeline module and no civic index exists, so a real cited response cannot be verified. |
+
+No measured evaluation row was added. The documented eval runner exits with “No questions to run. Add verified questions or pass --include-unverified.” when run normally on this set. The test fixture values are synthetic and are not used as evaluation results.
+
+Human decisions still needed: written permission/open licensed civic sources, presenter name, and API-credit spending limit. Also confirm whether any unclear-terms sources may be downloaded for private extraction, which is distinct from redistribution permission.
