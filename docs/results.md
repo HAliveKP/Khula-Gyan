@@ -78,6 +78,10 @@ Historical commit metadata, diffs, and combined statuses were rechecked on Hkp. 
 
 | 2026-10-10 | `eeb14458c88f455a74842aa548a761e1d502b653` | Codex | docs: log final decision evidence corrections | Leader work log | Added follow-up configuration and evidence-correction commit rows; current log update is not self-listed. |
 
+| 2026-10-10 | `068edd157be0b52211e6ace50e9779ea8eda4a16` | Codex | docs: complete project close-out README | Close-out documentation | README claims checked against the decisions, source registry, results, and Markdown task board; no Excel workbook was found. |
+| 2026-10-10 | `a2d5c4b0474895101f014c2bb3080693e4f57258` | Codex | docs: add decision close-out changelog | Close-out documentation | Changelog records evidence and pending human actions; no source permissions or decisions were inferred. |
+| 2026-10-10 | `6773a58e3d2974344d4d9b21814e35cfb73a4e47` | Codex | docs: track project next steps | Close-out planning | Next steps mapped to the Markdown story board; no Excel workbook found. |
+
 ## Day checklist and evidence
 
 | Day | Owner | Status | Evidence / remaining work |
@@ -178,3 +182,10 @@ Human decisions still needed: written permission/open licensed civic sources, pr
 | Synthetic evaluation harness | Pass | The offline fixture runner wrote one ignored run record and skipped the draft item. Mock percentages are not civic evaluation results and were not added to the evaluation tables. |
 | GNU Make setup target | Not run | `make setup` failed because `make` is not installed in this Windows environment. The existing `.venv` was already available. |
 | Source downloads / index build | Not run | Setup-only session; no source pages or Chroma index were downloaded or built. |
+
+
+## Close-out verification (2026-10-10)
+
+The independent close-out review found no Khula-Gyan Excel storyboard workbook; the project plan remains `docs/user-story-board.md`. No spreadsheet rows were changed. The reviewer re-ran the local suite with a workspace-local temporary directory: `pytest -q --basetemp=.pytest_tmp\verification` → **6 passed**. The primary close-out rerun used `pytest -q --basetemp=.pytest_tmp\closeout` → **6 passed in 4.28s**. The default pytest temp location produced 4 errors because it attempted to write under a sandbox-inaccessible AppData temp directory; using a repository-local temp directory passed. GNU Make is unavailable in this environment, so the Make targets themselves were not run during close-out. This result does not measure civic retrieval, answer quality, or evaluation metrics; those remain `-`.
+
+Human actions remain: send the source permission requests, confirm presenter and backup, confirm or change the provisional USD $1.00 API cap, configure current provider rates before paid calls, and provide the correct storyboard workbook if spreadsheet updates are expected.
