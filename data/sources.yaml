@@ -1,0 +1,138 @@
+# Last checked 2026-10-10. Rights apply to the listed page/document only;
+# government hosting is not a reuse license. Confirm changes before each fetch.
+checked_on: "2026-10-10"
+sources:
+  - id: dl_dotm_portal
+    title: Driving-license and vehicle-registration system page
+    publisher: Department of Transport Management (DoTM)
+    url: https://dotm.gov.np/pages/driving-license-and-vehicle-registration-system-1/
+    filename: dl_dotm_portal.html
+    service: driving_license
+    lang: en
+    license_status: unclear
+    license: null
+    terms_url: https://dotm.gov.np/
+    license_quote: null
+    answer_evidence: false
+  - id: dl_renewal_manual
+    title: Online Driving License System user manual
+    publisher: Department of Transport Management (DoTM)
+    url: https://applydlnew.dotm.gov.np/assets/downloads/user_manual.pdf
+    filename: dl_renewal_manual.pdf
+    service: driving_license
+    lang: en
+    license_status: unclear
+    license: null
+    terms_url: https://dotm.gov.np/
+    license_quote: null
+    answer_evidence: false
+  - id: dl_bheri_office_faq
+    title: Transport Management Office Bheri FAQ
+    publisher: Transport Management Office Bheri, DoTM
+    url: https://bheritmo.dotm.gov.np/FAQ/MainIndex
+    filename: dl_bheri_office_faq.html
+    service: driving_license
+    lang: en
+    license_status: unclear
+    license: null
+    terms_url: https://dotm.gov.np/
+    license_quote: null
+    answer_evidence: false
+  - id: citizenship_darchula_requirements
+    title: Required documents to make citizenship
+    publisher: District Administration Office, Darchula (MOHA)
+    url: https://daodarchula.moha.gov.np/en/post/required-documents-to-make-citizenship-1
+    filename: citizenship_darchula_requirements.html
+    service: citizenship
+    lang: en
+    license_status: unclear
+    license: null
+    terms_url: https://moha.gov.np/page/terms-of-use
+    license_quote: null
+    answer_evidence: false
+  - id: citizenship_kathmandu_requirements
+    title: Citizenship document checklist
+    publisher: District Administration Office, Kathmandu (MOHA)
+    url: https://daokathmandu.moha.gov.np/assets/3/%E0%A4%A8%E0%A4%BE%E0%A4%97%E0%A4%B0%E0%A4%BF%E0%A4%95%E0%A4%A4%E0%A4%BE_%E0%A4%95%E0%A4%BE%E0%A4%97%E0%A4%9C%E0%A4%BE%E0%A4%A4.PDF/file
+    filename: citizenship_kathmandu_requirements.pdf
+    service: citizenship
+    lang: ne
+    license_status: unclear
+    license: null
+    terms_url: https://moha.gov.np/page/terms-of-use
+    license_quote: null
+    answer_evidence: false
+  - id: citizenship_rules_2082
+    title: Citizenship Rules 2063, fourth amendment 2082 listing
+    publisher: District Administration Office, Dadeldhura (MOHA)
+    url: https://daodadeldhura.moha.gov.np/en/post/na-pa-l-na-ga-ra-ka-ta-na-ya-ma-val-ca-tha-sa-sha-tha-na
+    filename: citizenship_rules_2082.html
+    service: citizenship
+    lang: ne
+    license_status: unclear
+    license: null
+    terms_url: https://moha.gov.np/page/terms-of-use
+    license_quote: null
+    answer_evidence: false
+  - id: passport_process
+    title: ePassport application process
+    publisher: Department of Passports, Ministry of Foreign Affairs
+    url: https://nepalpassport.gov.np/en/process/process-40
+    filename: passport_process.html
+    service: passport
+    lang: en
+    license_status: all rights reserved
+    license: null
+    terms_url: https://nepalpassport.gov.np/en
+    license_quote: "Copyright© 2026. All rights reserved."
+    answer_evidence: false
+  - id: passport_required_documents
+    title: Documents required for ePassport
+    publisher: Department of Passports, Ministry of Foreign Affairs
+    url: https://nepalpassport.gov.np/process/process-22
+    filename: passport_required_documents.html
+    service: passport
+    lang: ne
+    license_status: all rights reserved
+    license: null
+    terms_url: https://nepalpassport.gov.np/en
+    license_quote: "Copyright© 2026. All rights reserved."
+    answer_evidence: false
+  - id: passport_fees
+    title: ePassport fee schedule
+    publisher: Department of Passports, Ministry of Foreign Affairs
+    url: https://nepalpassport.gov.np/process/process-25
+    filename: passport_fees.html
+    service: passport
+    lang: ne
+    license_status: all rights reserved
+    license: null
+    terms_url: https://nepalpassport.gov.np/en
+    license_quote: "Copyright© 2026. All rights reserved."
+    answer_evidence: false
+  - id: passport_pre_enrollment
+    title: Online pre-enrollment application instructions
+    publisher: Department of Passports, Ministry of Foreign Affairs
+    url: https://nepalpassport.gov.np/storage/sVDPlG1lqmxzZOr64tdDUic1qiaDZ2-metaUHJlIEVucm9sbG1lbnQgSW5zdHJ1Y3Rpb25zIGxhdGVzdC5wZGY%3D-.pdf
+    filename: passport_pre_enrollment.pdf
+    service: passport
+    lang: en
+    license_status: all rights reserved
+    license: null
+    terms_url: https://nepalpassport.gov.np/en
+    license_quote: "Copyright© 2026. All rights reserved."
+    answer_evidence: false
+  - id: opendatanepal_ncd_dataset_page
+    title: Non-Communicable Disease Risk Factors and Prevalence, Nepal (2013–2019) dataset page
+    publisher: Open Knowledge Nepal, Open Data Nepal
+    url: https://opendatanepal.com/dataset/non-communicable-disease-risk-factors-and-prevalence-nepal-2013-to-2019
+    filename: opendatanepal_ncd_dataset_page.html
+    service: reference
+    lang: en
+    license_status: confirmed open
+    license: CC BY 4.0
+    terms_url: https://opendatanepal.com/privacy-policy
+    license_quote: "All content is licensed under a Creative Commons Attribution 4.0 International License"
+    answer_evidence: false
+    relevance: "Openly licensed page, but health data is unrelated to civic procedure answers. Excluded from the retrieval index."
+
