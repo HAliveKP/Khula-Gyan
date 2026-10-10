@@ -24,11 +24,9 @@ from src.generation.guard import citations_grounded  # noqa: E402
 from src.generation.prompt import PROMPT_VERSION  # noqa: E402
 from src.generation.settings import setting  # noqa: E402
 
-RESULTS_MD = REPO / "docs" / "results.md"
+from results_log import add_rows, cell  # noqa: E402
+
 RUNS_DIR = REPO / "eval" / "runs"
-HEADER = ("| Date | Change | Prompt | N | hit@5 | Citation acc. | Correct | Hallucination | "
-          "Correct refusal | False refusal | p95 s |\n"
-          "|---|---|---|---|---|---|---|---|---|---|---|\n")
 
 
 def load_questions(path: Path, include_unverified: bool) -> list[dict]:
@@ -86,7 +84,7 @@ def categorize(q: dict, rec: dict) -> str:
 
 
 def pct(values: list[bool]) -> str:
-    return f"{100 * sum(values) / len(values):.0f}%" if values else "n/a"
+    return f"{100 * sum(values) / len(values):.0f}%" if values else "-"
 
 
 def main() -> None:
@@ -151,7 +149,7 @@ def main() -> None:
         "hit@5": pct([r["hit"] for r in ans]),
         "citation_acc": "-" if args.retrieval_only else pct([r["cited_must_page"] for r in answered_ans]),
         "correct": "-" if args.retrieval_only else pct([r.get("correct", False) for r in ans]),
-        "hallucination": pct([r["hallucinated"] for r in answered_all]) if args.judge else "n/a (no judge)",
+        "hallucination": pct([r["hallucinated"] for r in answered_all]) if args.judge else "-",
         "correct_refusal": "-" if args.retrieval_only else pct([r["status"] == "not_found" for r in oos]),
         "false_refusal": "-" if args.retrieval_only else pct([r["status"] == "not_found" for r in ans]),
         "p95_s": f"{p95:.1f}",
@@ -173,16 +171,11 @@ def main() -> None:
     if args.no_write or args.mock:
         print("(not written to docs/results.md)")
         return
-    if not RESULTS_MD.exists():
-        RESULTS_MD.write_text("# Results\n\nOne row per eval run. Newest at the bottom. "
-                              "Never delete rows; a change that hurts the numbers is reverted, not hidden.\n\n"
-                              + HEADER, encoding="utf-8")
-    row = (f"| {stamp[:10]} | {args.note} | {PROMPT_VERSION} | {len(records)} | {metrics['hit@5']} | "
+    row = (f"| {stamp[:10]} | {cell(args.note)} | {PROMPT_VERSION} | {len(records)} | {metrics['hit@5']} | "
            f"{metrics['citation_acc']} | {metrics['correct']} | {metrics['hallucination']} | "
-           f"{metrics['correct_refusal']} | {metrics['false_refusal']} | {metrics['p95_s']} |\n")
-    with open(RESULTS_MD, "a", encoding="utf-8") as f:
-        f.write(row)
-    print("Row added to docs/results.md")
+           f"{metrics['correct_refusal']} | {metrics['false_refusal']} | {metrics['p95_s']} |")
+    add_rows("Eval table", [row])
+    print('Row added to the "Eval table" in docs/results.md')
 
 
 if __name__ == "__main__":
