@@ -98,6 +98,7 @@ def search(query: str, k: int = 5, service: str | None = None) -> list[dict]:
                 "page": page,
                 "service": metadata.get("service"),
                 "lang": metadata.get("lang"),
+                "source_url": metadata.get("source_url"),
                 "score": _similarity(distance),
             }
         )

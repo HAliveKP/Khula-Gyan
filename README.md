@@ -6,7 +6,7 @@ Khula Gyan is an open-source project to help people understand government proced
 
 ## Project status
 
-We are starting with one service: driving-license renewal. The dense retrieval adapter and pipeline contract are in place, but there are no approved source files or populated index yet. The generation implementation is available on `main`/`dev` but has not been merged into `Hkp`. Until reviewed source text, an index, and the answer module are available on this branch, the app returns `not_found`; it does not invent an answer or citation.
+We are starting with one service: driving-license renewal. Dense retrieval and generation modules are integrated on this branch, but no permitted civic source files or populated index are available yet. The app returns `not_found` until reviewed source text is indexed; it does not invent an answer or citation.
 
 ## Getting started
 
@@ -15,7 +15,7 @@ We are starting with one service: driving-license renewal. The dense retrieval a
 - Python 3.12
 - Git
 - Internet access for installing packages and downloading the embedding model on its first run
-- An LLM provider and API key, once the team chooses one (do not commit the key)
+- An OpenRouter API key for live generation (may incur charges; follow the team's spending limit and never commit the key)
 
 On Windows, check that `py -3.12 -V` prints a Python 3.12 version. If `py` is not recognized, install Python 3.12 from the official Python downloads page, enable the launcher option if offered, then reopen PowerShell.
 
@@ -69,11 +69,11 @@ After installing the requirements, start the UI from the repository root:
 streamlit run frontend/app.py
 ```
 
-The screen currently shows a clear not-found message until approved processed source text is indexed and `src/generation/answer.py` is present on this branch. Dense similarity scores are normalized to 0–1; they are not probabilities, and the guard threshold has not been calibrated. The search interface is `search(query, k=5, service=None)`.
+The screen currently shows a clear not-found message until reviewed, permitted civic source text is indexed. Start headlessly for a server deployment with `streamlit run frontend/app.py --server.headless true`. `search(query, k=5, service=None)` returns a 0–1 cosine similarity, not a probability; the configured guard threshold is not calibrated.
 
 ### Prepare a local source document
 
-Keep a source copy in `data/raw/` only after checking its reuse terms. The Day 2 processor supports PDF and HTML and keeps one JSONL row per source page. To see its options from a clean checkout, run:
+Use `python scripts/fetch_sources.py` to fetch only sources whose license status is confirmed open. Unclear terms require human review; files under `data/raw/` and `data/processed/` are local-only and ignored by Git. Then process eligible sources and build the index with `python scripts/build_index.py`. The builder excludes reference-only pages from civic answer evidence. The Day 2 processor supports PDF and HTML and keeps one JSONL row per source page. To see its options from a clean checkout, run:
 
 ```bash
 python scripts/process_document.py --help
@@ -104,12 +104,12 @@ Document extraction and Unicode cleanup live in `src/ingest/`; `scripts/process_
 
 ## Team workflow
 
-Use small branches and pull requests. The user-selected working branch is `Hkp`; shared `dev` was created from `main` on 2026-10-10. Keep the response contract in `docs/ask-response.schema.json` stable so work can proceed in parallel.
+Use small branches and pull requests. The user-selected working branch is `Hkp`. Agree as a team before creating shared `dev` or `main` branches. Keep the response contract in `docs/ask-response.schema.json` stable so work can proceed in parallel.
 
 ## Current project notes
 
 - First service: driving-license renewal.
 - Initial sources are candidates listed in `docs/data-sources.md`; verify their currentness before answering procedural questions.
-- On `Hkp`, provider and model settings are still placeholders. `main`/`dev` has an OpenRouter implementation; coordinate before copying provider settings across branches. The application must not treat placeholder values in `.env.example` as credentials.
+- The team selected OpenRouter for live generation; the model and API-credit limit still need a team decision. The application must not treat placeholder values in `.env.example` as credentials.
 - The task board is in `docs/user-story-board.md`; checked commit history and measured evaluation results are tracked in `docs/results.md`.
 

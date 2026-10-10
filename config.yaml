@@ -11,6 +11,6 @@ guard_min_score: 0.35
 max_latency_seconds: 8
 
 # Member 3 (generation and evaluation)
-# guard_min_score above only makes sense for reranker scores in 0-1.
-# Until Member 2's reranker is merged, set it to 0 so the threshold is off.
+# Dense-search similarity is normalized to 0-1; this is a starting point, not calibrated.
+# Keep the guard enabled until it is calibrated on verified answerable and refusal cases.
 support_check: false   # guard v2 (second LLM call); turn on on Day 6 if it helps the numbers

@@ -19,6 +19,7 @@ def chunk_text(
     page: int,
     service: str,
     lang: str,
+    source_url: str | None = None,
     chunk_size: int = 400,
     overlap: int = 50,
     encode: Callable[[str], list[Any]] | None = None,
@@ -65,8 +66,7 @@ def chunk_text(
     for number, start in enumerate(range(0, len(units), step), start=1):
         piece = render(units[start : start + chunk_size]).strip()
         if piece:
-            chunks.append(
-                {
+            chunk = {
                     "id": f"{doc_id}_p{page}_c{number}",
                     "text": piece,
                     "source": source,
@@ -74,8 +74,11 @@ def chunk_text(
                     "service": service,
                     "lang": lang,
                 }
-            )
+            if source_url:
+                chunk["source_url"] = source_url
+            chunks.append(chunk)
         if start + chunk_size >= len(units):
             break
 
     return chunks
+
