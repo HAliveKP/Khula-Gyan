@@ -1,5 +1,4 @@
 import json
-import os
 from pathlib import Path
 import subprocess
 import sys
@@ -73,15 +72,13 @@ def test_search_limits_scores_and_service_filter(tmp_path, monkeypatch):
 
 def test_eval_runner_writes_results_and_skips_drafts(tmp_path):
     runs_dir = tmp_path / "runs"
-    env = os.environ.copy()
-    env["LLM_PROVIDER"] = "fake"
     result = subprocess.run(
         [
             sys.executable, str(ROOT / "eval" / "run_eval.py"),
             "--questions", str(FIXTURES / "eval_questions.jsonl"),
-            "--runs-dir", str(runs_dir), "--mock", "--note", "pytest synthetic fixture harness",
+            "--runs-dir", str(runs_dir), "--mock", "--fake-llm", "--note", "pytest synthetic fixture harness",
         ],
-        cwd=ROOT, env=env, capture_output=True, text=True, check=False,
+        cwd=ROOT, capture_output=True, text=True, check=False,
     )
 
     assert result.returncode == 0, result.stdout + result.stderr
