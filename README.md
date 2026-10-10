@@ -6,6 +6,14 @@ Khula Gyan is a Nepali civic-document assistant that retrieves passages from pub
 
 The repository contains the Streamlit app, document processing, Chroma indexing, dense search, citation-aware generation, and an evaluation runner. The source register currently has no confirmed-open civic answer source; MOHA sources are unclear and Department of Passports pages state all rights reserved. Those sources are fetched locally only when permitted and are not included in the index. The checked-in openly licensed dataset page is unrelated to civic procedures and is excluded from answer evidence. No performance metric is claimed until measured on verified questions.
 
+## Presentation assignment
+
+The presenter is **provisionally the Leader role** because that role owns integration, UI, repository, and deployment. **Backup candidate: `aash-crest01` (provisional, unconfirmed)** based on recorded Member 3 work; the team must confirm both people before the presentation.
+
+## API spend safety
+
+The provisional API spend cap is **USD $1.00 per process run** (`MAX_API_SPEND_USD`). Confirm or change it with the project owner. Before paid API requests, set `LLM_INPUT_COST_PER_1M_USD` and `LLM_OUTPUT_COST_PER_1M_USD` to the selected provider's current prices; requests are blocked if prices are unset or the estimated reservation would exceed the cap. `MAX_API_OUTPUT_TOKENS` bounds each request. Estimates use provider-reported token counts when available and are not invoices.
+
 ## Requirements and setup
 
 Use Python 3.12, Git, and GNU Make. The first setup installs pinned Python packages and the CPU-only PyTorch wheel. It needs network access and enough disk space for the embedding model.
