@@ -55,6 +55,8 @@ Historical commit metadata, diffs, and combined statuses were rechecked on Hkp. 
 | 2026-10-10 | `1731f0152d2cc42e1204f6d1dcdb784322cf8020` | Codex | docs: clarify verified-question and app limitations | Leader results accuracy | Clarified that zero verified questions prevented evaluation and cited-answer validation. |
 | 2026-10-10 | `5d0ad3aa84c30bb79f0e593ea4981885f76ebcc5` | Codex | docs: record environment and source verification results | Cross-member status audit | Added environment, data, index, evaluation, and Streamlit evidence; no unmeasured metrics added. |
 
+| 2026-10-10 | `e05ee48b863c457118edfd1877a5e0a56c8c8c2c` | Codex | eval: keep exactly five out-of-scope drafts | Member 3 evaluation set | Final structure check: 25 questions, 5 out-of-scope, 0 verified, 25 TODO expected values, 0 duplicate IDs. |
+
 ## Day checklist and evidence
 
 | Day | Owner | Status | Evidence / remaining work |
