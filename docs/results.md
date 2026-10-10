@@ -1,6 +1,6 @@
 # Project work log and results
 
-Updated 2026-10-09. This file keeps previous entries and reports only checks that were actually run. The commit log below includes every Hkp commit through the immediately preceding Day 2 implementation commit. A Git commit cannot contain its own final hash; this log's commit will be included when the log is next updated.
+Updated 2026-10-10. This file preserves the historical entries below and reports checks that were actually run. Historical commit log entries remain intact; setup verification is recorded separately. A Git commit cannot contain its own final hash, so the current results-log commit can be recorded in a later update.
 
 ## Commit log
 
@@ -82,11 +82,11 @@ Historical commit metadata, diffs, and combined statuses were rechecked on Hkp. 
 
 ## Evaluation results
 
-Only `eval/run_eval.py` output belongs in this table. That runner is not present on Hkp, so no quality numbers have been measured. Smoke checks above are implementation checks, not evaluation results.
+Only real output from `eval/run_eval.py` against human-verified civic questions and source chunks belongs in the evaluation tables. The runner is present, but there is no verified civic evaluation set or permitted civic-source index available for a baseline. The offline synthetic fixture harness is a plumbing check; its mock percentages are not project quality metrics. Unmeasured values remain `-`.
 
 | Run / build | Date | Questions | hit@5 | Citation accuracy | Answer correctness | Refusal rate | Notes |
 |---|---|---:|---:|---:|---:|---:|---|
-| Day 0–2 baseline | - | - | - | - | - | - | `eval/run_eval.py` is not available; run the evaluation after the answer and search modules are connected. |
+| Day 0–2 baseline | - | - | - | - | - | - | No human-verified civic question set and permitted civic-source index are available for a real baseline. |
 
 ### Eval runs (eval/run_eval.py)
 
@@ -148,3 +148,15 @@ The branch includes both the Hkp retrieval score implementation and the generati
 No measured evaluation row was added. The eval runner’s default selector has zero verified questions; its code exits with “No questions to run. Add verified questions or pass --include-unverified.” before computing metrics. It was not invoked on this branch because no source-backed verified questions exist. The test fixture values are synthetic and are not used as evaluation results.
 
 Human decisions still needed: written permission/open licensed civic sources, presenter name, and API-credit spending limit. Also confirm whether any unclear-terms sources may be downloaded for private extraction, which is distinct from redistribution permission.
+
+
+## Agent setup verification (2026-10-10)
+
+| Check | Result | Evidence / limits |
+|---|---|---|
+| Offline pytest suite | Pass | `4 passed`; synthetic processor metadata, Chroma score/filter behavior, draft-question skipping, and Git tracking guard. Used a repository-local pytest temp directory because the sandbox temp directory was not writable. |
+| Pinned dependency consistency | Pass | `pip check`: `No broken requirements found.` |
+| Embedding smoke check | Pass | Script printed `Embedding smoke check passed: 10 examples (5 Nepali + 5 English), vector size 1024`. Hugging Face warned that free cache space was slightly below the model's advertised download size. |
+| Synthetic evaluation harness | Pass | The offline fixture runner wrote one ignored run record and skipped the draft item. Mock percentages are not civic evaluation results and were not added to the evaluation tables. |
+| GNU Make setup target | Not run | `make setup` failed because `make` is not installed in this Windows environment. The existing `.venv` was already available. |
+| Source downloads / index build | Not run | Setup-only session; no source pages or Chroma index were downloaded or built. |

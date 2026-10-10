@@ -42,7 +42,7 @@ def build(*, chunk_size: int = 400, overlap: int = 50) -> tuple[int, int]:
         raw_path = RAW_DIR / source["filename"]
         if not raw_path.is_file():
             continue
-        if source.get("license_status") != "confirmed open":
+        if source.get("licence_status") != "confirmed open":
             skipped.append(f"{source['id']}: license status is not confirmed open")
             continue
 

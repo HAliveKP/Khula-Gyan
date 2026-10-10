@@ -69,7 +69,7 @@ def main() -> int:
         allowed = {"confirmed open"}
         if args.include_unclear:
             allowed.add("unclear")
-        selected = [s for s in sources if s.get("license_status") in allowed]
+        selected = [s for s in sources if s.get("licence_status") in allowed]
         skipped = len(sources) - len(selected)
         print(f"Eligible source files: {len(selected)}; skipped by license status: {skipped}")
         for source in selected:

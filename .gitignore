@@ -221,14 +221,12 @@ __marimo__/
 
 # Khula Gyan local secrets, source files, and generated search data
 .env.*
+.env
 !.env.example
-data/raw/*
-!data/raw/.gitkeep
-data/processed/*
-!data/processed/.gitkeep
+data/raw/
+data/processed/
 chroma_db/
 artifacts/
+.venv/
+.pytest_tmp/
 
-
-# Member 3: evaluation run details (results.md is committed, raw runs are not)
-eval/runs/
