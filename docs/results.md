@@ -60,6 +60,17 @@ Historical commit metadata, diffs, and combined statuses were rechecked on Hkp. 
 | 2026-10-10 | `d3fbd55dfabe94c2245613c23e656773ba71d40c` | Codex | docs: log latest verification records | Leader work log | Added prior environment and verification commit rows; no result metrics changed. |
 | 2026-10-10 | `af98e03dcf35a69791d50732711eadbeb9cdfba4` | Codex | docs: log final question set verification | Member 3 evaluation set log | Logged the final 25-question, 5 out-of-scope structure check. |
 
+| 2026-10-10 | `773e81ea928714cacb7ef6cb305451d8b3d91c51` | Codex | data: correct Open Data Nepal licence records | Source reuse review | YAML parsed; NCD licence left unclear/local-only; environment dataset recorded open but reference-only. |
+| 2026-10-10 | `ab64b6152d26ee09df30798ee8ec2eddeb5453d1` | Codex | docs: record provisional project decisions | Leader decisions | Decision evidence cross-checked; source permission, presenter, and cap remain human-confirmation items. |
+| 2026-10-10 | `d5a976905fdd70ac6fbb126b29c69d926e5bdee9` | Codex | docs: draft source permission request | Leader source permission | Draft created only; no publisher contacted. |
+| 2026-10-10 | `938065281bf1eb92858dd53564fe88707fa8e52c` | Codex | docs: note provisional presenter and API cap | Leader presentation and spend policy | README labels presenter/backup and cap provisional; unrelated source is marked reference-only. |
+| 2026-10-10 | `0410e7b212f8716744e90561583c9cd268de3732` | Codex | docs: require spend approval before over-cap runs | Agent setup policy | AGENTS spend stop rule added. |
+| 2026-10-10 | `807fc956fd409bb4195e715b673a357a3076fc66` | Codex | feat: add preflight API spend cap | Generation spend safety | Spend estimator/reservation added; verified by final pytest run. |
+| 2026-10-10 | `41d1e90c529f1e50fcc940caebfc72fd58329822` | Codex | feat: guard generation calls with spend cap | Generation and support/eval LLM calls | Preflight runs before provider calls; verified by final pytest run. |
+| 2026-10-10 | `c885cdefebf02fcef1e6f2f3dfbcd1a777a8769f` | Codex | eval: track spend and stop over-cap runs | Evaluation run accounting | Synthetic fake-LLM harness completed; estimated spend $0.000000. No civic metrics inferred. |
+| 2026-10-10 | `b8372d11e46d0b56c6bd82948ec4943e2a3b738f` | Codex | test: cover spend cap stop behavior | Spend guard tests | Final suite: 6 passed; provider mock was not called when reservation exceeded cap. |
+| 2026-10-10 | `e97b2566d2baf666674034727d0a1fce8c0790ed` | Codex | config: document API spend and rate settings | Local provider configuration | Documents provisional cap and required explicit rates; no key or secret added. |
+
 ## Day checklist and evidence
 
 | Day | Owner | Status | Evidence / remaining work |
