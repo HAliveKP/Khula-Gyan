@@ -57,6 +57,9 @@ Historical commit metadata, diffs, and combined statuses were rechecked on Hkp. 
 
 | 2026-10-10 | `e05ee48b863c457118edfd1877a5e0a56c8c8c2c` | Codex | eval: keep exactly five out-of-scope drafts | Member 3 evaluation set | Final structure check: 25 questions, 5 out-of-scope, 0 verified, 25 TODO expected values, 0 duplicate IDs. |
 
+| 2026-10-10 | `d3fbd55dfabe94c2245613c23e656773ba71d40c` | Codex | docs: log latest verification records | Leader work log | Added prior environment and verification commit rows; no result metrics changed. |
+| 2026-10-10 | `af98e03dcf35a69791d50732711eadbeb9cdfba4` | Codex | docs: log final question set verification | Member 3 evaluation set log | Logged the final 25-question, 5 out-of-scope structure check. |
+
 ## Day checklist and evidence
 
 | Day | Owner | Status | Evidence / remaining work |
