@@ -53,6 +53,7 @@ Only real output from `eval/run_eval.py` against human-verified civic questions 
 | Check | Result | Evidence / limits |
 |---|---|---|
 | Offline pytest suite | Pass | `4 passed`; includes synthetic processor metadata, Chroma score/filter behavior, draft-question skipping, and Git tracking guard. Ran with a repo-local pytest temp directory because the sandbox temp directory is not writable. |
+| Synthetic evaluation harness | Pass | The offline fixture runner wrote one ignored run record and skipped the draft item. Its mock percentages are not civic evaluation results and were not copied into the evaluation table. |
 | Pinned dependency consistency | Pass | `pip check`: `No broken requirements found.` |
 | Embedding smoke check | Pass | Script printed `Embedding smoke check passed: 10 examples (5 Nepali + 5 English), vector size 1024`. Hugging Face warned that free cache space was slightly below the model's advertised download size. |
 | GNU Make setup target | Not run | `make setup` failed because `make` is not installed in this Windows environment. The existing `.venv` was already available. |
