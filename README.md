@@ -69,11 +69,11 @@ After installing the requirements, start the UI from the repository root:
 streamlit run frontend/app.py
 ```
 
-The screen currently shows a clear not-found message until reviewed, permitted civic source text is indexed. `search(query, k=5, service=None)` returns a 0–1 cosine similarity, not a probability; the configured guard threshold is not calibrated.
+The screen currently shows a clear not-found message until reviewed, permitted civic source text is indexed. Start headlessly for a server deployment with `streamlit run frontend/app.py --server.headless true`. `search(query, k=5, service=None)` returns a 0–1 cosine similarity, not a probability; the configured guard threshold is not calibrated.
 
 ### Prepare a local source document
 
-Use `python scripts/fetch_sources.py` to fetch sources whose license status is confirmed open. Unclear terms require human review; files under `data/raw/` are local-only and ignored by Git. The Day 2 processor supports PDF and HTML and keeps one JSONL row per source page. To see its options from a clean checkout, run:
+Use `python scripts/fetch_sources.py` to fetch only sources whose license status is confirmed open. Unclear terms require human review; files under `data/raw/` and `data/processed/` are local-only and ignored by Git. Then process eligible sources and build the index with `python scripts/build_index.py`. The builder excludes reference-only pages from civic answer evidence. The Day 2 processor supports PDF and HTML and keeps one JSONL row per source page. To see its options from a clean checkout, run:
 
 ```bash
 python scripts/process_document.py --help
