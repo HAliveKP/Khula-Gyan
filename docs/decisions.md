@@ -18,7 +18,7 @@ Checked 2026-10-10 against the project documents, source register, and recorded 
 
 **Status:** PROVISIONAL (named presenter and backup are NOT IN DOCS).
 
-**Evidence:** `docs/user-story-board.md:12`: “Member 1 = Data & Documents; Member 2 = Retrieval; Member 3 = Generation & Evaluation; Leader = Integration, UI, Repository, and Deployment.” `docs/results.md:30`: “| 2026-10-10 | `6d5702aa999b61c671ac87a8051c45ef6d0afbaa` | aash-crest01 | feat: OpenRouter key pool (round robin + failover across several API keys) | Day 0 M3: LLM API key + test call (OpenRouter, key loop) | pass: 21 tests passed; smoke_test_llm.py passed with nemotron-3-super-120b-a12b:free |”.
+**Evidence:** `docs/user-story-board.md:12`: “Member 1 = Data & Documents; Member 2 = Retrieval; Member 3 = Generation & Evaluation; Leader = Integration, UI, Repository, and Deployment.” `docs/results.md:25`: “| 2026-10-09 | `d2aa3fb37b291e1ac77fc9f8e383101876fdfd68` | aash-crest01 | feat: Member 3 generation + eval starter (answer, guard, run_eval) | Day 0-1 M3: prompt v0, eval format, answer.py, guard, run_eval | pass: 12 tests passed at this commit |”.
 
 **Who must confirm:** The team must confirm the Leader as presenter and whether `aash-crest01` accepts the backup role, or name different people.
 
