@@ -25,8 +25,8 @@ def process_document(
 ) -> Path:
     """Write one cleaned, source-linked JSONL record per page."""
     source = Path(source_path)
-    if service not in {"driving_license", "citizenship", "passport"}:
-        raise ValueError("service must be driving_license, citizenship, or passport")
+    if service not in {"driving_license", "citizenship", "passport", "reference"}:
+        raise ValueError("service must be driving_license, citizenship, passport, or reference")
     if lang not in {"ne", "en"}:
         raise ValueError("lang must be ne or en")
 
