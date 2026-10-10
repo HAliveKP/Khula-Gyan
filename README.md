@@ -4,7 +4,7 @@ Khula Gyan is a Nepali civic-document assistant that retrieves passages from pub
 
 ## Current status
 
-The repository contains the Streamlit app, document processing, Chroma indexing, dense search, citation-aware generation, and an evaluation runner. The source register currently has no confirmed-open civic answer source; MOHA sources are unclear and Department of Passports pages state all rights reserved. Those sources are fetched locally only when permitted and are not included in the index. The checked-in openly licensed dataset page is unrelated to civic procedures and is excluded from answer evidence. No performance metric is claimed until measured on verified questions.
+The repository contains the Streamlit app, document processing, Chroma indexing, dense search, citation-aware generation, and an evaluation runner. The source register currently has no confirmed-open civic answer source; MOHA sources are unclear and Department of Passports pages state all rights reserved. Those sources are fetched locally only when permitted and are not included in the index. The explicitly share-alike licensed Open Data Nepal environmental dataset is unrelated to civic procedures and excluded from answer evidence; a separate health dataset has no specified license and is also excluded. No performance metric is claimed until measured on verified questions.
 
 ## Presentation assignment
 
