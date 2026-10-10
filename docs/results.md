@@ -51,6 +51,10 @@ Historical commit metadata, diffs, and combined statuses were rechecked on Hkp. 
 | 2026-10-10 | `775bc51b9e8e4f4edab765b4e8c1c7f9935d39b4` | Codex | retrieval: attach canonical URLs to chunks | Member 2 citations | Full chunk metadata correction applied. |
 | 2026-10-10 | `a1d5166cb4421f7e375e3b6ea701168c38822839` | Codex | docs: document pinned install and source indexing steps | Leader setup docs | README updated for CPU install, fetching and index build. |
 
+| 2026-10-10 | `3f059054857075955b6e97b1ca6c36b0205e2e6a` | Codex | docs: reflect selected OpenRouter provider | Leader README accuracy | Provider statement aligned with the existing OpenRouter integration; credit ceiling remains undecided. |
+| 2026-10-10 | `1731f0152d2cc42e1204f6d1dcdb784322cf8020` | Codex | docs: clarify verified-question and app limitations | Leader results accuracy | Clarified that zero verified questions prevented evaluation and cited-answer validation. |
+| 2026-10-10 | `5d0ad3aa84c30bb79f0e593ea4981885f76ebcc5` | Codex | docs: record environment and source verification results | Cross-member status audit | Added environment, data, index, evaluation, and Streamlit evidence; no unmeasured metrics added. |
+
 ## Day checklist and evidence
 
 | Day | Owner | Status | Evidence / remaining work |
