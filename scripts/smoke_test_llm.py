@@ -10,7 +10,7 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from src.generation.llm import _make_client, api_keys, complete, mask  # noqa: E402
+from src.generation.llm import _make_client, api_keys, complete  # noqa: E402
 
 MESSAGES = [{"role": "system", "content": 'Reply with JSON only: {"answer": "..."}'}]
 QUESTIONS = [
@@ -23,14 +23,14 @@ model, base_url = os.getenv("LLM_MODEL", ""), os.getenv("LLM_BASE_URL") or None
 keys = api_keys()
 print(f"Model: {model}   Keys found: {len(keys)}")
 bad = 0
-for key in keys:
+for idx, key in enumerate(keys, start=1):
     try:
         _make_client(key, base_url).chat.completions.create(
             model=model, messages=MESSAGES + [{"role": "user", "content": "Say ok"}], max_tokens=20)
-        print(f"  key {mask(key)}: OK")
+        print(f"  key #{idx}: OK")
     except Exception as err:
         bad += 1
-        print(f"  key {mask(key)}: FAILED ({type(err).__name__}, status {getattr(err, 'status_code', None)})")
+        print(f"  key #{idx}: FAILED ({type(err).__name__}, status {getattr(err, 'status_code', None)})")
 
 # 2. Real questions through the normal client (uses the key pool).
 for q in QUESTIONS:
