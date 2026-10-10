@@ -45,4 +45,5 @@ Run from the repository root. Install GNU Make and Python 3.12 first.
 - Do not invent source text, expected answers, citations, or evaluation numbers.
 - Mark unverified questions as `draft`; use `-` for metrics that were not measured.
 - A task is done only when the relevant tests pass and `README.md` and `docs/results.md` describe verified behavior and results accurately.
+- Stop and ask before any run that could exceed the configured API spend cap. Paid calls require explicit provider rates and are blocked before sending if a request reservation would exceed `MAX_API_SPEND_USD`.
 
