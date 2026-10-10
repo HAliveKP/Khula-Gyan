@@ -89,6 +89,8 @@ Historical commit metadata, diffs, and combined statuses were rechecked on Hkp. 
 | 2026-10-10 | `26085903f11ee8d0243f92e1549623fce5132a52` | Codex | docs: update Day 2 task status | Day 2 team board | Day 2 marked partial/blocked on a usable approved source, based on current checks. |
 | 2026-10-10 | `ca25543732f1822eebfe9b14df0b96a8dd4f8f33` | Codex | docs: record source extraction blockers | Member 1 and Member 2 handoff | Notes local visual review, OCR dependency, empty search results, and pending permission. |
 
+| 2026-10-10 | `1511e7b186a00dd8110d93347160c8bf4d07c98e` | Codex | docs: record source and OCR setup blockers | Source rights and OCR follow-up | Records no eligible procedural open source, failed official OCR installation verification, empty civic index, local ignored key configuration, and branch rename limitation. |
+
 ## Day checklist and evidence
 
 | Day | Owner | Status | Evidence / remaining work |
@@ -208,3 +210,12 @@ Human actions remain: send the source permission requests, confirm presenter and
 | Leader — End-to-end app check | Run the app and try a query | Partial | Headless Streamlit started; the browser rendered Khula Gyan. “How do I renew a driving license?” returned `not_found`: “The available official sources do not contain a matching passage.” No citations were returned. This verifies the refusal path, not a supported cited answer. |
 
 Latest verification after the processor change: `pytest -q --basetemp=.pytest_tmp\\leader` → **7 passed in 4.54s**. No verified question or civic evaluation number was added. Day 2 remains incomplete until an approved, readable civic source can be indexed and a supported query returns a correct page-linked citation. The local source files remain gitignored and were not committed.
+
+
+## Follow-up: source rights, OCR installation, and index gate (2026-10-10)
+
+- Read-only source research found no explicitly open-licensed procedural civic source suitable for this RAG use. Madhesh Province's portal states that its datasets are under CC BY 4.0, but the catalog is statistical datasets rather than civic service instructions. Open Data Nepal's reuse policy covers datasets with attribution; no suitable procedural page with explicit applicable reuse terms was verified. No written permission from MOHA, Department of Passports, or DoTM is on file; no publisher was contacted.
+- Tesseract and Nepali/English language data remain unavailable. `winget install --id UB-Mannheim.TesseractOCR -e --scope user --accept-package-agreements --accept-source-agreements` reported success but installed nothing; later `winget list` could not access the `winget.exe` shim. A first official Mannheim installer URL returned 404; a corrected official URL downloaded the installer (50,175,248 bytes), but its signature verification reported `UnknownError: A required certificate is not within its validity period when verifying against the current system clock`. The quiet install created no install folder and no Tesseract process remained. No unsigned/older installer route was attempted.
+- The existing local-only MOHA PDF remains excluded from the index because the registry marks it unclear/local-only and the extracted text is unusable. Builder/index results remain 0 civic chunks; no civic search or hit@5 result is available. A source-backed citation could not be verified.
+- The NVIDIA NIM key supplied by the user was written to the local ignored `.env` as `NVIDIA_API_KEY`; its value was not printed, used, or committed. No paid API call was made.
+- The connected GitHub tools did not expose branch rename/delete, and the available GitHub browser session was signed out. PR #10 was already merged. To continue under the requested branch name, created `decisions-spend-cap` at the existing tip and opened PR #11 into Hkp; the old `codex/decisions-spend-cap` branch still exists. The requested-name branch is ready, but removing the old ref (a true rename) still needs a human with repository branch-management access.
