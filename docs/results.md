@@ -71,6 +71,9 @@ Historical commit metadata, diffs, and combined statuses were rechecked on Hkp. 
 | 2026-10-10 | `b8372d11e46d0b56c6bd82948ec4943e2a3b738f` | Codex | test: cover spend cap stop behavior | Spend guard tests | Final suite: 6 passed; provider mock was not called when reservation exceeded cap. |
 | 2026-10-10 | `e97b2566d2baf666674034727d0a1fce8c0790ed` | Codex | config: document API spend and rate settings | Local provider configuration | Documents provisional cap and required explicit rates; no key or secret added. |
 
+| 2026-10-10 | `0f37e3f12b547772ad19abfafa0e6441bf21ff00` | Codex | config: preserve OpenRouter setup and add spend guard | Local provider configuration | Preserved Hkp's OpenRouter URL/key-pool settings and documented cap and rates. |
+| 2026-10-10 | `2c9c9a95324eb0920b352694dd5eabf87067ab02` | Codex | docs: cite documented Member 3 backup candidate | Presenter evidence | Decision record now cites the Member 3 generation/eval history row directly. |
+
 ## Day checklist and evidence
 
 | Day | Owner | Status | Evidence / remaining work |
