@@ -229,3 +229,6 @@ data/processed/*
 chroma_db/
 artifacts/
 
+
+# Member 3: evaluation run details (results.md is committed, raw runs are not)
+eval/runs/

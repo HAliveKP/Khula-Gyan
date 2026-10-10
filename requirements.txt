@@ -11,3 +11,8 @@ streamlit
 pyyaml
 python-dotenv
 pytesseract
+# Member 3: generation and evaluation
+openai
+jsonschema
+matplotlib
+pytest

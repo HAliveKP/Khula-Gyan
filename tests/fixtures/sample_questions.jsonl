@@ -1,0 +1,3 @@
+{"id": "t001", "q": "Which documents do I need to renew my driving license?", "lang": "en", "service": "driving_license", "type": "answerable", "expected": ["citizenship certificate", "medical certificate"], "must_cite": {"source": "mock_dl_renewal.pdf", "page": 2}, "verified": true}
+{"id": "t002", "q": "License renew garna k k kagaj chahincha?", "lang": "mixed", "service": "driving_license", "type": "answerable", "expected": ["citizenship certificate"], "must_cite": {"source": "mock_dl_renewal.pdf", "page": 2}, "verified": true}
+{"id": "t003", "q": "What medicine should I take for blurred vision before a driving test?", "lang": "en", "service": "other", "type": "out_of_scope", "expected": [], "must_cite": null, "verified": true}
