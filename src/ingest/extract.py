@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from html.parser import HTMLParser
 from pathlib import Path
+import unicodedata
 from typing import Any
 
 
@@ -62,7 +63,26 @@ def _ocr_page(page: Any, *, languages: str) -> str:
         ) from exc
 
 
-def _extract_pdf(path: Path, *, ocr: bool, ocr_languages: str) -> list[dict[str, Any]]:
+def _has_expected_script(text: str, expected_language: str | None) -> bool:
+    """Detect high-confidence mismatches between declared language and text."""
+    if "\ufffd" in text:
+        return False
+    if expected_language != "ne":
+        return True
+    letters = [char for char in text if unicodedata.category(char).startswith("L")]
+    if len(letters) < 40:
+        return True
+    devanagari_letters = sum("\u0900" <= char <= "\u097f" for char in letters)
+    return devanagari_letters / len(letters) >= 0.05
+
+
+def _extract_pdf(
+    path: Path,
+    *,
+    ocr: bool,
+    ocr_languages: str,
+    expected_language: str | None,
+) -> list[dict[str, Any]]:
     try:
         import fitz
     except ImportError as exc:
@@ -73,10 +93,28 @@ def _extract_pdf(path: Path, *, ocr: bool, ocr_languages: str) -> list[dict[str,
         for page_number, page in enumerate(document, start=1):
             text = page.get_text("text")
             used_ocr = False
-            if ocr and len(text.strip()) < 40:
-                text = _ocr_page(page, languages=ocr_languages)
-                used_ocr = True
-            pages.append({"page": page_number, "text": text, "ocr": used_ocr})
+            script_mismatch = not _has_expected_script(text, expected_language)
+            ocr_error: str | None = None
+            if ocr and (len(text.strip()) < 40 or script_mismatch):
+                try:
+                    text = _ocr_page(page, languages=ocr_languages)
+                    used_ocr = True
+                    script_mismatch = not _has_expected_script(text, expected_language)
+                except RuntimeError as exc:
+                    text = ""
+                    script_mismatch = True
+                    ocr_error = str(exc)
+            page_record = {"page": page_number, "text": text, "ocr": used_ocr}
+            if script_mismatch:
+                page_record.update(
+                    text="",
+                    extraction_status="unusable",
+                    extraction_note=(
+                        "Expected script was not detected; OCR was unavailable or did not recover it."
+                        + (f" {ocr_error}" if ocr_error else "")
+                    ),
+                )
+            pages.append(page_record)
     return pages
 
 
@@ -85,12 +123,15 @@ def extract_pages(
     *,
     ocr: bool = True,
     ocr_languages: str = "nep+eng",
+    expected_language: str | None = None,
 ) -> list[dict[str, Any]]:
     """Extract one record per PDF page, or one record for an HTML page.
 
-    OCR runs only when a PDF page has fewer than 40 extracted characters. The
-    original source should remain in ignored ``data/raw/``; this function does
-    not download, modify, or redistribute source files.
+    OCR runs when a PDF page has fewer than 40 extracted characters or its
+    text clearly misses the expected script. Likely corrupted text is marked
+    unusable if OCR is disabled or cannot recover it. The original source
+    should remain in ignored ``data/raw/``; this function does not download,
+    modify, or redistribute source files.
     """
     source = Path(path)
     if not source.is_file():
@@ -99,5 +140,10 @@ def extract_pages(
     if suffix in {".html", ".htm"}:
         return _extract_html(source)
     if suffix == ".pdf":
-        return _extract_pdf(source, ocr=ocr, ocr_languages=ocr_languages)
+        return _extract_pdf(
+            source,
+            ocr=ocr,
+            ocr_languages=ocr_languages,
+            expected_language=expected_language,
+        )
     raise ValueError("Supported source formats are PDF (.pdf) and HTML (.html/.htm)")

@@ -4,9 +4,11 @@ import subprocess
 import sys
 
 import chromadb
+import fitz
 
 from scripts.process_document import process_document
 from src.ingest.chunk import chunk_text
+from src.ingest import extract as extract_module
 from src.retrieval import search as search_module
 
 
@@ -34,6 +36,35 @@ def test_processor_fixture_chunks_keep_source_and_service(tmp_path):
     assert chunks
     assert all(chunk["source_url"] == source_url for chunk in chunks)
     assert all(chunk["service"] == "driving_license" for chunk in chunks)
+
+
+def test_processor_blanks_wrong_script_when_ocr_is_unavailable(tmp_path, monkeypatch):
+    source = tmp_path / "synthetic.pdf"
+    document = fitz.open()
+    page = document.new_page()
+    page.insert_text((72, 72), "Synthetic Latin text standing in for a broken font map. " * 4)
+    document.save(source)
+    document.close()
+
+    calls = []
+
+    def unavailable_ocr(_page, *, languages):
+        calls.append(languages)
+        raise RuntimeError("OCR failed: Tesseract binary unavailable in synthetic test.")
+
+    monkeypatch.setattr(extract_module, "_ocr_page", unavailable_ocr)
+    output = process_document(
+        source,
+        service="citizenship",
+        lang="ne",
+        output_directory=tmp_path / "processed",
+    )
+    row = json.loads(output.read_text(encoding="utf-8").splitlines()[0])
+
+    assert calls == ["nep+eng"]
+    assert row["text"] == ""
+    assert row["extraction_status"] == "unusable"
+    assert "Tesseract binary unavailable" in row["extraction_note"]
 
 
 def test_search_limits_scores_and_service_filter(tmp_path, monkeypatch):
@@ -99,4 +130,3 @@ def test_raw_processed_and_chroma_data_are_not_tracked():
         if path.replace("\\", "/").startswith(("chroma_db/", "data/raw/", "data/processed/"))
     ]
     assert forbidden == []
-

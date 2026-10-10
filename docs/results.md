@@ -60,6 +60,37 @@ Historical commit metadata, diffs, and combined statuses were rechecked on Hkp. 
 | 2026-10-10 | `d3fbd55dfabe94c2245613c23e656773ba71d40c` | Codex | docs: log latest verification records | Leader work log | Added prior environment and verification commit rows; no result metrics changed. |
 | 2026-10-10 | `af98e03dcf35a69791d50732711eadbeb9cdfba4` | Codex | docs: log final question set verification | Member 3 evaluation set log | Logged the final 25-question, 5 out-of-scope structure check. |
 
+| 2026-10-10 | `773e81ea928714cacb7ef6cb305451d8b3d91c51` | Codex | data: correct Open Data Nepal licence records | Source reuse review | YAML parsed; NCD licence left unclear/local-only; environment dataset recorded open but reference-only. |
+| 2026-10-10 | `ab64b6152d26ee09df30798ee8ec2eddeb5453d1` | Codex | docs: record provisional project decisions | Leader decisions | Decision evidence cross-checked; source permission, presenter, and cap remain human-confirmation items. |
+| 2026-10-10 | `d5a976905fdd70ac6fbb126b29c69d926e5bdee9` | Codex | docs: draft source permission request | Leader source permission | Draft created only; no publisher contacted. |
+| 2026-10-10 | `938065281bf1eb92858dd53564fe88707fa8e52c` | Codex | docs: note provisional presenter and API cap | Leader presentation and spend policy | README labels presenter/backup and cap provisional; unrelated source is marked reference-only. |
+| 2026-10-10 | `0410e7b212f8716744e90561583c9cd268de3732` | Codex | docs: require spend approval before over-cap runs | Agent setup policy | AGENTS spend stop rule added. |
+| 2026-10-10 | `807fc956fd409bb4195e715b673a357a3076fc66` | Codex | feat: add preflight API spend cap | Generation spend safety | Spend estimator/reservation added; verified by final pytest run. |
+| 2026-10-10 | `41d1e90c529f1e50fcc940caebfc72fd58329822` | Codex | feat: guard generation calls with spend cap | Generation and support/eval LLM calls | Preflight runs before provider calls; verified by final pytest run. |
+| 2026-10-10 | `c885cdefebf02fcef1e6f2f3dfbcd1a777a8769f` | Codex | eval: track spend and stop over-cap runs | Evaluation run accounting | Synthetic fake-LLM harness completed; estimated spend $0.000000. No civic metrics inferred. |
+| 2026-10-10 | `b8372d11e46d0b56c6bd82948ec4943e2a3b738f` | Codex | test: cover spend cap stop behavior | Spend guard tests | Final suite: 6 passed; provider mock was not called when reservation exceeded cap. |
+| 2026-10-10 | `e97b2566d2baf666674034727d0a1fce8c0790ed` | Codex | config: document API spend and rate settings | Local provider configuration | Documents provisional cap and required explicit rates; no key or secret added. |
+
+| 2026-10-10 | `0f37e3f12b547772ad19abfafa0e6441bf21ff00` | Codex | config: preserve OpenRouter setup and add spend guard | Local provider configuration | Preserved Hkp's OpenRouter URL/key-pool settings and documented cap and rates. |
+| 2026-10-10 | `2c9c9a95324eb0920b352694dd5eabf87067ab02` | Codex | docs: cite documented Member 3 backup candidate | Presenter evidence | Decision record now cites the Member 3 generation/eval history row directly. |
+
+| 2026-10-10 | `9488a4d7900d7991fdaf1f7e5c6ab5040423883e` | Codex | docs: log decision and spend guard work | Leader work log | Recorded initial decision/spend commit hashes; later corrections are separately logged above. |
+
+| 2026-10-10 | `eeb14458c88f455a74842aa548a761e1d502b653` | Codex | docs: log final decision evidence corrections | Leader work log | Added follow-up configuration and evidence-correction commit rows; current log update is not self-listed. |
+
+| 2026-10-10 | `068edd157be0b52211e6ace50e9779ea8eda4a16` | Codex | docs: complete project close-out README | Close-out documentation | README claims checked against the decisions, source registry, results, and Markdown task board; no Excel workbook was found. |
+| 2026-10-10 | `a2d5c4b0474895101f014c2bb3080693e4f57258` | Codex | docs: add decision close-out changelog | Close-out documentation | Changelog records evidence and pending human actions; no source permissions or decisions were inferred. |
+| 2026-10-10 | `6773a58e3d2974344d4d9b21814e35cfb73a4e47` | Codex | docs: track project next steps | Close-out planning | Next steps mapped to the Markdown story board; no Excel workbook found. |
+
+| 2026-10-10 | `230e7e4e667b7649dee5d5ff07ce55c380bd00af` | Codex | fix: reject corrupted Nepali PDF text | Member 1 extraction safeguard | Nepali PDFs with replacement characters or low Devanagari share now trigger OCR; failed/mismatched OCR marks text unusable. Verified with synthetic regression and full suite. |
+| 2026-10-10 | `e1e866eeb0d01e90100505eb9733cdec54bfecb3` | Codex | fix: report unusable extracted pages | Member 1 page processing | Processor carries extraction status/note and reports unusable page counts; local MOHA source recheck identified five unusable pages. |
+| 2026-10-10 | `8ca72b1cc104e022690b9b894d764a5c9afa8b9f` | Codex | test: cover corrupted Nepali PDF extraction | Member 1 extraction regression | Synthetic no-OCR fixture covered; full local suite passed 7 tests. |
+| 2026-10-10 | `3de68358b62a1f6ad3f29ccd6865587ac25ce069` | Codex | docs: update Day 2 source and app status | Leader README status | README reflects the unusable local PDF, empty index, and observed app refusal. |
+| 2026-10-10 | `26085903f11ee8d0243f92e1549623fce5132a52` | Codex | docs: update Day 2 task status | Day 2 team board | Day 2 marked partial/blocked on a usable approved source, based on current checks. |
+| 2026-10-10 | `ca25543732f1822eebfe9b14df0b96a8dd4f8f33` | Codex | docs: record source extraction blockers | Member 1 and Member 2 handoff | Notes local visual review, OCR dependency, empty search results, and pending permission. |
+
+| 2026-10-10 | `1511e7b186a00dd8110d93347160c8bf4d07c98e` | Codex | docs: record source and OCR setup blockers | Source rights and OCR follow-up | Records no eligible procedural open source, failed official OCR installation verification, empty civic index, local ignored key configuration, and branch rename limitation. |
+
 ## Day checklist and evidence
 
 | Day | Owner | Status | Evidence / remaining work |
@@ -160,3 +191,31 @@ Human decisions still needed: written permission/open licensed civic sources, pr
 | Synthetic evaluation harness | Pass | The offline fixture runner wrote one ignored run record and skipped the draft item. Mock percentages are not civic evaluation results and were not added to the evaluation tables. |
 | GNU Make setup target | Not run | `make setup` failed because `make` is not installed in this Windows environment. The existing `.venv` was already available. |
 | Source downloads / index build | Not run | Setup-only session; no source pages or Chroma index were downloaded or built. |
+
+
+## Close-out verification (2026-10-10)
+
+The independent close-out review found no Khula-Gyan Excel storyboard workbook; the project plan remains `docs/user-story-board.md`. No spreadsheet rows were changed. The reviewer re-ran the local suite with a workspace-local temporary directory: `pytest -q --basetemp=.pytest_tmp\verification` → **6 passed**. The primary close-out rerun used `pytest -q --basetemp=.pytest_tmp\closeout` → **6 passed in 4.28s**. The default pytest temp location produced 4 errors because it attempted to write under a sandbox-inaccessible AppData temp directory; using a repository-local temp directory passed. GNU Make is unavailable in this environment, so the Make targets themselves were not run during close-out. This result does not measure civic retrieval, answer quality, or evaluation metrics; those remain `-`.
+
+Human actions remain: send the source permission requests, confirm presenter and backup, confirm or change the provisional USD $1.00 API cap, configure current provider rates before paid calls, and provide the correct storyboard workbook if spreadsheet updates are expected.
+
+
+## Day 2 source, retrieval, and leader verification (2026-10-10)
+
+| Owner | Task | Status | Evidence / remaining work |
+|---|---|---|---|
+| Member 1 — Data | Find, fetch, process, and visually inspect a usable source | Partial / blocked | No explicitly open-licensed civic procedure source was found. One MOHA Kathmandu citizenship checklist PDF was downloaded to ignored local storage for this user-requested check; no redistribution/indexing permission is on file. Rendered pages 1, 3, and 5 show legible Devanagari, but printed page numbers were not visible. Its embedded text is corrupted Latin-like output. After the processor fix, all five pages are marked unusable with blank text because Nepali/English Tesseract OCR is unavailable. |
+| Member 1 — Processor safeguard | Prevent corrupted Nepali text from being treated as valid | Done | Nepali PDF pages with replacement characters or very low Devanagari proportion now trigger OCR; if OCR is unavailable or still mismatched, page text is blank and marked unusable. Synthetic regression covers the missing-OCR case. |
+| Member 2 — Retrieval | Build and query an approved civic index | Blocked on source | Builder reported 0 processed pages, 0 eligible civic chunks, 0 indexed records; it skipped the unclear-license dataset and local-only source. Five sample searches (3 English, 2 Nepali) returned empty arrays. The embedding smoke check passed (10 examples, vector size 1024). Empty-index checks do not measure retrieval quality; hit@5 remains `-`. |
+| Leader — End-to-end app check | Run the app and try a query | Partial | Headless Streamlit started; the browser rendered Khula Gyan. “How do I renew a driving license?” returned `not_found`: “The available official sources do not contain a matching passage.” No citations were returned. This verifies the refusal path, not a supported cited answer. |
+
+Latest verification after the processor change: `pytest -q --basetemp=.pytest_tmp\\leader` → **7 passed in 4.54s**. No verified question or civic evaluation number was added. Day 2 remains incomplete until an approved, readable civic source can be indexed and a supported query returns a correct page-linked citation. The local source files remain gitignored and were not committed.
+
+
+## Follow-up: source rights, OCR installation, and index gate (2026-10-10)
+
+- Read-only source research found no explicitly open-licensed procedural civic source suitable for this RAG use. Madhesh Province's portal states that its datasets are under CC BY 4.0, but the catalog is statistical datasets rather than civic service instructions. Open Data Nepal's reuse policy covers datasets with attribution; no suitable procedural page with explicit applicable reuse terms was verified. No written permission from MOHA, Department of Passports, or DoTM is on file; no publisher was contacted.
+- Tesseract and Nepali/English language data remain unavailable. `winget install --id UB-Mannheim.TesseractOCR -e --scope user --accept-package-agreements --accept-source-agreements` reported success but installed nothing; later `winget list` could not access the `winget.exe` shim. A first official Mannheim installer URL returned 404; a corrected official URL downloaded the installer (50,175,248 bytes), but its signature verification reported `UnknownError: A required certificate is not within its validity period when verifying against the current system clock`. The quiet install created no install folder and no Tesseract process remained. No unsigned/older installer route was attempted.
+- The existing local-only MOHA PDF remains excluded from the index because the registry marks it unclear/local-only and the extracted text is unusable. Builder/index results remain 0 civic chunks; no civic search or hit@5 result is available. A source-backed citation could not be verified.
+- The NVIDIA NIM key supplied by the user was written to the local ignored `.env` as `NVIDIA_API_KEY`; its value was not printed, used, or committed. No paid API call was made.
+- The connected GitHub tools did not expose branch rename/delete, and the available GitHub browser session was signed out. PR #10 was already merged. To continue under the requested branch name, created `decisions-spend-cap` at the existing tip and opened PR #11 into Hkp; the old `codex/decisions-spend-cap` branch still exists. The requested-name branch is ready, but removing the old ref (a true rename) still needs a human with repository branch-management access.
