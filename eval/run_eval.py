@@ -9,6 +9,7 @@ Examples
 
 import argparse
 import json
+import os
 import statistics
 import sys
 import time
@@ -99,6 +100,7 @@ def main() -> None:
     ap.add_argument("--runs-dir", default=str(RUNS_DIR), help="directory for per-question JSONL output")
     ap.add_argument("--note", required=True, help="what changed since the last row")
     ap.add_argument("--mock", action="store_true", help="use tests/fixtures chunks instead of search()")
+    ap.add_argument("--fake-llm", action="store_true", help="use the local fake generator; no API key needed")
     ap.add_argument("--judge", action="store_true", help="use the LLM judge for correctness + hallucination")
     ap.add_argument("--retrieval-only", action="store_true", help="only measure hit@5")
     ap.add_argument("--use-service-filter", action="store_true")
@@ -106,6 +108,8 @@ def main() -> None:
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--no-write", action="store_true", help="print only; do not touch docs/results.md")
     args = ap.parse_args()
+    if args.fake_llm:
+        os.environ["LLM_PROVIDER"] = "fake"
 
     questions = load_questions(Path(args.questions), args.include_unverified or args.mock)
     if args.limit:
