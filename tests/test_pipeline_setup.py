@@ -97,7 +97,6 @@ def test_raw_processed_and_chroma_data_are_not_tracked():
     forbidden = [
         path for path in tracked
         if path.replace("\\", "/").startswith(("chroma_db/", "data/raw/", "data/processed/"))
-        and Path(path).name != ".gitkeep"
     ]
     assert forbidden == []
 
