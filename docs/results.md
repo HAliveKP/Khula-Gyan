@@ -76,6 +76,8 @@ Historical commit metadata, diffs, and combined statuses were rechecked on Hkp. 
 
 | 2026-10-10 | `9488a4d7900d7991fdaf1f7e5c6ab5040423883e` | Codex | docs: log decision and spend guard work | Leader work log | Recorded initial decision/spend commit hashes; later corrections are separately logged above. |
 
+| 2026-10-10 | `eeb14458c88f455a74842aa548a761e1d502b653` | Codex | docs: log final decision evidence corrections | Leader work log | Added follow-up configuration and evidence-correction commit rows; current log update is not self-listed. |
+
 ## Day checklist and evidence
 
 | Day | Owner | Status | Evidence / remaining work |
