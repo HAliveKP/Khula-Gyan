@@ -15,7 +15,8 @@ SERVICES = {"driving_license", "citizenship", "passport", "other"}
 
 def check(path: Path) -> int:
     problems, ids = [], set()
-    counts = {"type": Counter(), "lang": Counter(), "service": Counter(), "verified": Counter()}
+    counts = {"type": Counter(), "lang": Counter(), "service": Counter(), "verified": Counter(),
+              "verification_status": Counter()}
     for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
         if not line.strip():
             continue
@@ -43,13 +44,23 @@ def check(path: Path) -> int:
             mc = q.get("must_cite") or {}
             if not mc.get("source") or not isinstance(mc.get("page"), int):
                 problems.append(f"{qid}: verified answerable question needs must_cite {{source, page}}")
+        # verified questions must not still hold placeholder answers
+        status = q.get("verification_status")
+        if q.get("verified"):
+            if any("todo" in str(fact).lower() for fact in q.get("expected") or []):
+                problems.append(f"{qid}: verified question still has 'TODO' in 'expected'")
+            if status == "draft":
+                problems.append(f"{qid}: verified is true but verification_status is 'draft' "
+                                "(run_eval.py would skip it)")
+        elif status is not None and status != "draft":
+            problems.append(f"{qid}: verified is false but verification_status is '{status}'")
         for field in counts:
             counts[field][str(q.get(field))] += 1
 
     total = sum(counts["type"].values())
     print(f"{total} questions in {path}")
     for field, c in counts.items():
-        print(f"  {field:9s} " + ", ".join(f"{k}={v}" for k, v in sorted(c.items())))
+        print(f"  {field:19s} " + ", ".join(f"{k}={v}" for k, v in sorted(c.items())))
     if total:
         print(f"  target mix: ~80% answerable / 20% out_of_scope; ~40% ne, 40% en, 20% mixed "
               f"(now {100 * counts['type']['out_of_scope'] // total}% out_of_scope)")
