@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from html.parser import HTMLParser
 from pathlib import Path
+import re
 import unicodedata
 from typing import Any
 
@@ -76,6 +77,210 @@ def _has_expected_script(text: str, expected_language: str | None) -> bool:
     return devanagari_letters / len(letters) >= 0.05
 
 
+# ---------------------------------------------------------------------------
+# Repair for Word-made PDFs whose Devanagari ToUnicode map is wrong.
+#
+# Some PDFs exported by Microsoft Word (for example the Nepal Law Commission
+# copy of the Vehicle and Transport Management Rules 2054, font Kalimati)
+# store glyphs in *visual* order and ship a ToUnicode map that gives many
+# glyphs the wrong letter: the glyph for "न" maps to "ि", the "ि" sign maps
+# to "न"/"द"/"ह"/"श", the reph maps to "थ", and so on. The embedded font
+# itself is correct, so we rebuild the glyph -> text map from the font's own
+# cmap and GSUB (ligature/substitution) tables, then put the two signs that
+# are drawn out of logical order back where Unicode expects them:
+#   * "ि" is drawn before its consonant cluster -> moved after it;
+#   * reph ("र्" drawn above) is drawn after its syllable -> moved before it.
+# The repair runs only for fonts whose ToUnicode map disagrees with the
+# font's own cmap, and only in memory: the source file is never changed.
+# ---------------------------------------------------------------------------
+
+_REPH_MARK = ""  # private-use marker: reph seen after its syllable
+_I_SIGN_MARK = ""  # private-use marker: "ि" seen before its cluster
+_CONSONANT = "[क-हक़-य़]़?"  # consonant + optional nukta
+_CLUSTER = f"(?:{_CONSONANT}्)*{_CONSONANT}"  # e.g. क, स्थ, न्त्र
+_I_SIGN_PATTERN = re.compile(f"{_I_SIGN_MARK}({_CLUSTER})")
+_REPH_PATTERN = re.compile(f"({_CLUSTER}[ा-ौॢॣँं]*){_REPH_MARK}")
+
+
+def restore_logical_order(text: str) -> str:
+    """Turn marked visual-order Devanagari back into Unicode logical order.
+
+    Only text carrying the private markers from the font repair is changed.
+    A marker that cannot be placed safely becomes its plain character.
+    """
+    text = _I_SIGN_PATTERN.sub(lambda match: match.group(1) + "ि", text)
+    text = _REPH_PATTERN.sub(lambda match: "र्" + match.group(1), text)
+    return text.replace(_I_SIGN_MARK, "ि").replace(_REPH_MARK, "र्")
+
+
+def _join_components(parts: list[str]) -> str:
+    """Join ligature parts; a half form plus below-base "्र" becomes "C्र्"."""
+    text = ""
+    for part in parts:
+        if text.endswith("्") and part.startswith("्"):
+            text = text[:-1] + part + "्"
+        else:
+            text += part
+    return text
+
+
+def font_glyph_texts(font_bytes: bytes) -> tuple[dict[int, str], dict[int, str]] | None:
+    """Derive glyph id -> text from an embedded TrueType font's own tables.
+
+    Returns ``(derived, direct)``: ``derived`` covers every glyph reachable
+    from the cmap through GSUB lookups; ``direct`` holds only glyphs listed in
+    the cmap (their identity is certain). Glyphs with two different possible
+    readings are left out. Returns None when the font cannot be read.
+    """
+    try:
+        import io
+        from fontTools.ttLib import TTFont
+    except ImportError:
+        return None
+    try:
+        font = TTFont(io.BytesIO(font_bytes), lazy=True)
+        order = font.getGlyphOrder()
+        cmap = font.getBestCmap() or {}
+    except Exception:
+        return None
+    names: dict[str, str] = {}
+    for code_point, glyph in sorted(cmap.items()):
+        names.setdefault(glyph, chr(code_point))
+    direct = {order.index(glyph): text for glyph, text in names.items()}
+    for glyph, text in names.items():
+        if text == "ि":
+            names[glyph] = _I_SIGN_MARK
+
+    # Collect simple rules: (input glyphs, output glyph, feature tag).
+    rules: list[tuple[list[str], str, str]] = []
+    if "GSUB" in font:
+        table = font["GSUB"].table
+        tags: dict[int, str] = {}
+        for record in table.FeatureList.FeatureRecord:
+            for index in record.Feature.LookupListIndex:
+                tags.setdefault(index, record.FeatureTag)
+        for index, lookup in enumerate(table.LookupList.Lookup):
+            for subtable in lookup.SubTable:
+                kind = lookup.LookupType
+                if kind == 7:  # extension wrapper
+                    subtable, kind = subtable.ExtSubTable, subtable.ExtSubTable.LookupType
+                if kind == 1:
+                    rules += [([source], target, tags.get(index, "")) for source, target in subtable.mapping.items()]
+                elif kind == 4:
+                    for first, ligatures in subtable.ligatures.items():
+                        rules += [([first, *lig.Component], lig.LigGlyph, tags.get(index, "")) for lig in ligatures]
+    # The reph and below-base ra forms are written in visual position.
+    for inputs, output, tag in rules:
+        # Some Nepali fonts (e.g. Kalimati) draw the ASCII digit glyphs as
+        # Devanagari numerals and list them as substitutes for "०".."९".
+        # Read such a glyph as the Devanagari digit it is drawn as.
+        source_text = names.get(inputs[0], "")
+        if len(inputs) == 1 and len(source_text) == 1 and "०" <= source_text <= "९":
+            if names.get(output) == str(ord(source_text) - 0x966):
+                names[output] = source_text
+        if [names.get(glyph) for glyph in inputs] == ["र", "्"]:
+            if tag == "rphf":
+                names[output] = _REPH_MARK
+            elif tag == "blwf":
+                names[output] = "्र"
+
+    # Follow the rules until no new glyph gets a reading.
+    changed = True
+    while changed:
+        changed = False
+        for inputs, output, _tag in rules:
+            if output not in names and all(glyph in names for glyph in inputs):
+                names[output] = _join_components([names[glyph] for glyph in inputs])
+                changed = True
+    # Drop glyphs that two rules would read differently.
+    for inputs, output, _tag in rules:
+        if names.get(output) in {_REPH_MARK, "्र"}:
+            continue  # set on purpose above
+        if output in names and all(glyph in names for glyph in inputs) and len(inputs) > 1:
+            if _join_components([names[glyph] for glyph in inputs]) != names[output]:
+                names.pop(output)
+    derived = {order.index(glyph): text for glyph, text in names.items() if glyph in order}
+    return derived, direct
+
+
+def _parse_tounicode(cmap_text: str) -> dict[int, str]:
+    """Read bfchar/bfrange entries of a ToUnicode CMap into code -> text."""
+
+    def decode(hex_text: str) -> str:
+        return bytes.fromhex(hex_text).decode("utf-16-be", errors="replace")
+
+    mapping: dict[int, str] = {}
+    for block in re.findall(r"beginbfchar(.*?)endbfchar", cmap_text, re.S):
+        for source, target in re.findall(r"<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]*)>", block):
+            mapping[int(source, 16)] = decode(target)
+    for block in re.findall(r"beginbfrange(.*?)endbfrange", cmap_text, re.S):
+        for start, end, target in re.findall(r"<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>\s*(<[0-9A-Fa-f]*>|\[[^\]]*\])", block):
+            first, last = int(start, 16), int(end, 16)
+            if target.startswith("["):
+                for offset, item in enumerate(re.findall(r"<([0-9A-Fa-f]*)>", target)):
+                    mapping[first + offset] = decode(item)
+            else:
+                base = decode(target[1:-1])
+                for offset in range(last - first + 1):
+                    mapping[first + offset] = base[:-1] + chr(ord(base[-1]) + offset)
+    return mapping
+
+
+def _write_tounicode(mapping: dict[int, str]) -> bytes:
+    """Write a ToUnicode CMap (bfchar entries, 100 per block)."""
+    lines = [
+        "/CIDInit /ProcSet findresource begin", "12 dict begin", "begincmap",
+        "/CIDSystemInfo << /Registry (Adobe) /Ordering (UCS) /Supplement 0 >> def",
+        "/CMapName /Adobe-Identity-UCS def", "/CMapType 2 def",
+        "1 begincodespacerange", "<0000> <FFFF>", "endcodespacerange",
+    ]
+    items = sorted(mapping.items())
+    for start in range(0, len(items), 100):
+        chunk = items[start:start + 100]
+        lines.append(f"{len(chunk)} beginbfchar")
+        lines += [f"<{code:04X}> <{text.encode('utf-16-be').hex().upper()}>" for code, text in chunk]
+        lines.append("endbfchar")
+    lines += ["endcmap", "CMapName currentdict /CMap defineresource pop", "end", "end"]
+    return "\n".join(lines).encode("ascii")
+
+
+def repair_devanagari_tounicode(document: Any) -> list[str]:
+    """Fix wrong ToUnicode maps in an open PyMuPDF document, in memory only.
+
+    A Type0/Identity-H font is repaired only when at least one glyph listed in
+    its own cmap is mapped to a different letter by the PDF's ToUnicode map.
+    Returns the names of the repaired fonts.
+    """
+    repaired: list[str] = []
+    checked: set[int] = set()
+    for page in document:
+        for xref, _ext, kind, name, _ref, encoding, *_rest in page.get_fonts(full=True):
+            if xref in checked or kind != "Type0" or encoding != "Identity-H":
+                continue
+            checked.add(xref)
+            tounicode = document.xref_get_key(xref, "ToUnicode")
+            descendants = document.xref_get_key(xref, "DescendantFonts")
+            if tounicode[0] != "xref" or descendants[0] not in {"array", "xref"}:
+                continue
+            if descendants[0] == "xref":  # the array itself is a separate object
+                descendants = ("array", document.xref_object(int(descendants[1].split()[0])))
+            references = re.findall(r"(\d+) 0 R", descendants[1])
+            if not references or document.xref_get_key(int(references[0]), "CIDToGIDMap") != ("name", "/Identity"):
+                continue  # glyph ids equal character codes only with an identity map
+            readings = font_glyph_texts(document.extract_font(xref)[3])
+            if not readings:
+                continue
+            derived, direct = readings
+            stream_xref = int(tounicode[1].split()[0])
+            current = _parse_tounicode(document.xref_stream(stream_xref).decode("latin-1"))
+            wrong = [gid for gid, text in direct.items() if gid in current and current[gid] != text]
+            if not wrong:
+                continue
+            document.update_stream(stream_xref, _write_tounicode({**current, **derived}))
+            repaired.append(name)
+    return repaired
+
+
 def _extract_pdf(
     path: Path,
     *,
@@ -90,8 +295,12 @@ def _extract_pdf(
 
     pages: list[dict[str, Any]] = []
     with fitz.open(path) as document:
+        # In-memory fix for fonts whose ToUnicode map disagrees with the font.
+        repaired_fonts = repair_devanagari_tounicode(document)
         for page_number, page in enumerate(document, start=1):
             text = page.get_text("text")
+            if repaired_fonts:
+                text = restore_logical_order(text)
             used_ocr = False
             script_mismatch = not _has_expected_script(text, expected_language)
             ocr_error: str | None = None

@@ -225,8 +225,10 @@ __marimo__/
 !.env.example
 data/raw/
 data/processed/
+data/readable/
 chroma_db/
 artifacts/
+eval/runs/
 .venv/
 .pytest_tmp/
 

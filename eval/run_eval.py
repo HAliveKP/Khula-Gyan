@@ -1,7 +1,7 @@
 """Run the evaluation and append one row to docs/results.md (blueprint section 11).
 
 Examples
-  python eval/run_eval.py --mock --note "harness check"          # no search(), no key needed with LLM_PROVIDER=fake
+  python eval/run_eval.py --mock --note "harness check"          # sample questions + chunks; no key needed with --fake-llm
   python eval/run_eval.py --note "baseline: dense only"          # real search() from Member 2
   python eval/run_eval.py --judge --note "prompt v1 + reranker"  # adds LLM judge (correctness, hallucination)
   python eval/run_eval.py --retrieval-only --note "BM25 + RRF"   # hit@5 only, for Member 2's experiments
@@ -29,17 +29,36 @@ from src.generation.spend import SpendLimitError, configured_cap, current_spend,
 from results_log import EVAL_SECTION, add_rows, cell  # noqa: E402
 
 RUNS_DIR = REPO / "eval" / "runs"
+REAL_QUESTIONS = REPO / "eval" / "questions.jsonl"
+MOCK_QUESTIONS = REPO / "tests" / "fixtures" / "sample_questions.jsonl"  # synthetic, not drafts
+
+
+def read_jsonl(path: Path) -> list[dict]:
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+
+
+def is_draft(q: dict) -> bool:
+    return q.get("status") == "draft" or q.get("verification_status") == "draft" or bool(q.get("draft", False))
 
 
 def load_questions(path: Path, include_unverified: bool) -> list[dict]:
-    qs = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
-    eligible = [
-        q for q in qs
-        if q.get("status") != "draft"
-        and q.get("verification_status") != "draft"
-        and not q.get("draft", False)
-    ]
+    eligible = [q for q in read_jsonl(path) if not is_draft(q)]  # drafts are always skipped
     return eligible if include_unverified else [q for q in eligible if q.get("verified")]
+
+
+def pick_questions_file(questions_arg: str | None, mock: bool) -> Path:
+    """--questions wins; otherwise --mock uses the synthetic sample set so it is a working plumbing check."""
+    if questions_arg:
+        return Path(questions_arg)
+    return MOCK_QUESTIONS if mock else REAL_QUESTIONS
+
+
+def no_questions_message(path: Path) -> str:
+    drafts = sum(is_draft(q) for q in read_jsonl(path))
+    return (f"No questions to run from {path}: {drafts} skipped as drafts, the rest are unverified or missing.\n"
+            "Verify questions by hand (verified: true, verification_status: verified, real expected facts), "
+            "pass --include-unverified for non-draft unverified ones, "
+            "or use --mock (without --questions) to check the plumbing on synthetic sample questions.")
 
 
 def get_retriever(mock: bool, use_service: bool):
@@ -97,7 +116,8 @@ def pct(values: list[bool]) -> str:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--questions", default=str(REPO / "eval" / "questions.jsonl"))
+    ap.add_argument("--questions", default=None,
+                    help="JSONL file (default: eval/questions.jsonl, or the synthetic sample set with --mock)")
     ap.add_argument("--runs-dir", default=str(RUNS_DIR), help="directory for per-question JSONL output")
     ap.add_argument("--note", required=True, help="what changed since the last row")
     ap.add_argument("--mock", action="store_true", help="use tests/fixtures chunks instead of search()")
@@ -113,11 +133,13 @@ def main() -> None:
         os.environ["LLM_PROVIDER"] = "fake"
     reset_spend()
 
-    questions = load_questions(Path(args.questions), args.include_unverified or args.mock)
+    questions_file = pick_questions_file(args.questions, args.mock)
+    print(f"Questions: {questions_file}")
+    questions = load_questions(questions_file, args.include_unverified or args.mock)
     if args.limit:
         questions = questions[: args.limit]
     if not questions:
-        sys.exit("No questions to run. Add verified questions or pass --include-unverified.")
+        sys.exit(no_questions_message(questions_file))
     retrieve = get_retriever(args.mock, args.use_service_filter)
     if args.judge:
         from judge import judge

@@ -36,6 +36,8 @@ def setup(monkeypatch, tmp_path):
     monkeypatch.setenv("LLM_PROVIDER", "openrouter")
     monkeypatch.setenv("LLM_MODEL", "some/model")
     monkeypatch.setenv("LLM_API_KEYS", "key-aaaa1111, key-bbbb2222, key-cccc3333")
+    monkeypatch.setenv("LLM_INPUT_COST_PER_1M_USD", "0")   # spend cap needs rates; fake keys are free
+    monkeypatch.setenv("LLM_OUTPUT_COST_PER_1M_USD", "0")
     monkeypatch.delenv("LLM_KEY_STRATEGY", raising=False)
     monkeypatch.setattr(llm, "CACHE_DIR", tmp_path)
     monkeypatch.setattr(llm, "_next_key", 0)
