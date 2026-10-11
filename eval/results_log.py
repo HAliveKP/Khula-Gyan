@@ -67,31 +67,40 @@ def _section_bounds(lines: list[str], title: str) -> tuple[int, int]:
     raise ValueError(f'docs/results.md has no "{title}" section')
 
 
+def _table_span(lines: list[str], start: int, end: int) -> tuple[int, int] | None:
+    """(first, last) line of the section's table. Blank lines between row groups
+    belong to the table (the team log has them); any other text ends it."""
+    first = next((i for i in range(start + 1, end) if lines[i].startswith("|")), None)
+    if first is None:
+        return None
+    last = first
+    for i in range(first + 1, end):
+        if lines[i].startswith("|"):
+            last = i
+        elif lines[i].strip():
+            break
+    return first, last
+
+
 def table_rows(title: str) -> list[list[str]]:
-    """Return the data rows (cells) of the first table in a section."""
+    """Return the data rows (cells) of the section's table, across blank-line gaps."""
     lines = ensure_results_md().splitlines()
-    start, end = _section_bounds(lines, title)
-    table = []
-    for ln in lines[start + 1:end]:
-        if ln.startswith("|"):
-            table.append(ln)
-        elif table:
-            break  # first table only
+    span = _table_span(lines, *_section_bounds(lines, title))
+    if span is None:
+        return []
+    table = [ln for ln in lines[span[0]:span[1] + 1] if ln.startswith("|")]
     return [[c.strip() for c in ln.strip().strip("|").split("|")] for ln in table[2:]]
 
 
 def add_rows(title: str, rows: list[str]) -> None:
-    """Append rows at the end of the section's first table."""
+    """Append rows after the last row of the section's table."""
     if not rows:
         return
     lines = ensure_results_md().splitlines()
-    start, end = _section_bounds(lines, title)
-    first = next((i for i in range(start, end) if lines[i].startswith("|")), None)
-    if first is None:
+    span = _table_span(lines, *_section_bounds(lines, title))
+    if span is None:
         raise ValueError(f'"{title}" in docs/results.md has no table header')
-    last = first
-    while last + 1 < end and lines[last + 1].startswith("|"):
-        last += 1
+    last = span[1]
     lines[last + 1:last + 1] = [r.rstrip("\n") for r in rows]
     RESULTS_MD.write_text("\n".join(lines) + "\n", encoding="utf-8")
 

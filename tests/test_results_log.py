@@ -55,6 +55,17 @@ def test_commit_rows_append_to_commit_log_only(tmp_path, monkeypatch):
     assert text.index("abc1234") < text.index("## Day checklist")
 
 
+def test_commit_rows_after_blank_line_gaps_are_seen(tmp_path, monkeypatch):
+    gapped = LEADER_STYLE.replace(
+        "| Repository baseline | ok |\n",
+        "| Repository baseline | ok |\n\n| 2026-10-10 | `7e7801d8638323f12fe56ad4aa521862dd0d2641` | H | feat: search | Day 2 | ok |\n")
+    md = setup(tmp_path, monkeypatch, gapped)
+    assert [results_log.bare_hash(r[1])[:7] for r in results_log.table_rows("Commit log")] == ["fcb094b", "7e7801d"]
+    results_log.add_rows("Commit log", ["| 2026-10-11 | `abc1234` | A | feat: x | ? | not checked |"])
+    text = md.read_text(encoding="utf-8")
+    assert text.index("7e7801d") < text.index("abc1234") < text.index("## Day checklist")
+
+
 def test_short_and_full_hash_match():
     listed = {results_log.bare_hash("`fcb094b9d06c024d39f0058cf83e67691f072663`"), "d2aa3fb"}
     assert results_log.hash_listed("fcb094b9d06c024d39f0058cf83e67691f072663", listed)
