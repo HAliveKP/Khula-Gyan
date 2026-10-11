@@ -1,0 +1,11 @@
+# Starting settings from the project blueprint. Measure and tune them on the
+# verified evaluation questions; score thresholds are not universal guarantees.
+embedding_model: BAAI/bge-m3
+reranker_model: BAAI/bge-reranker-v2-m3
+chunk_tokens: 400
+chunk_overlap: 50
+retrieve_k: 20
+final_k: 5
+rrf_k: 60
+guard_min_score: 0.35
+max_latency_seconds: 8

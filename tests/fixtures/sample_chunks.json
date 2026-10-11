@@ -1,0 +1,7 @@
+[
+  {"id": "mock_dl_p2_c1", "text": "MOCK TEXT FOR TESTING. To renew a driving license, the applicant must submit a copy of the citizenship certificate, the old driving license and a medical certificate. The application is filled online first.", "source": "mock_dl_renewal.pdf", "page": 2, "service": "driving_license", "lang": "en", "score": 0.82},
+  {"id": "mock_dl_p3_c1", "text": "नमुना पाठ (परीक्षणका लागि)। सवारी चालक अनुमतिपत्र नवीकरणका लागि नागरिकता प्रमाणपत्रको प्रतिलिपि र पुरानो अनुमतिपत्र पेस गर्नुपर्छ।", "source": "mock_dl_renewal.pdf", "page": 3, "service": "driving_license", "lang": "ne", "score": 0.74},
+  {"id": "mock_dl_p4_c1", "text": "MOCK TEXT FOR TESTING. The renewal fee is shown in the fee schedule published by the transport office. Pay the fee at the counter after biometrics.", "source": "mock_dl_renewal.pdf", "page": 4, "service": "driving_license", "lang": "en", "score": 0.61},
+  {"id": "mock_pp_p1_c1", "text": "MOCK TEXT FOR TESTING. A passport application requires the citizenship certificate and a completed online form.", "source": "mock_passport_guide.pdf", "page": 1, "service": "passport", "lang": "en", "score": 0.30},
+  {"id": "mock_ct_p5_c1", "text": "MOCK TEXT FOR TESTING. Citizenship certificate applications are submitted at the District Administration Office.", "source": "mock_citizenship_guide.pdf", "page": 5, "service": "citizenship", "lang": "en", "score": 0.22}
+]
