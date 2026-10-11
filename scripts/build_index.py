@@ -24,26 +24,39 @@ INDEX_DIR = REPO_ROOT / "chroma_db"
 ANSWER_SERVICES = {"driving_license", "citizenship", "passport"}
 
 
-def load_sources() -> list[dict]:
-    data = yaml.safe_load(SOURCES_FILE.read_text(encoding="utf-8")) or {}
+def load_sources(sources_file: Path | None = None) -> list[dict]:
+    path = sources_file or SOURCES_FILE
+    data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     sources = data.get("sources", [])
     if not isinstance(sources, list):
         raise ValueError("data/sources.yaml must contain a 'sources' list")
     return sources
 
 
-def build(*, chunk_size: int = 400, overlap: int = 50) -> tuple[int, int]:
+def build(*, chunk_size: int = 400, overlap: int = 50, sources_file: Path | None = None) -> tuple[int, int]:
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
     all_chunks: list[dict] = []
     processed_pages = 0
     skipped: list[str] = []
 
-    for source in load_sources():
+    for source in load_sources(sources_file):
         raw_path = RAW_DIR / source["filename"]
         if not raw_path.is_file():
             continue
-        if source.get("licence_status") != "confirmed open":
-            skipped.append(f"{source['id']}: license status is not confirmed open")
+
+        licence_ok = source.get("licence_status") == "confirmed open"
+        local_approved = (
+            source.get("answer_evidence", False)
+            and source.get("approval_note")
+            and source.get("local_only", False)
+        )
+        if not (licence_ok or local_approved):
+            reason = (
+                "license status is not confirmed open"
+                if not licence_ok
+                else "missing local approval (answer_evidence + approval_note + local_only)"
+            )
+            skipped.append(f"{source['id']}: {reason}")
             continue
 
         service = source.get("service") or "reference"

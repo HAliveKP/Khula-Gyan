@@ -1,39 +1,66 @@
 # Decision record
 
-Checked 2026-10-10 against the project documents, source register, and recorded GitHub history. “Confirmed” is used only where the cited text directly supports the claim.
+Checked 2026-10-11 against the project documents, source register, and recorded GitHub history. "Confirmed" is used only where the cited text directly supports the claim.
 
 ## 1. Source permission and open-licensed sources
 
-**Decision:** No written permission from MOHA, the Department of Passports, or DoTM is on file in the reviewed repository. Keep their official pages local-only for a demo; keep synthetic fixtures in Git; request written permission before wider reuse. No explicitly open-licensed procedural civic source was verified. The Open Data Nepal environment-statistics dataset is explicitly share-alike licensed and may be retained as a reference source record, but it is unrelated to civic procedures and must not be answer evidence. The NCD dataset is not approved as open because its own metadata says “License Not specified.”
+**Decision:** No written permission from MOHA, the Department of Passports, or DoTM is on file in the reviewed repository. Keep their official pages local-only for a demo; keep synthetic fixtures in Git; request written permission before wider reuse. No explicitly open-licensed procedural civic source was verified. The Open Data Nepal environment-statistics dataset is explicitly share-alike licensed and may be retained as a reference source record, but it is unrelated to civic procedures and must not be answer evidence. The NCD dataset is not approved as open because its own metadata says "License Not specified."
 
 **Status:** NOT IN DOCS for publisher permission; PROVISIONAL for the demo source policy.
 
-**Evidence:** `docs/data-sources.md:5`: “Government hosting does not by itself grant redistribution permission.” `data/sources.yaml:54` records the MOHA Darchula page as `licence_status: unclear`; line 57 sets `local_only: true`. Lines 95–98 record the Department of Passports process page as `all rights reserved` and `local_only: true`. Open Data Nepal's Data Policy says: “Users are free to use, modify, and share datasets, provided they give appropriate attribution.” `data/sources.yaml:174–175` records that exact quote and its [Data Policy URL](https://opendatanepal.com/privacy-policy). Lines 168 and 173 mark the environment-statistics dataset as `Creative Commons Attribution Share-Alike` and `confirmed open` [on its dataset page](https://opendatanepal.com/dataset/environment-statistics-of-nepal-2019); this is environmental data, not civic procedure. Lines 156–160 record the NCD dataset as `unclear` and local-only because its metadata says “License Not specified” [on its dataset page](https://opendatanepal.com/dataset/non-communicable-disease-risk-factors-and-prevalence-nepal-2013-to-2019).
+**Evidence:** `docs/data-sources.md:5`: "Government hosting does not by itself grant redistribution permission." `data/sources.yaml:54` records the MOHA Darchula page as `licence_status: unclear`; line 57 sets `local_only: true`. Lines 95-98 record the Department of Passports process page as `all rights reserved` and `local_only: true`. Open Data Nepal's Data Policy says: "Users are free to use, modify, and share datasets, provided they give appropriate attribution." `data/sources.yaml:174-175` records that exact quote and its [Data Policy URL](https://opendatanepal.com/privacy-policy). Lines 168 and 173 mark the environment-statistics dataset as `Creative Commons Attribution Share-Alike` and `confirmed open` [on its dataset page](https://opendatanepal.com/dataset/environment-statistics-of-nepal-2019); this is environmental data, not civic procedure. Lines 156-160 record the NCD dataset as `unclear` and local-only because its metadata says "License Not specified" [on its dataset page](https://opendatanepal.com/dataset/non-communicable-disease-risk-factors-and-prevalence-nepal-2013-to-2019).
 
 **Who must confirm:** A human project owner must confirm which publishers have given written permission, select suitable open-licensed procedural sources if available, and send permission requests. No publisher has been contacted by this work.
 
-## 2. Presenter
+## 2. Branch policy
 
-**Decision:** No presenter is assigned by name in the reviewed documents. PROVISIONAL presenter: the Leader role, because the board assigns integration, UI, repository, and deployment to that role. PROVISIONAL backup candidate: GitHub handle `aash-crest01`, whose history includes Member 3 generation/evaluation work; this is a candidate only, not a documented presentation assignment or consent.
+**Decision:** All work must happen on `Hkp` or a feature branch created from `Hkp`. Pull requests go into `Hkp`. Never push to `main`, merge `dev` unless specifically tasked, or force-push. The `dev` branch was previously merged into `main` (PR #5) but this is now disallowed going forward. The `hkp-opencode` branch contained opencode-specific configuration and must not be merged; a clean `hkp-opencode-v2` (renamed `hkp-feat-*`) was created from `origin/main` with only `.opencode/`, `AUDIT_VERIFICATION_TABLE.md`, and `docx/`.
 
-**Status:** PROVISIONAL (named presenter and backup are NOT IN DOCS).
+**Status:** CONFIRMED (matches AGENTS.md).
 
-**Evidence:** `docs/user-story-board.md:12`: “Member 1 = Data & Documents; Member 2 = Retrieval; Member 3 = Generation & Evaluation; Leader = Integration, UI, Repository, and Deployment.” `docs/results.md:25`: “| 2026-10-09 | `d2aa3fb37b291e1ac77fc9f8e383101876fdfd68` | aash-crest01 | feat: Member 3 generation + eval starter (answer, guard, run_eval) | Day 0-1 M3: prompt v0, eval format, answer.py, guard, run_eval | pass: 12 tests passed at this commit |”.
+**Evidence:** `AGENTS.md:33-35` branch rules. `origin/Hkp` is the integration branch. `origin/dev` merged into `origin/main` via PR #5 (historical). `hkp-opencode-v2` created at commit `fbd14f5` from `origin/main` with restricted file set.
 
-**Who must confirm:** The team must confirm the Leader as presenter and whether `aash-crest01` accepts the backup role, or name different people.
+**Who must confirm:** Team must follow this policy for all future work.
 
-## 3. API spending limit
+## 3. Rules 2054 / MOHA local-only approval (2026-10-11)
 
-**Decision:** PROVISIONAL cap: USD $1.00 per process run, configurable as `MAX_API_SPEND_USD`. Local embeddings run on the user's machine and are free, so API spend is limited to generation and evaluation. A $1.00-per-run cap is deliberately small and must be confirmed by a human before any run that could exceed it. Paid calls are blocked unless provider input and output rates are configured; estimated usage is reserved before each call.
+**Decision:** The MOHA Kathmandu citizenship PDF (`citizenship_kathmandu_requirements`) is approved as LOCAL-ONLY baseline evidence for development and internal testing only. It has `licence_status: unclear`, `local_only: true`, `answer_evidence: true`, and an `approval_note` documenting the Leader's approval. This source and any index built from it MUST NOT be:
+- Committed to Git (chroma_db/, data/processed/ remain gitignored)
+- Deployed to Hugging Face or any public endpoint
+- Used as production answer evidence
+- Redistributed in any form
 
-**Status:** PROVISIONAL (the blueprint gives no numeric cap).
+Written permission from MOHA is still required before any broader reuse. The approval is recorded in `data/sources.yaml` with `approved_on: 2026-10-11`, `approved_by: Harikrishna Pokhrel`.
 
-**Evidence:** `docx/Khula_Gyan_Project_Blueprint.docx`, §10: “Models and tools are chosen to be free or low-cost, multilingual, and replaceable.” The reviewed blueprint and `docs/results.md` do not specify a credit amount; `docs/results.md:54` says “credit ceiling remains undecided.”
+**Status:** APPROVED for local internal baseline only.
 
-**Who must confirm:** A human project owner must confirm or change the $1.00 cap and provide the selected provider’s input/output prices before any paid run.
+**Evidence:** `data/sources.yaml` lines 90-104 (updated 2026-10-11). `scripts/build_index.py` eligibility logic accepts `(confirmed open AND answer_evidence) OR (answer_evidence AND approval_note AND local_only)`.
+
+**Who must confirm:** Leader (Harikrishna Pokhrel) approved 2026-10-11. Publisher permission still pending.
+
+## 4. Presenter
+
+**Decision:** Presenter: **Harikrishna Pokhrel (HAliveKP)**, Leader role. Backup: **aash-crest01** (GitHub handle, Member 3 generation/evaluation work). Both confirmed by Leader on 2026-10-11.
+
+**Status:** CONFIRMED.
+
+**Evidence:** `docs/user-story-board.md:12`: "Leader = Integration, UI, Repository, and Deployment." `docs/results.md:25` shows aash-crest01's Member 3 commit history.
+
+**Who must confirm:** Leader (Harikrishna Pokhrel) confirmed 2026-10-11.
+
+## 5. API spending limit
+
+**Decision:** Cap: **USD $1.00 per process run** (`MAX_API_SPEND_USD=1.00`). Provider: NVIDIA NIM (Nemotron 3 Super 120B) via `https://integrate.api.nvidia.com/v1` — **free tier**, so input/output costs are $0.00/1M tokens. Local embeddings (BAAI/bge-m3) run on user's machine and are free. Spend cap is configured but will not block on free tier.
+
+**Status:** CONFIRMED (2026-10-11).
+
+**Evidence:** `.env` configured with `LLM_INPUT_COST_PER_1M_USD=0.00`, `LLM_OUTPUT_COST_PER_1M_USD=0.00`, `MAX_API_SPEND_USD=1.00`. LLM call tested and working.
+
+**Who must confirm:** Leader (Harikrishna Pokhrel) confirmed 2026-10-11.
 
 ## Needs human confirmation
 
-- Send permission requests and record any written responses; identify approved sources.
-- Confirm the presenter and backup.
-- Confirm or change the USD $1.00 spend cap and configure provider rates.
+- Send permission requests and record any written responses; identify approved sources (optional for local-only; required for public demo).
+- **Presenter/backup: CONFIRMED** (Harikrishna Pokhrel presenter, aash-crest01 backup).
+- **API spend cap: CONFIRMED** ($1.00, NVIDIA free tier).
+- Confirm branch policy adherence (no direct pushes to main, no dev merges without tasking).

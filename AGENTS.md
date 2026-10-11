@@ -35,8 +35,10 @@ Run from the repository root. Install GNU Make and Python 3.12 first.
 ## Branch and data rules
 
 - Work on `Hkp` or a feature branch created from `Hkp`; open pull requests into `Hkp`.
-- Never push to `main`, merge `dev` as part of setup, or force-push.
+- Never push to `main`, merge `dev` unless specifically tasked, or force-push. The `dev` branch was merged into `main` historically (PR #5) but this is now disallowed.
+- The `hkp-opencode` branch contained opencode-specific config and must not be merged. A clean baseline `hkp-opencode-v2` (renamed to `hkp-feat-*` style) was created from `origin/main` with only `.opencode/`, `AUDIT_VERIFICATION_TABLE.md`, and `docx/`.
 - MOHA pages are not cleared for redistribution. Department of Passports pages state all rights reserved. Fetch them locally only when appropriate, and keep them ignored; do not commit them.
+- The MOHA Kathmandu citizenship PDF (`citizenship_kathmandu_requirements`) has Leader-approved LOCAL-ONLY baseline status (2026-10-11). It has `answer_evidence: true`, `approval_note`, `local_only: true`, `licence_status: unclear`. Any index built from it stays in gitignored `chroma_db/`; no Hugging Face deployment or commit until written permission is on file.
 - Never commit raw source data, `.env` files, API keys, or the Chroma database. Only source data explicitly marked `confirmed open` with a quoted license may be considered for version control; generated/private copies stay local.
 - Use only the license status and quote recorded in `data/sources.yaml`; do not infer permission from government hosting.
 
