@@ -106,7 +106,7 @@ Observed status in this setup environment:
 
 | Make command | Observed status |
 |---|---|
-| make setup | Attempted and failed before setup: GNU Make is unavailable. PowerShell reported: “The term 'make' is not recognized as a name of a cmdlet, function, script file, or executable program.” |
+| make setup | Attempted and failed before setup: GNU Make is unavailable. PowerShell reported: "The term 'make' is not recognized as a name of a cmdlet, function, script file, or executable program." |
 | make fetch | Make target not run. It downloads only sources currently marked confirmed open. |
 | make index | Make target not run. The latest direct builder run reported 0 processed page records, 0 eligible civic chunks, and 0 indexed records; it skipped the local-only MOHA PDF and unclear-license dataset. |
 | make test | Make target not run because GNU Make is unavailable. The equivalent local pytest command below ran and passed. |
@@ -119,7 +119,7 @@ The latest direct test command run in this checkout was:
 .\.venv\Scripts\python.exe -m pytest -q --basetemp=.pytest_tmp
 ~~~
 
-Observed output: **7 passed in 4.54s** (latest run, including the PDF text-quality regression). To use the documented setup commands on Windows, first install GNU Make and Python 3.12. The embedding smoke command is:
+Observed output: **54 passed, 1 skipped in 7.98s** (latest run, including build_index eligibility tests, synthetic processor metadata, Chroma score/filter behavior, draft-question skipping, Git tracking guard, and API spend-cap behavior). To use the documented setup commands on Windows, first install GNU Make and Python 3.12. The embedding smoke command is:
 
 ~~~powershell
 .\.venv\Scripts\python.exe scripts/smoke_test_embedding.py
@@ -152,9 +152,9 @@ The current source registry is data/sources.yaml. It has no civic source approve
 | Source group | Registry status | Current use |
 |---|---|---|
 | DoTM driving-license pages/manual | unclear; local_only: true | Not approved as answer evidence. Request permission before broader reuse; do not commit copies. |
-| MOHA citizenship pages | unclear; local_only: true | Not approved as answer evidence. Request permission before broader reuse; do not commit copies. |
+| MOHA citizenship pages | unclear; local_only: true; Kathmandu PDF: answer_evidence: true (Leader-approved LOCAL-ONLY baseline 2026-10-11; no redistribution; permission request pending) | Not approved as answer evidence. Request permission before broader reuse; do not commit copies. |
 | Department of Passports pages | all rights reserved; local_only: true | Not approved for redistribution or answer evidence; do not commit copies. |
-| Open Data Nepal health/NCD dataset page | unclear; local_only: true; its dataset metadata says “License Not specified” | Unrelated to civic procedures and excluded. |
+| Open Data Nepal health/NCD dataset page | unclear; local_only: true; its dataset metadata says "License Not specified" | Unrelated to civic procedures and excluded. |
 | Open Data Nepal Environment Statistics of Nepal 2019 datasets | confirmed open; Creative Commons Attribution Share-Alike; local_only: false | Reference-only environmental data, unrelated to civic procedures; not answer evidence and excluded from the civic index. |
 
 No explicitly open-licensed procedural civic source has been verified. The source register quotes the Open Data Nepal policy: “Users are free to use, modify, and share datasets, provided they give appropriate attribution.” The environment dataset is retained only as an openly licensed reference record; the source register says its source data is credited to the Central Bureau of Statistics. Do not treat that dataset as evidence for civic-service answers.
@@ -201,9 +201,9 @@ Run the full test suite with:
 make test
 ~~~
 
-The suite covers synthetic HTML processing and source/service metadata, top-k and score-range checks plus service filtering with a temporary Chroma index, evaluation output and draft skipping, a Git tracking guard for raw/processed/index data, and pre-send API spend-cap behavior.
+The suite covers synthetic HTML processing and source/service metadata, top-k and score-range checks plus service filtering with a temporary Chroma index, evaluation output and draft skipping, a Git tracking guard for raw/processed/index data, pre-send API spend-cap behavior, and build_index source eligibility logic (confirmed-open path and local-only approval path).
 
-The latest direct pytest command reported **7 passed**. GNU Make is not installed here, so the Makefile test target itself was not run.
+The latest direct pytest command reported **54 passed, 1 skipped**. GNU Make is not installed here, so the Makefile test target itself was not run.
 
 ## 14. Known limitations and caveats
 
@@ -213,7 +213,7 @@ The latest direct pytest command reported **7 passed**. GNU Make is not installe
 - Source freshness and page-specific procedural accuracy have not been checked through an end-to-end indexed answer.
 - Search similarities are not calibrated probabilities; the refusal threshold is not calibrated against verified questions.
 - Answers may be wrong. Verify any procedure with the responsible official office. This project is not legal advice.
-- OCR needs Tesseract and the Nepali/English language packs. A local-only MOHA PDF was visually checked on pages 1, 3, and 5: Devanagari appears legible, but printed page numbers were not visible. Its embedded text is corrupted; all five pages are now marked unusable because Tesseract is unavailable. This source is not approved for indexing or redistribution.
+- OCR needs Tesseract and the Nepali/English language packs. The MOHA Kathmandu citizenship PDF has Leader-approved LOCAL-ONLY baseline status (2026-10-11) with `answer_evidence: true`, `approval_note`, `local_only: true`, `licence_status: unclear`. Its embedded text is corrupted; all five pages would be processed via OCR when Tesseract is available. This source and any index built from it remain gitignored; no Hugging Face deployment or commit until written permission is on file.
 - The Streamlit process can start, but without an eligible civic index it returns not_found rather than a supported cited answer.
 
 ## 15. Roadmap

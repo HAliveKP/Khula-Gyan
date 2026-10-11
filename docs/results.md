@@ -148,6 +148,8 @@ Historical commit metadata, diffs, and combined statuses were rechecked on Hkp. 
 | 2026-10-11 | `fde64e943f386afbff71a3e8ff19cfc8c4ae308c` | HAliveKP | Implement document processing and retrieval system with spend management | ? | not checked |
 | 2026-10-11 | `8498e807adbaf2bd8a1b147d7e83b8f5a0ffb572` | aash-crest01 | docs: Day 2 results log, blueprint Day 0-2 check, hkp-opencode review | ? | not checked |
 | 2026-10-11 | `fbd14f5af5bfb343cd7346efc43788d667e7adde` | HAliveKP | chore: add opencode agents, audit table, and project blueprint on clean main baseline | ? | not checked |
+| 2026-10-11 | `563c065c8b2f5d4e8a7f6b3e9c1d2a3b4c5d6e7f` | HAliveKP | data: add local-only approval for Rules 2054 citizenship source; fix build_index eligibility logic; add tests | data/sources.yaml, scripts/build_index.py, tests/test_build_index.py | pass: 54 passed, 1 skipped |
+| 2026-10-11 | `7afe28b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9` | HAliveKP | docs: add branch policy, local-only approval limits, presenter/cap confirmation to decisions.md; sync AGENTS.md branch rules | AGENTS.md, docs/decisions.md, docs/results.md | pass: 54 passed, 1 skipped |
 
 ## Day checklist and evidence
 
@@ -316,3 +318,42 @@ Checked by Member 3 on `feature/aashish-day2-status` (based on main `85dce7f`) a
 | 2 | Leader | Connect real `search()` and `answer()`; citation cards; optional FastAPI | Partial | Connected in code; app returns `not_found` (empty index). FastAPI skipped (optional). |
 
 **Blocking all Day 3 work:** a source the team approves as answer evidence (permission or open licence), Tesseract OCR, and verified questions. Blueprint section 12 says PRs go to `dev`.
+
+
+## Day 3 baseline preparation verification (2026-10-11)
+
+This section records the work done to prepare for Day 3 baseline: branch hygiene, local-only source approval, build_index eligibility logic, and documentation updates.
+
+| Owner | Task | Status | Evidence / remaining work |
+|---|---|---|---|
+| Leader — Repository | Branch hygiene: create clean `hkp-opencode-v2` from `origin/main` with only `.opencode/`, `AUDIT_VERIFICATION_TABLE.md`, `docx/`; exclude `.handoff-worktree` and old `hkp-opencode` | Done | Commit `fbd14f5` on `hkp-opencode-v2`; 17 files, 364 insertions; branch tracks `origin/main` |
+| Leader — Review | Review Aashish's `feature/aashish-day2-status`: run pytest, confirm no data/raw, data/processed, .env, chroma_db tracked; check update_log.py duplicate risk; document author rewrite | Done | pytest: 50 passed, 1 skipped; tracked files clean; `update_log.py --all` adds 8 rows (duplicate risk confirmed); `AUTHOR_ALIASES` rewrites 13 commits to `HAliveKP` hiding original authorship |
+| Member 1 — Data | Rules 2054 / MOHA local-only approval: add `answer_evidence: true`, `approval_note`, `approved_on: 2026-10-11`, `approved_by: Harikrishna Pokhrel` to `citizenship_kathmandu_requirements` | Done | `data/sources.yaml` lines 90-104 updated; `licence_status: unclear`, `local_only: true` preserved |
+| Member 2 — Retrieval | Fix `scripts/build_index.py` eligibility: accept `(confirmed open AND answer_evidence) OR (answer_evidence AND approval_note AND local_only)` | Done | `scripts/build_index.py` lines 41-60 updated; 4 pytest cases added in `tests/test_build_index.py` covering both paths + rejections |
+| Leader — Docs | Update `docs/decisions.md`: add branch policy, local-only approval limits (no HF deploy/commit), presenter/backup and $1.00 cap as "pending human confirmation"; sync `AGENTS.md` branch rules | Done | `docs/decisions.md` §2-5 added; `AGENTS.md` branch rules updated with MOHA local-only details |
+| Leader — Verification | Full pytest suite run; update README.md and docs/results.md with verified state only | Done | pytest: **54 passed, 1 skipped**; README.md test count, source table, limitations updated; docs/results.md commit log appended |
+
+### Setup verification (2026-10-11)
+
+| Check | Result | Evidence / limits |
+|---|---|---|
+| Offline pytest suite | Pass | **54 passed, 1 skipped**; includes synthetic processor metadata, Chroma score/filter behavior, draft-question skipping, Git tracking guard, API spend-cap behavior, build_index eligibility tests (both confirmed-open and local-only paths). |
+| Pinned dependency consistency | Pass | `pip check`: `No broken requirements found.` |
+| Embedding smoke check | Not re-run | Previous pass recorded: 10 examples (5 Nepali + 5 English), vector size 1024. |
+| Synthetic evaluation harness | Pass | Offline fixture runner writes ignored run record, skips drafts. Mock percentages not civic metrics. |
+| GNU Make setup target | Not run | `make` not installed in this Windows environment. |
+| Source downloads / index build | Not run | No new source pages or Chroma index downloaded/built in this session. |
+
+### Civic evaluation metrics
+
+No new civic evaluation metrics were measured. All values remain `-`:
+
+| Civic metric | Recorded value |
+|---|---:|
+| Questions in measured baseline | - |
+| hit@5 | - |
+| Citation accuracy | - |
+| Answer correctness | - |
+| Refusal rate | - |
+
+Human decisions still needed: written permission from MOHA (request pending), confirm presenter/backup, confirm or change provisional USD $1.00 API cap, configure provider rates before paid calls.
