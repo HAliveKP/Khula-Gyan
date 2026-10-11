@@ -140,6 +140,14 @@ Historical commit metadata, diffs, and combined statuses were rechecked on Hkp. 
 | 2026-10-11 | `ee54e2babdfede7f7ffd5e90af89755665f906d2` | aash-crest01 | eval: check verification_status; make --mock run; reword q021 | Day 1-2 M3: eval set checks | pass: check_questions OK on 25 drafts; --mock runs 3 sample questions; 10 new tests |
 | 2026-10-11 | `9302a1b13f344bfc49c2799670246f87b783ef67` | aash-crest01 | fix: rebuild wrong Devanagari glyph maps in Word-made PDFs | Day 2 M1 (done by M3): fix broken Devanagari | pass: sampled Rules 2054 pages match page images; 9 new tests; 51 passed |
 | 2026-10-11 | `6bdb769c7e2b81d173372ae0f4e91503f6ca1d4b` | aash-crest01 | data: register Rules 2054 and DoTM directive; correct sources; extraction QA | Day 1-2 M1 (done by M3): sources and extraction QA | pass: docs and register only; fetched files stay in ignored data/ |
+| 2026-10-10 | `0645f41d6aa0e80d00cfcf857b0b2bd837f6ad7d` | HAliveKP | chore: add opencode agents and commands | ? | not checked |
+| 2026-10-10 | `c60eccf3879a8623f1d635aa7117133abf6a53df` | HAliveKP | docs: reverify handoff state with audit evidence | ? | not checked |
+| 2026-10-10 | `bc454adfe74c8ffaf868d2b13504f565a68272f7` | HAliveKP | chore: add boss and 4 member subagents for Day 2 execution | ? | not checked |
+| 2026-10-10 | `94276b406de4cefda2ea3d7b1e2b66219a67994f` | HAliveKP | docs: reconcile README with verified state (question count, OCR, index, pipeline) | ? | not checked |
+| 2026-10-10 | `6d690f7d348b3e03994a809f12a968df35cc98e5` | HAliveKP | docs: reconcile results.md with verified Day 2 state (OCR, index, pipeline, question count) | ? | not checked |
+| 2026-10-11 | `fde64e943f386afbff71a3e8ff19cfc8c4ae308c` | HAliveKP | Implement document processing and retrieval system with spend management | ? | not checked |
+| 2026-10-11 | `8498e807adbaf2bd8a1b147d7e83b8f5a0ffb572` | aash-crest01 | docs: Day 2 results log, blueprint Day 0-2 check, hkp-opencode review | ? | not checked |
+| 2026-10-11 | `fbd14f5af5bfb343cd7346efc43788d667e7adde` | HAliveKP | chore: add opencode agents, audit table, and project blueprint on clean main baseline | ? | not checked |
 
 ## Day checklist and evidence
 
