@@ -44,23 +44,26 @@ sources:
 - id: dl_vehicle_transport_rules_2054
   title: Vehicle and Transport Management Rules 2054 (consolidated, amended to 2081)
   publisher: Nepal Law Commission
-  url: https://giwmscdnone.gov.np/media/pdf_upload/6.%20%E0%A4%B8%E0%A4%B5%E0%A4%BE%E0%A4%B0%E0%A5%80%20%E0%A4%A4%E0%A4%A5%E0%A4%BE%20%E0%A4%AF%E0%A4%BE%E0%A4%A4%E0%A4%BE%E0%A4%AF%E0%A4%BE%E0%A4%A4%20%E0%A4%B5%E0%A5%8D%E0%A4%AF%E0%A4%B5%E0%A4%B8%E0%A5%8D%E0%A4%A5%E0%A4%BE%20%E0%A4%A8%E0%A4%BF%E0%A4%AF%E0%A4%AE%E0%A4%BE%E0%A4%B5%E0%A4%B2%E0%A5%80%2C%20%E0%A5%A8%E0%A5%A6%E0%A5%AB%E0%A5%AA_lklb1sl.pdf
+  url: https://giwmscdnone.gov.np/media/pdf_upload/6.%20%E0%A4%B8%E0%A4%B5%E0%A4%BE%E0%A4%B0%E0%A5%80%20%E0%A4%A4%E0%A4%A5%E0%A4%BE%20%E0%A4%AF%E0%A4%BE%E0%A4%A4%E0%A4%BE%E0%A4%AF%E0%A4%BE%E0%A4%A4%20%E0%A4%B5%E0%A5%8D%E0%A4%AF%E0%A4%B5%E0%A4%B8%E0%A5%8D%E0%A4%A5%E0%A4%BE%20%E0%A4%A8%E0%A4%B9%E0%A4%AE%E0%A4%BE%E0%A4%B5%E0%A4%B2%E0%A5%80%2C%20%E0%A5%A8%E0%A5%A6%E0%A5%AB%E0%A5%AA_lklb1sl.pdf
   filename: dl_vehicle_transport_rules_2054.pdf
   service: driving_license
   lang: ne
   license: null
   terms_url: https://lawcommission.gov.np/
-  answer_evidence: false
+  answer_evidence: true
   relevance: Rule 23 (renewal application, Schedule-21 form, Schedule-18 health certificate) and
     Schedule 3 (renewal fees). Fees may be superseded by provincial eDLVRS rates; confirm currency.
   licence_status: unclear
   terms_quote: null
   date_checked: '2026-10-11'
   local_only: true
+  approval_note: "Leader-approved for local internal baseline only; no redistribution; permission request pending"
+  approved_on: '2026-10-11'
+  approved_by: "Harikrishna Pokhrel"
 - id: dl_dotm_procedure_directive_2060
   title: Transport management procedure directive 2060 (amended)
   publisher: Department of Transport Management (DoTM)
-  url: https://giwmscdnone.gov.np/media/pdf_upload/%E0%A4%AF%E0%A4%BE%E0%A4%A4%E0%A4%BE%E0%A4%AF%E0%A4%BE%E0%A4%A4%20%E0%A4%B5%E0%A5%8D%E0%A4%AF%E0%A4%B5%E0%A4%B8%E0%A5%8D%E0%A4%A5%E0%A4%BE%E0%A4%AA%E0%A4%A8%20%E0%A4%95%E0%A4%BE%E0%A4%B0%E0%A5%8D%E0%A4%AF%E0%A4%B5%E0%A4%BF%E0%A4%A7%E0%A4%BF%20%E0%A4%A8%E0%A4%BF%E0%A4%B0%E0%A5%8D%E0%A4%A6%E0%A5%87%E0%A4%B6%E0%A4%BF%E0%A4%95%E0%A4%BE%20%E0%A5%A8%E0%A5%A6%E0%A5%AC%E0%A5%A6%20(%E0%A4%B8%E0%A4%82%E0%A4%B6%E0%A5%8B%E0%A4%A7%E0%A4%BF%E0%A4%A4)_b9akxt1.pdf
+  url: https://giwmscdnone.gov.np/media/pdf_upload/%E0%A4%AF%E0%A4%BE%E0%A4%A4%E0%A4%BE%E0%A4%AF%E0%A4%BE%E0%A4%A4%20%E0%A4%B5%E0%A5%8D%E0%A4%AF%E0%A4%B5%E0%A4%B8%E0%A5%8D%E0%A4%A5%E0%A4%AA%E0%A4%A8%20%E0%A4%95%E0%A4%BE%E0%A4%B0%E0%A5%8D%E0%A4%AF%E0%A4%B5%E0%A4%AF%E0%A4%B5%E0%A4%B5%E0%A4%A5%E0%A4%BE%20%E0%A4%A8%E0%A4%B9%E0%A4%AE%E0%A4%BE%E0%A4%B5%E0%A4%B2%E0%A5%80%2C%20%E0%A5%A8%E0%A5%A6%E0%A5%AB%E0%A5%AA_lklb1sl.pdf
   filename: dl_dotm_procedure_directive_2060.pdf
   service: driving_license
   lang: ne
@@ -211,4 +214,3 @@ sources:
     attribution. https://opendatanepal.com/privacy-policy'
   date_checked: '2026-10-10'
   local_only: false
-

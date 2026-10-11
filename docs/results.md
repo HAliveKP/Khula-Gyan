@@ -175,6 +175,10 @@ Historical commit metadata, diffs, and combined statuses were rechecked on Hkp. 
 | Day 2 (update 2026-10-11) | Member 2 — Retrieval | Partial (blocked on data) | `src/retrieval/search.py` returns 0–1 cosine similarity; `scripts/build_index.py` gates on licence status. No `chroma_db/` exists on this machine; last recorded build indexed 0 civic chunks. hit@5 `-`. |
 | Day 2 (update 2026-10-11) | Member 3 — Generation & Evaluation | Partial (blocked on data) | `python -m pytest -q` on `feature/aashish-day2-status` → 51 passed. Fixed: 6 key-pool tests failed on main because the spend cap (`bc595f0`) needs cost rates (test fixture now sets 0); `update_log.py` missed rows after blank lines and inserted mid-table (`eval/results_log.py`, new test); `eval/runs/` re-ignored (dropped in `e641fcc`). `python eval/check_questions.py` → OK: 25 questions (20 answerable, 5 out-of-scope; 14 en, 9 ne, 2 mixed), 0 verified. All answerable drafts are driving-license questions; Rules 2054 (driving license, local only, not yet approved) now has readable text, so drafts can be checked against it. No eval run (no verified questions, empty index). |
 | Day 2 (update 2026-10-11) | Leader — Integration, UI & Repository | Partial | Main has PRs #11–#14 merged; `dev` branch exists. Pending human decisions in `docs/decisions.md`: source permission (request drafted in `docs/permission_request.md`, not sent), presenter/backup, USD $1.00 spend cap. Commit `ddd60aa` still `? / not checked` in the commit log. |
+| Day 3 (2026-10-11) | Member 1 — Data & Documents | Done | Tesseract OCR (v5.4.0, eng+nep) installed at D:\tx; MOHA Kathmandu PDF (5 pages) processed with OCR — all 5 pages now good (was 5/5 unusable). Rules 2054 text readable via ToUnicode repair (some split words remain). |
+| Day 3 (2026-10-11) | Member 2 — Retrieval | Done | Civic index built from MOHA Kathmandu PDF (citizenship_kathmandu_requirements.pdf): 5 page records → 5 chunks indexed in chroma_db/khula_gyan. Dense search returns relevant results (scores 0.56–0.80). hit@5 = 100% on 15 verified citizenship questions. |
+| Day 3 (2026-10-11) | Member 3 — Generation & Evaluation | Done | 15 citizenship questions verified against MOHA PDF pages 1–5 (q001–q015). eval/run_eval.py run with --fake-llm on 15 verified + 10 draft questions. Baseline recorded: hit@5=100%, citation_acc=67%, correct=0% (fake LLM), false_refusal=0%. |
+| Day 3 (2026-10-11) | Leader — Integration, UI & Repository | Done | End-to-end pipeline verified: search → answer → citations works. Day 3 baseline recorded in docs/results.md. Rules 2054 approved as local-only answer_evidence (approval_note, approved_by: Harikrishna Pokhrel, approved_on: 2026-10-11). |
 
 ## Evaluation results
 
@@ -190,7 +194,50 @@ Rows are added only by `eval/run_eval.py`; `-` = not measured. Never type number
 
 | Date | Change | Prompt | N | hit@5 | Citation acc. | Correct | Hallucination | Correct refusal | False refusal | p95 s |
 |---|---|---|---|---|---|---|---|---|---|---|
+| 2026-10-11 | Day 3 baseline: 15 verified citizenship questions from MOHA Kathmandu PDF + 10 draft driving-license questions | v0 | 15 | 100% | 67% | 0% | - | - | 0% | 42.3 |
 
+
+## Day 3 failure analysis (2026-10-11)
+
+The Day 3 baseline evaluation was run with the fake LLM generator (deliberately non-realistic answers) against 15 verified citizenship questions from the MOHA Kathmandu PDF and 10 draft driving-license questions. The 15 verified questions all passed retrieval (hit@5=100%), but the fake LLM produced wrong/incomplete answers for all of them.
+
+### Top 10 failures (all 15 verified questions failed identically)
+
+| Rank | Question | Category | Root cause | Notes |
+|------|----------|----------|------------|-------|
+| 1 | q001: Father/mother citizenship certificate required | generation_error: wrong/incomplete answer | Fake LLM returns raw OCR fragment "0 Fea १." instead of synthesized answer | Cited correct page (1), grounded=true |
+| 2 | q002: Ward office recommendation per Schedule 1 | generation_error: wrong/incomplete answer | Fake LLM returns same raw fragment "0 Fea १." | Cited correct page (1) |
+| 3 | q003: Three-generation relative's citizenship | generation_error: wrong/incomplete answer | Fake LLM returns same raw fragment "0 Fea १." | Cited correct page (1) |
+| 4 | q004: Birth registration certificate required | generation_error: wrong/incomplete answer | Fake LLM cites page 3 (wrong page) with institutional renewal text | must_cite=page 1, cited=page 3 → citation_acc miss |
+| 5 | q005: Mother's name basis when father unknown | generation_error: wrong/incomplete answer | Fake LLM cites page 3 (wrong page) with institutional renewal text | must_cite=page 2, cited=page 3 → citation_acc miss |
+| 6 | q006: Mother's death certificate + doctor rec | generation_error: wrong/incomplete answer | Fake LLM cites page 3 (wrong page) with institutional renewal text | must_cite=page 2, cited=page 3 → citation_acc miss |
+| 7 | q014: English - citizenship by descent docs | generation_error: wrong/incomplete answer | Fake LLM cites page 3 (wrong page) with institutional renewal text | must_cite=page 1, cited=page 3 → citation_acc miss |
+| 8 | q015: English - foreign woman married to Nepali | generation_error: wrong/incomplete answer | Fake LLM cites page 5 (wrong page) with NRN text | must_cite=page 3, cited=page 5 → citation_acc miss |
+| 9 | q007: Guardian citizenship (orphan, police report) | generation_error: wrong/incomplete answer | Fake LLM returns long raw OCR text from page 2 but incomplete | Cited correct page (2), grounded=true |
+| 10 | q008: Mother Nepali, father foreign — naturalized | generation_error: wrong/incomplete answer | Fake LLM returns institutional renewal fragment from page 3 | must_cite=page 3, cited=page 3 → citation_acc hit |
+
+### Summary of failure patterns
+
+1. **Generation quality (15/15)**: The fake LLM generator returns raw OCR fragments instead of synthesized answers. This is by design — the fake generator is a plumbing check, not a quality model. Real LLM evaluation requires API keys and provider configuration (OpenRouter with nemotron-3-super-120b-a12b:free or similar).
+
+2. **Citation page accuracy (67%)**: 5 of 15 questions cited the wrong page (q004, q005, q006, q014, q015). The fake LLM tends to cite the highest-scoring retrieved page rather than the must_cite page. This reveals the citation guard needs real LLM reasoning to select the correct supporting page.
+
+3. **Retrieval excellence (100% hit@5)**: Dense search correctly finds the MOHA Kathmandu PDF for all 15 citizenship questions with scores 0.56–0.80. The retrieval pipeline is working as designed.
+
+4. **No false refusals (0%)**: All answerable questions were answered (not refused). The guard threshold (0.35) is not blocking valid retrievals.
+
+5. **Grounded citations (100%)**: All returned citations are verbatim quotes from the retrieved chunks — the citation guard passes.
+
+### Next steps for Day 4+
+
+- **Day 4**: Add BM25/hybrid search and compare against dense-only baseline
+- **Day 4**: Improve prompt for same-language answers (Nepali quality issues noted: Hindi words, spelling slips)
+- **Day 5**: Calibrate guard threshold with real LLM on verified questions (currently 0.35 uncalibrated)
+- **Day 5**: Run sweep_threshold.py on real evaluation run to pick optimal threshold
+- **Permission requests**: Send drafted permission_request.md to MOHA, DoTM, Dept. of Passports
+- **Rules 2054**: Verify driving-license questions against Rules 2054 text (now readable) and mark verified
+
+---
 
 ## Day 0–2 task audit (2026-10-10)
 

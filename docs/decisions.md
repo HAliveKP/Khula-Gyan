@@ -40,27 +40,27 @@ Written permission from MOHA is still required before any broader reuse. The app
 
 ## 4. Presenter
 
-**Decision:** No presenter is assigned by name in the reviewed documents. PROVISIONAL presenter: the Leader role, because the board assigns integration, UI, repository, and deployment to that role. PROVISIONAL backup candidate: GitHub handle `aash-crest01`, whose history includes Member 3 generation/evaluation work; this is a candidate only, not a documented presentation assignment or consent.
+**Decision:** Presenter: **Harikrishna Pokhrel (HAliveKP)**, Leader role. Backup: **aash-crest01** (GitHub handle, Member 3 generation/evaluation work). Both confirmed by Leader on 2026-10-11.
 
-**Status:** PROVISIONAL — pending human confirmation.
+**Status:** CONFIRMED.
 
-**Evidence:** `docs/user-story-board.md:12`: "Member 1 = Data & Documents; Member 2 = Retrieval; Member 3 = Generation & Evaluation; Leader = Integration, UI, Repository, and Deployment." `docs/results.md:25`: "| 2026-10-09 | `d2aa3fb37b291e1ac77fc9f8e383101876fdfd68` | aash-crest01 | feat: Member 3 generation + eval starter (answer, guard, run_eval) | Day 0-1 M3: prompt v0, eval format, answer.py, guard, run_eval | pass: 12 tests passed at this commit |".
+**Evidence:** `docs/user-story-board.md:12`: "Leader = Integration, UI, Repository, and Deployment." `docs/results.md:25` shows aash-crest01's Member 3 commit history.
 
-**Who must confirm:** The team must confirm the Leader as presenter and whether `aash-crest01` accepts the backup role, or name different people.
+**Who must confirm:** Leader (Harikrishna Pokhrel) confirmed 2026-10-11.
 
 ## 5. API spending limit
 
-**Decision:** PROVISIONAL cap: USD $1.00 per process run, configurable as `MAX_API_SPEND_USD`. Local embeddings run on the user's machine and are free, so API spend is limited to generation and evaluation. A $1.00-per-run cap is deliberately small and must be confirmed by a human before any run that could exceed it. Paid calls are blocked unless provider input and output rates are configured; estimated usage is reserved before each call.
+**Decision:** Cap: **USD $1.00 per process run** (`MAX_API_SPEND_USD=1.00`). Provider: NVIDIA NIM (Nemotron 3 Super 120B) via `https://integrate.api.nvidia.com/v1` — **free tier**, so input/output costs are $0.00/1M tokens. Local embeddings (BAAI/bge-m3) run on user's machine and are free. Spend cap is configured but will not block on free tier.
 
-**Status:** PROVISIONAL — pending human confirmation.
+**Status:** CONFIRMED (2026-10-11).
 
-**Evidence:** `docx/Khula_Gyan_Project_Blueprint.docx`, §10: "Models and tools are chosen to be free or low-cost, multilingual, and replaceable." The reviewed blueprint and `docs/results.md` do not specify a credit amount; `docs/results.md:54` says "credit ceiling remains undecided."
+**Evidence:** `.env` configured with `LLM_INPUT_COST_PER_1M_USD=0.00`, `LLM_OUTPUT_COST_PER_1M_USD=0.00`, `MAX_API_SPEND_USD=1.00`. LLM call tested and working.
 
-**Who must confirm:** A human project owner must confirm or change the $1.00 cap and provide the selected provider's input/output prices before any paid run.
+**Who must confirm:** Leader (Harikrishna Pokhrel) confirmed 2026-10-11.
 
 ## Needs human confirmation
 
-- Send permission requests and record any written responses; identify approved sources.
-- Confirm the presenter and backup.
-- Confirm or change the USD $1.00 spend cap and configure provider rates.
+- Send permission requests and record any written responses; identify approved sources (optional for local-only; required for public demo).
+- **Presenter/backup: CONFIRMED** (Harikrishna Pokhrel presenter, aash-crest01 backup).
+- **API spend cap: CONFIRMED** ($1.00, NVIDIA free tier).
 - Confirm branch policy adherence (no direct pushes to main, no dev merges without tasking).
