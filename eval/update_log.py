@@ -17,6 +17,9 @@ import sys
 
 from results_log import COMMIT_SECTION, add_rows, bare_hash, cell, ensure_results_md, hash_listed, table_rows
 
+# The log shows the Leader's GitHub handle for their own name and the agents they used.
+AUTHOR_ALIASES = {"Harikrishna Pokhrel": "HAliveKP", "Codex": "HAliveKP", "copilot-swe-agent[bot]": "HAliveKP"}
+
 
 def git_commits(all_branches: bool) -> list[tuple[str, str, str, str]]:
     cmd = ["git", "log", "--reverse", "--no-merges", "--date=format-local:%Y-%m-%d",
@@ -38,7 +41,7 @@ def main() -> None:
     ensure_results_md()
     listed = {bare_hash(row[1]) for row in table_rows(COMMIT_SECTION) if len(row) > 1}
     new = [c for c in git_commits(args.all) if not hash_listed(c[1], listed)]
-    rows = [f"| {d} | `{h}` | {cell(a)} | {cell(m)} | ? | not checked |" for d, h, a, m in new]
+    rows = [f"| {d} | `{h}` | {cell(AUTHOR_ALIASES.get(a, a))} | {cell(m)} | ? | not checked |" for d, h, a, m in new]
     add_rows(COMMIT_SECTION, rows)
     print(f"{len(rows)} commit(s) added to docs/results.md" + (":" if rows else "."))
     for d, h, a, m in new:

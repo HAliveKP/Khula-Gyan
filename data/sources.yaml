@@ -5,7 +5,7 @@ sources:
   url: https://dotm.gov.np/pages/driving-license-and-vehicle-registration-system-1/
   filename: dl_dotm_portal.html
   service: driving_license
-  lang: en
+  lang: ne
   license: null
   terms_url: https://dotm.gov.np/
   answer_evidence: false
@@ -41,6 +41,38 @@ sources:
   terms_quote: null
   date_checked: '2026-10-10'
   local_only: true
+- id: dl_vehicle_transport_rules_2054
+  title: Vehicle and Transport Management Rules 2054 (consolidated, amended to 2081)
+  publisher: Nepal Law Commission
+  url: https://giwmscdnone.gov.np/media/pdf_upload/6.%20%E0%A4%B8%E0%A4%B5%E0%A4%BE%E0%A4%B0%E0%A5%80%20%E0%A4%A4%E0%A4%A5%E0%A4%BE%20%E0%A4%AF%E0%A4%BE%E0%A4%A4%E0%A4%BE%E0%A4%AF%E0%A4%BE%E0%A4%A4%20%E0%A4%B5%E0%A5%8D%E0%A4%AF%E0%A4%B5%E0%A4%B8%E0%A5%8D%E0%A4%A5%E0%A4%BE%20%E0%A4%A8%E0%A4%BF%E0%A4%AF%E0%A4%AE%E0%A4%BE%E0%A4%B5%E0%A4%B2%E0%A5%80%2C%20%E0%A5%A8%E0%A5%A6%E0%A5%AB%E0%A5%AA_lklb1sl.pdf
+  filename: dl_vehicle_transport_rules_2054.pdf
+  service: driving_license
+  lang: ne
+  license: null
+  terms_url: https://lawcommission.gov.np/
+  answer_evidence: false
+  relevance: Rule 23 (renewal application, Schedule-21 form, Schedule-18 health certificate) and
+    Schedule 3 (renewal fees). Fees may be superseded by provincial eDLVRS rates; confirm currency.
+  licence_status: unclear
+  terms_quote: null
+  date_checked: '2026-10-11'
+  local_only: true
+- id: dl_dotm_procedure_directive_2060
+  title: Transport management procedure directive 2060 (amended)
+  publisher: Department of Transport Management (DoTM)
+  url: https://giwmscdnone.gov.np/media/pdf_upload/%E0%A4%AF%E0%A4%BE%E0%A4%A4%E0%A4%BE%E0%A4%AF%E0%A4%BE%E0%A4%A4%20%E0%A4%B5%E0%A5%8D%E0%A4%AF%E0%A4%B5%E0%A4%B8%E0%A5%8D%E0%A4%A5%E0%A4%BE%E0%A4%AA%E0%A4%A8%20%E0%A4%95%E0%A4%BE%E0%A4%B0%E0%A5%8D%E0%A4%AF%E0%A4%B5%E0%A4%BF%E0%A4%A7%E0%A4%BF%20%E0%A4%A8%E0%A4%BF%E0%A4%B0%E0%A5%8D%E0%A4%A6%E0%A5%87%E0%A4%B6%E0%A4%BF%E0%A4%95%E0%A4%BE%20%E0%A5%A8%E0%A5%A6%E0%A5%AC%E0%A5%A6%20(%E0%A4%B8%E0%A4%82%E0%A4%B6%E0%A5%8B%E0%A4%A7%E0%A4%BF%E0%A4%A4)_b9akxt1.pdf
+  filename: dl_dotm_procedure_directive_2060.pdf
+  service: driving_license
+  lang: ne
+  license: null
+  terms_url: https://dotm.gov.np/
+  answer_evidence: false
+  relevance: Section 12.17 (renewal deadline, late fines, cancellation after 5 years). Text uses
+    the legacy Preeti font and must be converted to Unicode before use.
+  licence_status: unclear
+  terms_quote: null
+  date_checked: '2026-10-11'
+  local_only: true
 - id: citizenship_darchula_requirements
   title: Required documents to make citizenship
   publisher: District Administration Office, Darchula (MOHA)
@@ -51,24 +83,27 @@ sources:
   license: null
   terms_url: https://moha.gov.np/page/terms-of-use
   answer_evidence: false
-  licence_status: unclear
-  terms_quote: null
-  date_checked: '2026-10-10'
+  licence_status: all rights reserved
+  terms_quote: © All Rights Reserved to District Administration Office, Darchula
+  date_checked: '2026-10-11'
   local_only: true
 - id: citizenship_kathmandu_requirements
   title: Citizenship document checklist
   publisher: District Administration Office, Kathmandu (MOHA)
-  url: https://daokathmandu.moha.gov.np/assets/3/%E0%A4%A8%E0%A4%BE%E0%A4%97%E0%A4%B0%E0%A4%BF%E0%A4%95%E0%A4%A4%E0%A4%BE_%E0%A4%95%E0%A4%BE%E0%A4%97%E0%A4%9C%E0%A4%BE%E0%A4%A4.PDF/file
+  url: https://daokathmandu.moha.gov.np/assets/3/%E0%A4%A8%E0%A4%BE%E0%A4%97%E0%A4%B0%E0%A4%BF%E0%A4%95%E0%A4%A4%E0%A4%BE_%E0%A4%95%E0%A4%BE%E0%A4%97%E0%A4%9C%E0%A4%AE%E0%A4%A0.PDF/file
   filename: citizenship_kathmandu_requirements.pdf
   service: citizenship
   lang: ne
   license: null
   terms_url: https://moha.gov.np/page/terms-of-use
-  answer_evidence: false
+  answer_evidence: true
   licence_status: unclear
   terms_quote: null
   date_checked: '2026-10-10'
   local_only: true
+  approval_note: "Leader-approved for local internal baseline only; no redistribution; permission request pending"
+  approved_on: '2026-10-11'
+  approved_by: "Harikrishna Pokhrel"
 - id: citizenship_rules_2082
   title: Citizenship Rules 2063, fourth amendment 2082 listing
   publisher: District Administration Office, Dadeldhura (MOHA)
