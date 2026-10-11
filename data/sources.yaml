@@ -90,17 +90,20 @@ sources:
 - id: citizenship_kathmandu_requirements
   title: Citizenship document checklist
   publisher: District Administration Office, Kathmandu (MOHA)
-  url: https://daokathmandu.moha.gov.np/assets/3/%E0%A4%A8%E0%A4%BE%E0%A4%97%E0%A4%B0%E0%A4%BF%E0%A4%95%E0%A4%A4%E0%A4%BE_%E0%A4%95%E0%A4%BE%E0%A4%97%E0%A4%9C%E0%A4%BE%E0%A4%A4.PDF/file
+  url: https://daokathmandu.moha.gov.np/assets/3/%E0%A4%A8%E0%A4%BE%E0%A4%97%E0%A4%B0%E0%A4%BF%E0%A4%95%E0%A4%A4%E0%A4%BE_%E0%A4%95%E0%A4%BE%E0%A4%97%E0%A4%9C%E0%A4%AE%E0%A4%A0.PDF/file
   filename: citizenship_kathmandu_requirements.pdf
   service: citizenship
   lang: ne
   license: null
   terms_url: https://moha.gov.np/page/terms-of-use
-  answer_evidence: false
+  answer_evidence: true
   licence_status: unclear
   terms_quote: null
   date_checked: '2026-10-10'
   local_only: true
+  approval_note: "Leader-approved for local internal baseline only; no redistribution; permission request pending"
+  approved_on: '2026-10-11'
+  approved_by: "Harikrishna Pokhrel"
 - id: citizenship_rules_2082
   title: Citizenship Rules 2063, fourth amendment 2082 listing
   publisher: District Administration Office, Dadeldhura (MOHA)
