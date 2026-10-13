@@ -151,32 +151,56 @@ Historical commit metadata, diffs, and combined statuses were rechecked on Hkp. 
 | 2026-10-11 | `563c065c8b2f5d4e8a7f6b3e9c1d2a3b4c5d6e7f` | HAliveKP | data: add local-only approval for Rules 2054 citizenship source; fix build_index eligibility logic; add tests | data/sources.yaml, scripts/build_index.py, tests/test_build_index.py | pass: 54 passed, 1 skipped |
 | 2026-10-11 | `7afe28b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9` | HAliveKP | docs: add branch policy, local-only approval limits, presenter/cap confirmation to decisions.md; sync AGENTS.md branch rules | AGENTS.md, docs/decisions.md, docs/results.md | pass: 54 passed, 1 skipped |
 
-## Day checklist and evidence
+## Pivot to Palika Guide (2026-10-13)
+
+The project pivoted from central-government procedures (driving license / citizenship / passport) to **Palika Guide**: answering questions about municipal services from each municipality's citizen charter (नागरिक बडापत्र).
+
+**Reason:** The original topic had too little usable, permitted data (0 approved civic sources, 0 civic chunks, 0 verified questions after Oct 8-13 work). The new scope targets up to 5 municipalities with text/HTML citizen charters, 6-8 common services per municipality, and a municipality filter in retrieval.
+
+**Scope changes:**
+- Team reduced to 3 members: Member 1 (Data & Documents), Member 2 (Retrieval & Generation), Leader (Integration, UI, Evaluation, Repo, Deployment).
+- Timeline compressed to 8 days: Day 1 = Oct 14 ... Day 8 = Oct 21 (code freeze); Oct 22-25 buffer.
+- Legacy central-government sources in `data/sources.yaml` tagged `legacy: true, answer_evidence: false`.
+- New municipality charter register in `data/sources.yaml` with `service: palika_guide`, `answer_evidence: false` until written permission.
+- Chunk schema gains optional `municipality`, `district`, `ward`, `section` fields.
+- Retrieval gains `municipality` filter; pipeline adds wrong-municipality guard.
+- Team is now 3 members: Member 1 (Data & Documents), Member 2 (Retrieval & Generation), Leader (Integration, UI, Evaluation, Repo, Deployment).
+- Timeline: 8 days (Oct 14-21 code freeze), Oct 22-25 buffer.
+
+**Status of legacy work:** All Day 0-3 work on central-government procedures is preserved in the commit history and `docs/results.md` below. The MOHA Kathmandu PDF OCR work (Day 3) demonstrated the pipeline works; those learnings carry forward.
+
+---
+
+---
+
+## Day checklist and evidence (Palika Guide, Day 1 = Oct 14)
 
 | Day | Owner | Status | Evidence / remaining work |
 |---|---|---|---|
-| Day 0 | Member 1 — Data & Documents | Partial | Source register exists. No originals are in `data/raw/`; usage terms and a first local extraction remain to be confirmed. |
-| Day 0 | Member 2 — Retrieval | Partial | Dependency list and embedding smoke script exist. A successful local model smoke run is not recorded. |
-| Day 0 | Member 3 — Generation & Evaluation | Partial | Response contract and starter question drafts exist. Provider choice and a successful LLM call remain pending. |
-| Day 0 | Leader — Integration, UI & Repository | Partial | Setup files and README exist; Hkp is the selected branch. Shared `dev` and `main` branches were not created. |
-| Day 1 | Member 1 — Data & Documents | Partial | Ten sources are registered and a preliminary extraction report exists. No files were downloaded or locally extracted. |
-| Day 1 | Member 2 — Retrieval | Partial | Chunking and Chroma index code exist. A sample dataset and populated index have not been produced. |
-| Day 1 | Member 3 — Generation & Evaluation | Pending | `src/generation/answer.py` and the 15-question Day 1 set are not present. |
-| Day 1 | Leader — Integration, UI & Repository | Done for mock | `ask()` and the initial Streamlit screen were added; the screen was not launched in this environment. |
-| Day 2 | Member 1 — Data & Documents | In progress | PDF/HTML extraction, NFC cleanup, repeated header/footer removal, and page-linked JSONL output are implemented. Synthetic HTML checks passed. Process a permitted official source and inspect each page when the download and PyMuPDF prerequisites are available. |
-| Day 2 | Member 2 — Retrieval | Pending (not part of this request) | The real `src/retrieval/search.py` module is not present, so index search cannot yet run end to end. |
-| Day 2 | Member 3 — Generation & Evaluation | Pending (not part of this request) | The real `src/generation/answer.py` module is not present, so no answer generation or evaluation can run. |
-| Day 2 | Leader — Integration, UI & Repository | In progress | `ask()` now connects to the documented `search()` and `answer()` interfaces when available; the UI has citation display, loading, and friendly error states. It safely returns `not_found` until those modules and reviewed source text exist. Optional FastAPI was skipped. |
-| Day 0 (update 2026-10-10) | Member 3 — Generation & Evaluation | Done | Provider: OpenRouter (Leader's choice). `python scripts/smoke_test_llm.py` passed with `nvidia/nemotron-3-super-120b-a12b:free` (Nepali 5.0 s, English 0.9 s); `google/gemma-4-31b-it:free` was rate-limited upstream. Prompt v0 in `src/generation/prompt.py`; question format in `eval/questions.jsonl` (10 drafts, unverified); `python eval/check_questions.py` → OK. Code in PR #5. |
-| Day 1 (update 2026-10-10) | Member 3 — Generation & Evaluation | Partial | `src/generation/answer.py` exists (`answer()` per contract 9.3, guard, schema validation); `python -m pytest -q` → 24 passed. Real-AI check: `python scripts/try_answer.py` answered English, Nepali and Romanized questions with grounded citations on the sample passages and refused an off-topic question. Nepali has Hindi words and spelling slips (prompt v1, Day 4). Remaining: 15 verified questions with Member 1 (10 drafts, 0 verified). |
-| Day 2 (update 2026-10-10) | Member 3 — Generation & Evaluation | Partial (code ready) | `eval/run_eval.py` exists and ran end to end on sample passages with the fake LLM (`--mock`). Not yet run on real `search()` (Member 2's module not present). Remaining: 25 questions (5 out-of-scope). |
-| Day 2 (update 2026-10-11) | Member 1 — Data & Documents | Blocked | Rechecked on main `85dce7f`: `data/sources.yaml` registers the sources with licence status; no civic source is approved for indexing. Only one MOHA citizenship PDF was fetched, on another machine (superseded later the same day by the "documents" row below) (5 pages unusable: garbled text, no Tesseract `nep`/`eng`). A fresh clone has no `data/raw/` or `data/processed/` (placeholders removed in `61b39f9`, `28c7f36`). Remaining: permission or an open source, Tesseract OCR, first readable page-linked JSONL. |
-| Day 2 (update 2026-10-11, documents) | Member 1 — Data & Documents | Partial (done by Member 3 at Aashish's request; local only, nothing committed from data/) | `fetch_sources.py --include-unclear` on the register: 2/12 usable files (`dl_dotm_portal.html`: Nepali menus/notices, no documents or fees; `citizenship_kathmandu_requirements.pdf`: 5-page scan, 0/5 usable without OCR). Failed: `dl_renewal_manual` (host refused/timed out), `dl_bheri_office_faq` (expired TLS certificate), `citizenship_rules_2082` (HTTP 404). `citizenship_darchula_requirements` footer says "© All Rights Reserved": register corrected, local copy deleted. Two new local-only, `answer_evidence: false` sources registered and fetched: `dl_vehicle_transport_rules_2054` (Law Commission, 206 pages; `process_document.py` → 206 pages with text, good=194 ok=12; Rule 23 + Schedule 3 cover renewal steps and fees; Devanagari letters that extracted swapped (e.g. नवीकरण → िवीकरण) are fixed by a ToUnicode repair in `src/ingest/extract.py` (see `docs/extraction-report.md`); some words still split after `्`) and `dl_dotm_procedure_directive_2060` (132 pages, legacy Preeti font, 4/132 marked usable, but all 4 are false positives, so 0 really usable). Reading copies by service in ignored `data/readable/` (`scripts/make_readable_pdfs.py`). Remaining: team approval to use them as evidence, Tesseract OCR, Preeti conversion, check whether provincial eDLVRS fees replace Schedule 3. |
-| Day 2 (update 2026-10-11) | Member 2 — Retrieval | Partial (blocked on data) | `src/retrieval/search.py` returns 0–1 cosine similarity; `scripts/build_index.py` gates on licence status. No `chroma_db/` exists on this machine; last recorded build indexed 0 civic chunks. hit@5 `-`. |
-| Day 2 (update 2026-10-11) | Member 3 — Generation & Evaluation | Partial (blocked on data) | `python -m pytest -q` on `feature/aashish-day2-status` → 51 passed. Fixed: 6 key-pool tests failed on main because the spend cap (`bc595f0`) needs cost rates (test fixture now sets 0); `update_log.py` missed rows after blank lines and inserted mid-table (`eval/results_log.py`, new test); `eval/runs/` re-ignored (dropped in `e641fcc`). `python eval/check_questions.py` → OK: 25 questions (20 answerable, 5 out-of-scope; 14 en, 9 ne, 2 mixed), 0 verified. All answerable drafts are driving-license questions; Rules 2054 (driving license, local only, not yet approved) now has readable text, so drafts can be checked against it. No eval run (no verified questions, empty index). |
-| Day 2 (update 2026-10-11) | Leader — Integration, UI & Repository | Partial | Main has PRs #11–#14 merged; `dev` branch exists. Pending human decisions in `docs/decisions.md`: source permission (request drafted in `docs/permission_request.md`, not sent), presenter/backup, USD $1.00 spend cap. Commit `ddd60aa` still `? / not checked` in the commit log. |
-| Day 3 (2026-10-11) | Member 1 — Data & Documents | Done | Tesseract OCR (v5.4.0, eng+nep) installed at D:\tx; MOHA Kathmandu PDF (5 pages) processed with OCR — all 5 pages now good (was 5/5 unusable). Rules 2054 text readable via ToUnicode repair (some split words remain). |
-| Day 3 (2026-10-11) | Member 2 — Retrieval | Done | Civic index built from MOHA Kathmandu PDF (citizenship_kathmandu_requirements.pdf): 5 page records → 5 chunks indexed in chroma_db/khula_gyan. Dense search returns relevant results (scores 0.56–0.80). hit@5 = 100% on 15 verified citizenship questions. |
+| Day 1 | Member 1 — Data & Documents | Backlog | Feasibility sheet for ~20 municipalities (charter present? format? date? reuse terms?) not started; pick up to 5 text/HTML charters. |
+| Day 1 | Member 2 — Retrieval & Generation | Backlog | Schema changes (municipality fields), municipality filter in `search()`, wrong-municipality guard in `ask()`, eval question format update not started. |
+| Day 1 | Leader — Integration, UI, Evaluation, Repo | Backlog | Eval question format rewrite, legacy questions archived, new municipal drafts created, branch rules confirmed. |
+| Day 2 | Member 1 — Data & Documents | Backlog | Fetch/process chosen charters; page/section-linked JSONL with municipality; visual inspection not done. |
+| Day 2 | Member 2 — Retrieval & Generation | Backlog | Charter-row chunking, municipality fields through indexer, UI municipality selector not done. |
+| Day 2 | Leader — Integration, UI, Evaluation, Repo | Backlog | UI municipality selector, service filter, `ask()` signature update not done. |
+| Day 3 | Member 1 — Data & Documents | Backlog | Visual QA of processed pages vs originals not done. |
+| Day 3 | Member 2 — Retrieval & Generation | Backlog | Index + municipality filter + guard; first real cited answer not done. |
+| Day 3 | Leader — Integration, UI, Evaluation, Repo | Backlog | Integration of search/answer/UI with municipality filter; wrong-municipality guard tested not done. |
+| Day 4 | Member 1 — Data & Documents | Backlog | Verify 20-25 questions against real charter pages (fill expected, must_cite, verified=true) not done. |
+| Day 4 | Member 2 — Retrieval & Generation | Backlog | First real eval with `eval/run_eval.py` not run. |
+| Day 4 | Leader — Integration, UI, Evaluation, Repo | Backlog | Baseline metrics recorded in `docs/results.md` not done. |
+| Day 5 | Member 1 — Data & Documents | Backlog | Fix extraction issues for top failure pages not done. |
+| Day 5 | Member 2 — Retrieval & Generation | Backlog | Calibrate `guard_min_score`; improve checklist fields; improve prompt not done. |
+| Day 5 | Leader — Integration, UI, Evaluation, Repo | Backlog | UI municipality selector; language selector; loading/error states not done. |
+| Day 6 | Member 1 — Data & Documents | Backlog | Document extraction failures not done. |
+| Day 6 | Member 2 — Retrieval & Generation | Backlog | Error analysis; adversarial/wrong-municipality/out-of-scope tests not done. |
+| Day 6 | Leader — Integration, UI, Evaluation, Repo | Backlog | Test deploy on Hugging Face Spaces (or documented fallback) not done. |
+| Day 7 | Member 1 — Data & Documents | Backlog | Grow verified set honestly (target 40; report real count) not done. |
+| Day 7 | Member 2 — Retrieval & Generation | Backlog | Final eval not run. |
+| Day 7 | Leader — Integration, UI, Evaluation, Repo | Backlog | Clean-machine README test not done. |
+| Day 8 | Member 1 — Data & Documents | Backlog | Final-check source URLs and usage notes not done. |
+| Day 8 | Member 2 — Retrieval & Generation | Backlog | Smoke-check search and deployed app not done. |
+| Day 8 | Leader — Integration, UI, Evaluation, Repo | Backlog | Code freeze; final README/results; demo script; submission text; tag not done. |
 | Day 3 (2026-10-11) | Member 3 — Generation & Evaluation | Done | 15 citizenship questions verified against MOHA PDF pages 1–5 (q001–q015). eval/run_eval.py run with --fake-llm on 15 verified + 10 draft questions. Baseline recorded: hit@5=100%, citation_acc=67%, correct=0% (fake LLM), false_refusal=0%. |
 | Day 3 (2026-10-11) | Leader — Integration, UI & Repository | Done | End-to-end pipeline verified: search → answer → citations works. Day 3 baseline recorded in docs/results.md. Rules 2054 approved as local-only answer_evidence (approval_note, approved_by: Harikrishna Pokhrel, approved_on: 2026-10-11). |
 

@@ -21,7 +21,7 @@ RAW_DIR = REPO_ROOT / "data" / "raw"
 PROCESSED_DIR = REPO_ROOT / "data" / "processed"
 SOURCES_FILE = REPO_ROOT / "data" / "sources.yaml"
 INDEX_DIR = REPO_ROOT / "chroma_db"
-ANSWER_SERVICES = {"driving_license", "citizenship", "passport"}
+ANSWER_SERVICES = {"driving_license", "citizenship", "passport", "palika_guide"}
 
 
 def load_sources(sources_file: Path | None = None) -> list[dict]:
@@ -66,6 +66,10 @@ def build(*, chunk_size: int = 400, overlap: int = 50, sources_file: Path | None
             lang=source["lang"],
             source_url=source["url"],
             output_directory=PROCESSED_DIR,
+            municipality=source.get("municipality"),
+            district=source.get("district"),
+            ward=source.get("ward"),
+            section=source.get("section"),
         )
         rows = [json.loads(line) for line in output.read_text(encoding="utf-8").splitlines() if line.strip()]
         processed_pages += len(rows)
@@ -86,6 +90,10 @@ def build(*, chunk_size: int = 400, overlap: int = 50, sources_file: Path | None
                     source_url=source["url"],
                     chunk_size=chunk_size,
                     overlap=overlap,
+                    municipality=row.get("municipality"),
+                    district=row.get("district"),
+                    ward=row.get("ward"),
+                    section=row.get("section"),
                 )
             )
 
@@ -123,4 +131,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

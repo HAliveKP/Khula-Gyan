@@ -52,17 +52,45 @@ def _valid_response(response: Any) -> bool:
     return True
 
 
-def ask(query: str, service: str | None = None) -> dict[str, Any]:
-    """Run ``search(query, k=5, service)`` then ``answer(query, chunks)``.
+def _extract_municipality_from_query(query: str) -> str | None:
+    """Best-effort extraction of municipality name from query.
+    Returns the municipality name if found, else None.
+    This is a simple heuristic; the UI selector is the primary source.
+    """
+    # Common Nepali municipality names that might appear in queries
+    municipalities = [
+        "kathmandu", "lalitpur", "bhaktapur", "pokhara", "biratnagar", "birgunj",
+        "dharan", "hetauda", "butwal", "dhangadhi", "mahendranagar", "nepalgunj",
+        "janakpur", "dhulikhel", "banepa", "panauti", "kirtipur", "madhyapur",
+        "thimi", "gokarneshwor", "chandragiri", "tokha", "nagarjun", "dakshinkali",
+        "kageshwari", "manohara", "suryabinayak", "godawari", "konjyosome",
+        "mahalaxmi", "lalitpur", "kathmandu", "budhanilkantha", "dakshinkali",
+        "shankharapur", "kageshwari", "manohara", "tarakeshwor", "dakshinkali",
+    ]
+    query_lower = query.lower()
+    for mun in municipalities:
+        if mun in query_lower:
+            return mun.title()
+    return None
+
+
+def ask(query: str, service: str | None = None, municipality: str | None = None) -> dict[str, Any]:
+    """Run ``search(query, k=5, service, municipality)`` then ``answer(query, chunks)``.
 
     Member 2's ``src.retrieval.search`` and Member 3's
     ``src.generation.answer`` are loaded when present. Until both arrive, this
     function returns an honest ``not_found`` response without demo citations.
+
+    Safety: If the question names a municipality with no indexed charter,
+    or names none and the municipality selector is empty, return not_found
+    or a clarification response; never answer from another municipality's chunks.
     """
     if not isinstance(query, str):
         raise TypeError("query must be a string")
-    if service is not None and service not in {"driving_license", "citizenship", "passport"}:
-        raise ValueError("service must be driving_license, citizenship, passport, or None")
+    if service is not None and service not in {"driving_license", "citizenship", "passport", "palika_guide"}:
+        raise ValueError("service must be driving_license, citizenship, passport, palika_guide, or None")
+    if municipality is not None and not isinstance(municipality, str):
+        raise TypeError("municipality must be a string or None")
     if not query.strip():
         return _not_found("Enter a question to search the available official sources.")
 
@@ -76,11 +104,24 @@ def ask(query: str, service: str | None = None) -> dict[str, Any]:
     except AttributeError as exc:
         raise RuntimeError("Search and answer modules must expose search() and answer().") from exc
 
-    chunks = search_fn(query, k=5, service=service)
+    # Wrong/missing municipality guard
+    # If palika_guide service but no municipality specified, ask for clarification
+    if service == "palika_guide" and not municipality:
+        # Try to extract from query as fallback
+        extracted = _extract_municipality_from_query(query)
+        if extracted:
+            municipality = extracted
+        else:
+            return _not_found("Please specify which municipality (पालिका) you are asking about. Use the municipality selector or include the municipality name in your question.")
+
+    chunks = search_fn(query, k=5, service=service, municipality=municipality)
     if not isinstance(chunks, list):
         raise RuntimeError("search() must return a list of cited chunks.")
     if not chunks:
-        return _not_found("The available official sources do not contain a matching passage.")
+        msg = "The available official sources do not contain a matching passage."
+        if municipality:
+            msg += f" No indexed charter found for {municipality}."
+        return _not_found(msg)
 
     response = answer_fn(query, chunks)
     if not _valid_response(response):

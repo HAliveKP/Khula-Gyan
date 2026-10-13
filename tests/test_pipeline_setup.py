@@ -101,7 +101,116 @@ def test_search_limits_scores_and_service_filter(tmp_path, monkeypatch):
     assert all(item["service"] == "citizenship" for item in filtered)
 
 
-def test_eval_runner_writes_results_and_skips_drafts(tmp_path):
+def test_search_municipality_filter(tmp_path, monkeypatch):
+    """Test that search() respects the municipality filter."""
+    client = chromadb.PersistentClient(path=str(tmp_path / "chroma"))
+    collection = client.create_collection("khula_gyan", metadata={"hnsw:space": "cosine"})
+    collection.add(
+        ids=["lalitpur_birth", "kathmandu_birth", "pokhara_birth"],
+        documents=["Lalitpur birth registration docs", "Kathmandu birth registration docs", "Pokhara birth registration docs"],
+        metadatas=[
+            {"source": "lalitpur_charter.pdf", "page": 1, "service": "palika_guide", "lang": "ne",
+             "municipality": "Lalitpur", "source_url": "https://lalitpur.gov.np/charter.pdf"},
+            {"source": "kathmandu_charter.pdf", "page": 1, "service": "palika_guide", "lang": "ne",
+             "municipality": "Kathmandu", "source_url": "https://kathmandu.gov.np/charter.pdf"},
+            {"source": "pokhara_charter.pdf", "page": 1, "service": "palika_guide", "lang": "ne",
+             "municipality": "Pokhara", "source_url": "https://pokhara.gov.np/charter.pdf"},
+        ],
+        embeddings=[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
+    )
+
+    class FixedQueryEmbedding:
+        def encode(self, _texts, **_kwargs):
+            class Embedding:
+                @staticmethod
+                def tolist():
+                    return [[1.0, 0.0, 0.0]]
+
+            return Embedding()
+
+    monkeypatch.setattr(search_module, "PERSIST_DIRECTORY", tmp_path / "chroma")
+    monkeypatch.setattr(search_module, "_load_model", lambda: FixedQueryEmbedding())
+
+    # Without municipality filter - should return all
+    all_results = search_module.search("birth registration", k=5, service="palika_guide")
+    assert len(all_results) == 3
+
+    # With municipality filter - should return only Lalitpur
+    lalitpur_results = search_module.search("birth registration", k=5, service="palika_guide", municipality="Lalitpur")
+    assert len(lalitpur_results) == 1
+    assert lalitpur_results[0]["municipality"] == "Lalitpur"
+    assert lalitpur_results[0]["source"] == "lalitpur_charter.pdf"
+
+    # With non-existent municipality - should return empty
+    empty_results = search_module.search("birth registration", k=5, service="palika_guide", municipality="NonExistent")
+    assert empty_results == []
+
+
+def test_ask_wrong_municipality_guard(tmp_path, monkeypatch):
+    """Test wrong-municipality guard in ask(): missing municipality, unknown municipality, valid municipality."""
+    import sys
+    from importlib import import_module
+
+    # Mock the answer function to return a valid response
+    def mock_answer(query, chunks):
+        return {
+            "status": "answered",
+            "language": "en",
+            "answer": "Test answer",
+            "checklist": {"documents": [], "fees": [], "steps": [], "where": ""},
+            "citations": [{"source": "test.pdf", "page": 1, "quote": "test"}],
+            "confidence": "high",
+            "disclaimer": "Test disclaimer",
+        }
+
+    # Set up Chroma with two municipalities
+    client = chromadb.PersistentClient(path=str(tmp_path / "chroma"))
+    collection = client.create_collection("khula_gyan", metadata={"hnsw:space": "cosine"})
+    collection.add(
+        ids=["lalitpur_birth", "kathmandu_birth"],
+        documents=["Lalitpur birth registration docs", "Kathmandu birth registration docs"],
+        metadatas=[
+            {"source": "lalitpur_charter.pdf", "page": 1, "service": "palika_guide", "lang": "ne",
+             "municipality": "Lalitpur", "source_url": "https://lalitpur.gov.np/charter.pdf"},
+            {"source": "kathmandu_charter.pdf", "page": 1, "service": "palika_guide", "lang": "ne",
+             "municipality": "Kathmandu", "source_url": "https://kathmandu.gov.np/charter.pdf"},
+        ],
+        embeddings=[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]],
+    )
+
+    class FixedQueryEmbedding:
+        def encode(self, _texts, **_kwargs):
+            class Embedding:
+                @staticmethod
+                def tolist():
+                    return [[1.0, 0.0, 0.0]]
+
+            return Embedding()
+
+    monkeypatch.setattr(search_module, "PERSIST_DIRECTORY", tmp_path / "chroma")
+    monkeypatch.setattr(search_module, "_load_model", lambda: FixedQueryEmbedding())
+
+    # Mock answer module
+    import src.generation.answer as answer_module
+    monkeypatch.setattr(answer_module, "answer", mock_answer)
+
+    # Import ask after monkeypatching
+    pipeline_module = import_module("src.pipeline")
+
+    # Case 1: Missing municipality for palika_guide -> not_found with clarification
+    response = pipeline_module.ask("What documents for birth registration?", service="palika_guide", municipality=None)
+    assert response["status"] == "not_found"
+    assert "municipality" in response["answer"].lower() or "पालिका" in response["answer"]
+
+    # Case 2: Unknown municipality (no indexed charter) -> not_found
+    response = pipeline_module.ask("What documents for birth registration?", service="palika_guide", municipality="NonExistent")
+    assert response["status"] == "not_found"
+    assert "NonExistent" in response["answer"]
+
+    # Case 3: Valid municipality -> answered
+    response = pipeline_module.ask("What documents for birth registration?", service="palika_guide", municipality="Lalitpur")
+    assert response["status"] == "answered"
+    assert response["answer"] == "Test answer"
     runs_dir = tmp_path / "runs"
     result = subprocess.run(
         [

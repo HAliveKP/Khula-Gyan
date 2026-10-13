@@ -1,4 +1,5 @@
 sources:
+# --- LEGACY SOURCES (original central-government pivot, kept for history) ---
 - id: dl_dotm_portal
   title: Driving-license and vehicle-registration system page
   publisher: Department of Transport Management (DoTM)
@@ -9,6 +10,7 @@ sources:
   license: null
   terms_url: https://dotm.gov.np/
   answer_evidence: false
+  legacy: true
   licence_status: unclear
   terms_quote: null
   date_checked: '2026-10-10'
@@ -23,6 +25,7 @@ sources:
   license: null
   terms_url: https://dotm.gov.np/
   answer_evidence: false
+  legacy: true
   licence_status: unclear
   terms_quote: null
   date_checked: '2026-10-10'
@@ -37,6 +40,7 @@ sources:
   license: null
   terms_url: https://dotm.gov.np/
   answer_evidence: false
+  legacy: true
   licence_status: unclear
   terms_quote: null
   date_checked: '2026-10-10'
@@ -50,16 +54,14 @@ sources:
   lang: ne
   license: null
   terms_url: https://lawcommission.gov.np/
-  answer_evidence: true
+  answer_evidence: false
+  legacy: true
   relevance: Rule 23 (renewal application, Schedule-21 form, Schedule-18 health certificate) and
     Schedule 3 (renewal fees). Fees may be superseded by provincial eDLVRS rates; confirm currency.
   licence_status: unclear
   terms_quote: null
   date_checked: '2026-10-11'
   local_only: true
-  approval_note: "Leader-approved for local internal baseline only; no redistribution; permission request pending"
-  approved_on: '2026-10-11'
-  approved_by: "Harikrishna Pokhrel"
 - id: dl_dotm_procedure_directive_2060
   title: Transport management procedure directive 2060 (amended)
   publisher: Department of Transport Management (DoTM)
@@ -70,6 +72,7 @@ sources:
   license: null
   terms_url: https://dotm.gov.np/
   answer_evidence: false
+  legacy: true
   relevance: Section 12.17 (renewal deadline, late fines, cancellation after 5 years). Text uses
     the legacy Preeti font and must be converted to Unicode before use.
   licence_status: unclear
@@ -86,6 +89,7 @@ sources:
   license: null
   terms_url: https://moha.gov.np/page/terms-of-use
   answer_evidence: false
+  legacy: true
   licence_status: all rights reserved
   terms_quote: © All Rights Reserved to District Administration Office, Darchula
   date_checked: '2026-10-11'
@@ -99,14 +103,12 @@ sources:
   lang: ne
   license: null
   terms_url: https://moha.gov.np/page/terms-of-use
-  answer_evidence: true
+  answer_evidence: false
+  legacy: true
   licence_status: unclear
   terms_quote: null
   date_checked: '2026-10-10'
   local_only: true
-  approval_note: "Leader-approved for local internal baseline only; no redistribution; permission request pending"
-  approved_on: '2026-10-11'
-  approved_by: "Harikrishna Pokhrel"
 - id: citizenship_rules_2082
   title: Citizenship Rules 2063, fourth amendment 2082 listing
   publisher: District Administration Office, Dadeldhura (MOHA)
@@ -117,6 +119,7 @@ sources:
   license: null
   terms_url: https://moha.gov.np/page/terms-of-use
   answer_evidence: false
+  legacy: true
   licence_status: unclear
   terms_quote: null
   date_checked: '2026-10-10'
@@ -131,6 +134,7 @@ sources:
   license: null
   terms_url: https://nepalpassport.gov.np/en
   answer_evidence: false
+  legacy: true
   licence_status: all rights reserved
   terms_quote: Copyright© 2026. All rights reserved.
   date_checked: '2026-10-10'
@@ -145,6 +149,7 @@ sources:
   license: null
   terms_url: https://nepalpassport.gov.np/en
   answer_evidence: false
+  legacy: true
   licence_status: all rights reserved
   terms_quote: Copyright© 2026. All rights reserved.
   date_checked: '2026-10-10'
@@ -159,6 +164,7 @@ sources:
   license: null
   terms_url: https://nepalpassport.gov.np/en
   answer_evidence: false
+  legacy: true
   licence_status: all rights reserved
   terms_quote: Copyright© 2026. All rights reserved.
   date_checked: '2026-10-10'
@@ -173,6 +179,7 @@ sources:
   license: null
   terms_url: https://nepalpassport.gov.np/en
   answer_evidence: false
+  legacy: true
   licence_status: all rights reserved
   terms_quote: Copyright© 2026. All rights reserved.
   date_checked: '2026-10-10'
@@ -188,6 +195,7 @@ sources:
   license: null
   terms_url: https://opendatanepal.com/privacy-policy
   answer_evidence: false
+  legacy: true
   relevance: Health data is unrelated to civic procedure answers. The dataset metadata
     says License Not specified, so it is excluded from the retrieval index and not approved
     as confirmed open.
@@ -207,6 +215,7 @@ sources:
   license: Creative Commons Attribution Share-Alike
   terms_url: https://opendatanepal.com/privacy-policy
   answer_evidence: false
+  legacy: true
   relevance: Explicitly licensed environmental data, not civic procedure. Retained only as
     an open-licence reference; do not include in the civic retrieval index.
   licence_status: confirmed open
@@ -214,3 +223,29 @@ sources:
     attribution. https://opendatanepal.com/privacy-policy'
   date_checked: '2026-10-10'
   local_only: false
+
+# --- PALIKA GUIDE: MUNICIPALITY CHARTERS (to be populated on Day 1-2) ---
+# Format for new entries:
+# - id: palika_<municipality_slug>
+#   title: <Municipality Name> Citizen Charter (नागरिक बडापत्र)
+#   publisher: <Municipality Name> Municipality (पालिका)
+#   url: <official URL>
+#   filename: palika_<municipality_slug>.<pdf|html>
+#   service: palika_guide
+#   lang: ne  # or en, mixed
+#   license: null
+#   terms_url: <municipality website terms if any>
+#   answer_evidence: false  # set to true only after written permission
+#   legacy: false
+#   municipality: <Municipality Name in English>
+#   district: <District Name>
+#   province: <Province Name/Number>
+#   format: text_pdf  # or html, scan, image
+#   date_seen: 'YYYY-MM-DD'
+#   reuse_status: <unclear / all rights reserved / quoted terms>
+#   reuse_quote: <exact quote from site if any>
+#   local_only: true
+#   answer_evidence: false
+#   approval_note: null
+#   approved_on: null
+#   approved_by: null

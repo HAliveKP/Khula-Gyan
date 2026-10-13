@@ -2,57 +2,70 @@
 
 A Nepali civic-document assistant prototype that retrieves document passages and aims to answer with page-linked citations. It must refuse when evidence is insufficient and is not legal advice.
 
+**Product name:** Palika Guide — municipal citizen charter Q&A.
+
 ## 1. Project status and badges
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)]
 
-**Day 3 complete (2026-10-11).** Tests: **54 passed, 1 skipped**. Civic index built from MOHA Kathmandu citizenship PDF (5 pages, OCR). 15 verified citizenship questions. Day 3 baseline recorded: hit@5=100%, citation_acc=67%, correct=0% (fake LLM), false_refusal=0%.
+**Pivot (2026-10-13):** Project pivoted from central-government procedures (driving license / citizenship / passport — 0 approved sources, 0 civic chunks, 0 verified questions) to **Palika Guide**: questions about municipal services answered from each municipality's citizen charter (नागरिक बडापत्र).
+
+**Day 1 = Oct 14 ... Day 8 = Oct 21** (code freeze). Team of 3: Member 1 (Data & Documents), Member 2 (Retrieval & Generation), Leader (Integration, UI, Evaluation, Repo, Deployment). Presenter/backup: to be confirmed by a human.
 
 ## 2. What it does and who it is for
 
-Khula Gyan is intended for people who need help finding information in Nepali public-service documents, and for the student team building and reviewing that assistant. It is a retrieval-augmented generation (RAG) prototype: it searches source passages, asks a language model to answer from those passages, and returns citations that identify a source and page. It should say it cannot answer when the available evidence does not support a response.
+Khula Gyan (Palika Guide) is intended for people who need help finding information in Nepali municipal citizen charters (नागरिक बडापत्र), and for the student team building and reviewing that assistant. It is a retrieval-augmented generation (RAG) prototype: it searches source passages from a specific municipality's citizen charter, asks a language model to answer from those passages, and returns citations that identify a source, page, municipality, and section. It must say it cannot answer when the available evidence does not support a response, and must never answer from another municipality's charter.
 
 ## 3. Demo
 
-**Local demo available.** Run `make run` to start the Streamlit app. The civic index currently contains the MOHA Kathmandu citizenship checklist (5 pages, OCR'd). Driving-license questions use the Rules 2054 source (local-only, readable text, not yet verified).
+**Local demo available.** Run `make run` to start the Streamlit app. The app has a municipality selector (required for Palika Guide questions). No municipality charters are indexed yet — Day 1 feasibility sheet and Day 2 processing will populate the index.
 
 ## 4. Features
 
-### Working in the repository (Day 3)
+### Working in the repository (Day 0 legacy)
 
 - **PDF/HTML document processing** preserves page and source metadata. Flags corrupted Nepali PDF text as unusable and attempts OCR (Tesseract + nep/eng). Synthetic regression test covers missing-OCR case.
 - **Tesseract OCR** v5.4.0 with eng+nep language data installed. MOHA Kathmandu PDF (5 pages) now extracts readable Nepali text (was 5/5 unusable, now 5/5 good).
 - **Dense Chroma retrieval** supports service filtering and reports 0–1 similarity score. Synthetic Chroma test checks result limits, score range, and filtering. Scores are similarities, not probabilities.
-- **Civic index built** from MOHA Kathmandu citizenship PDF: 5 page records → 5 chunks indexed in `chroma_db/khula_gyan`. Search returns relevant results (scores 0.56–0.68).
-- **15 verified citizenship questions** (q001–q015) against MOHA PDF pages 1–5, with `must_cite` page references.
 - **Answer schema, citation guard, and provider adapter** implemented. Provider calls protected by per-process spend cap ($1.00, NVIDIA free tier).
-- **Streamlit Q&A screen** exists and launches. Returns cited answers for citizenship questions.
+- **Streamlit Q&A screen** exists and launches. Now includes municipality selector for Palika Guide.
 - **Evaluation runner** supports draft-question skipping, fake LLM for plumbing checks, real LLM for quality evaluation.
-- **Day 3 baseline** recorded: hit@5=100%, citation_acc=67%, correct=0% (fake LLM), false_refusal=0%.
+- **Day 3 baseline** (legacy citizenship): hit@5=100%, citation_acc=67%, correct=0% (fake LLM), false_refusal=0%.
 
-### Not yet verified / Day 4+
+### Palika Guide (Day 1-8, Oct 14-21)
 
-- Real LLM (NVIDIA Nemotron) returns empty for prompts with passage content — needs fix (Day 4).
-- Rules 2054 (driving-license) text readable but questions not yet verified against it.
-- BM25/hybrid retrieval, reranking not yet implemented.
-- No public deployment; no written publisher permissions for public demo.
+- **Municipality filter** in `search()` and municipality selector in UI.
+- **Wrong-municipality guard**: if question names municipality with no indexed charter, or names none, returns `not_found`; never answers from another municipality's charter.
+- **Chunk schema** gains optional `municipality`, `district`, `ward`, `section` fields (carried through chunker, indexer, Chroma metadata).
+- **Checklist fields** reused for fee, time, officer (unknown stays empty).
+- **30 draft questions** (26 palika_guide + 1 passport + 3 out_of_scope) with `municipality` field, all `verified=false`, `expected=TODO`.
+- **Legacy sources** tagged `legacy: true, answer_evidence: false` in `data/sources.yaml`; new municipality charter register template added.
+
+### Not yet verified / Day 1-8
+
+- No municipality charters indexed yet (Day 1 feasibility, Day 2 processing).
+- Municipality filter in `search()` implemented; needs Day 2 index test.
+- Wrong-municipality guard in `ask()` implemented; needs Day 3 test.
+- 30 draft questions all `verified=false`, `expected=TODO`.
+- Real LLM (NVIDIA Nemotron) returns empty for prompts with passages — may need provider change.
+- No municipality charters approved yet; written permission required.
 
 ## 5. How it works
 
-The intended data path is:
+The intended data path for Palika Guide:
 
 ~~~mermaid
 flowchart LR
-  S["Reviewed local PDF or HTML"] --> P["Extract text with page and URL (OCR if needed)"]
-  P --> C["Chunk while retaining metadata"]
+  S["Municipality citizen charter (text PDF/HTML)"] --> P["Extract text with page, municipality, section"]
+  P --> C["Chunk while retaining municipality, district, ward, section"]
   C --> E["BAAI/bge-m3 embeddings"]
   E --> V["Chroma index"]
-  Q["User question"] --> R["Dense retrieval"]
+  Q["User question + municipality"] --> R["Dense retrieval + municipality filter"]
   V --> R
   R --> G["Answer generation (LLM)"]
   G --> A["Schema and citation-grounding checks"]
-  A --> O["Answer with source, page, and quote"]
-  A --> N["not_found when evidence is insufficient"]
+  A --> O["Answer with source, page, municipality, section, quote"]
+  A --> N["not_found when evidence insufficient or wrong municipality"]
 ~~~
 
 Search score is a normalized cosine similarity from 0 to 1; it is not a calibrated confidence or probability.
@@ -123,23 +136,24 @@ $env:PATH = "D:\tx;" + $env:PATH
 .\.venv\Scripts\python.exe -m pytest -q --basetemp=.pytest_tmp
 
 # Run evaluation (fake LLM for plumbing; real LLM needs .env configured)
-.\.venv\Scripts\python.exe eval/run_eval.py --fake-llm --use-service-filter --include-unverified --note "test run"
+.\.venv\Scripts\python.exe eval/run_eval.py --fake-llm --use-service-filter --use-municipality-filter --include-unverified --note "test run"
 
 # Start Streamlit
 .\.venv\Scripts\python.exe -m streamlit run frontend/app.py
 ```
 
-### Observed status (2026-10-11)
+### Observed status (2026-10-13, post-pivot)
 
 | Command | Status |
 |---|---|
 | Setup | ✅ `.venv` created, deps installed, embedding smoke check passed |
 | Fetch | ✅ Works; only confirmed-open sources downloaded |
-| Index | ✅ **Civic index built** from MOHA Kathmandu PDF (5 pages, 5 chunks) |
-| Test | ✅ **54 passed, 1 skipped** |
-| Eval (fake LLM) | ✅ Runs; Day 3 baseline recorded |
+| Index (legacy) | ✅ MOHA Kathmandu PDF indexed (5 pages, 5 chunks) |
+| Index (Palika) | ⏳ No municipality charters indexed yet (Day 2) |
+| Test | ✅ **54 passed, 1 skipped** (all legacy tests pass) |
+| Eval (fake LLM) | ✅ Runs; legacy Day 3 baseline recorded |
 | Eval (real LLM) | ⚠️ **Blocked** — NVIDIA Nemotron returns empty for prompts with passages |
-| Streamlit run | ✅ Launches; citizenship questions work with real LLM (simple) |
+| Streamlit run | ✅ Launches; municipality selector present |
 
 ### Embedding smoke check
 
@@ -183,19 +197,29 @@ MAX_API_OUTPUT_TOKENS=1024
 
 The current source registry is `data/sources.yaml`.
 
+### Legacy sources (central-government, not used for Palika Guide)
+
 | Source group | Registry status | Current use |
 |---|---|---|
-| DoTM driving-license pages/manual | unclear; local_only: true | Not approved as answer evidence. Request permission before broader reuse; do not commit copies. |
-| Rules 2054 (Vehicle and Transport Management Rules) | unclear; local_only: true; **answer_evidence: true** (Leader-approved LOCAL-ONLY baseline 2026-10-11) | Readable text via ToUnicode repair. Questions not yet verified. No deployment until written permission. |
-| MOHA Kathmandu citizenship PDF | unclear; local_only: true; **answer_evidence: true** (Leader-approved LOCAL-ONLY baseline 2026-10-11) | **OCR working** — 5 pages indexed, 15 questions verified. No redistribution; permission request pending. |
-| Department of Passports pages | all rights reserved; local_only: true | Not approved for redistribution or answer evidence; do not commit copies. |
+| DoTM driving-license pages/manual | unclear; local_only: true; **legacy: true** | Not approved as answer evidence. Request permission before broader reuse; do not commit copies. |
+| Rules 2054 (Vehicle and Transport Management Rules) | unclear; local_only: true; **legacy: true** | Readable text via ToUnicode repair. Questions not yet verified. No deployment until written permission. |
+| MOHA Kathmandu citizenship PDF | unclear; local_only: true; **legacy: true** | **OCR working** — 5 pages indexed, 15 questions verified. No redistribution; permission request pending. |
+| Department of Passports pages | all rights reserved; local_only: true; **legacy: true** | Not approved for redistribution or answer evidence; do not commit copies. |
 | Open Data Nepal Environment Statistics 2019 | confirmed open; CC BY-SA; local_only: false | Reference-only environmental data, not civic procedure. |
+
+### Palika Guide municipality charter register (to be populated Day 1-2)
+
+| Municipality | District | Province | URL | Format | Date seen | Reuse status | Local only | Answer evidence |
+|---|---|---|---|---|---|---|---|---|
+| *(to be filled Day 1)* | | | | | | | | |
+
+All legacy sources tagged `legacy: true, answer_evidence: false` in `data/sources.yaml`. New municipality charter entries will have `service: palika_guide`, `answer_evidence: false` until written permission is recorded.
 
 `make fetch` downloads only registry entries marked `confirmed open` to ignored `data/raw/`. `make index` processes eligible locally available sources to ignored `data/processed/` and `chroma_db/` and excludes sources not marked confirmed open and approved as answer evidence. See `data/sources.yaml` for URLs, terms notes, and attribution.
 
 ## 11. Evaluation
 
-Day 3 baseline (2026-10-11) recorded in `docs/results.md`:
+**Legacy Day 3 baseline (2026-10-11)** recorded in `docs/results.md`:
 
 | Civic metric | Recorded value | Notes |
 |---|---:|---|
@@ -205,21 +229,27 @@ Day 3 baseline (2026-10-11) recorded in `docs/results.md`:
 | Answer correctness | 0% | Fake LLM returns raw OCR fragments |
 | False refusal rate | 0% | No answerable questions refused |
 
-The question file has 25 records: 15 verified (citizenship), 10 draft (7 driving-license, 3 out-of-scope). Synthetic fixture check is a pipeline check only, not a civic quality evaluation.
+The legacy question file has 25 records: 15 verified (citizenship), 10 draft (7 driving-license, 3 out-of-scope). Moved to `eval/legacy_questions.jsonl`.
+
+### Palika Guide evaluation (Day 4+)
+
+New municipal question set: 30 drafts in `eval/questions.jsonl` (26 palika_guide + 1 passport + 3 out_of_scope), all `verified=false`, `expected=TODO`, with `municipality` field. Target: up to 40 verified questions across 5 municipalities × 6-8 services.
+
+Day 4 baseline will be recorded in `docs/results.md` via `eval/run_eval.py --use-service-filter --use-municipality-filter`.
 
 ## 12. Project structure
 
 ~~~text
 .
 ├── data/                 source registry; ignored raw/ and processed/ data
-├── docs/                 decisions, source notes, story board, and results
-├── eval/                 question drafts, runner, judge, and result helpers
-├── frontend/             Streamlit interface
+├── docs/                 decisions, source notes, story board, results, pivot addendum
+├── eval/                 question sets (legacy + municipal), runner, judge, chart helpers
+├── frontend/             Streamlit interface with municipality selector
 ├── scripts/              source fetch, document processing, index, smoke check
 ├── src/api/              optional API package; not part of the verified app flow
 ├── src/generation/       prompts, answer schema/guard, provider, spend control
-├── src/ingest/           extraction, cleanup, chunking, embedding storage
-├── src/retrieval/        dense Chroma search
+├── src/ingest/           extraction, cleanup, chunking (municipality fields), embedding storage
+├── src/retrieval/        dense Chroma search with municipality filter
 ├── tests/fixtures/       synthetic pages, chunks, and eval fixture
 ├── chroma_db/            generated local index; ignored by Git
 └── docx/                 project blueprint
@@ -240,28 +270,35 @@ The suite covers:
 - Git tracking guard for raw/processed/index data
 - Pre-send API spend-cap behavior
 - Build_index source eligibility logic (confirmed-open path and local-only approval path)
+- **NEW**: Municipality filter tests (service + municipality combined filter)
 
-Latest run: **54 passed, 1 skipped**.
+Latest run: **54 passed, 1 skipped** (all legacy tests pass; new code integrates without breaking existing tests).
 
 ## 14. Known limitations and caveats
 
-- **Real LLM integration blocked**: NVIDIA Nemotron 3 Super returns empty response for prompts containing passage content (even with 1 passage). Fake LLM works for plumbing; real quality evaluation needs fix (Day 4).
-- **Only citizenship service indexed**: MOHA Kathmandu PDF (5 pages). Driving-license (Rules 2054) and passport sources not yet indexed/verified.
-- **15 verified questions only**: All citizenship. Driving-license questions (10) remain draft.
-- **No publisher permissions**: Local-only use approved by Leader; written permission required for public demo/deployment.
+- **Real LLM integration blocked**: NVIDIA Nemotron 3 Super returns empty response for prompts containing passage content (even with 1 passage). Fake LLM works for plumbing; real quality evaluation needs fix or provider change.
+- **No municipality charters indexed yet**: Day 1 feasibility, Day 2 processing, Day 3 indexing.
+- **0 verified Palika Guide questions**: All 30 drafts are `verified=false`, `expected=TODO`.
+- **No municipality permissions**: Written permission required from each municipality before public demo/deployment.
 - **Search similarities are not probabilities**; refusal threshold (0.35) uncalibrated.
 - **Answers may be wrong**. Verify any procedure with the responsible official office. This project is not legal advice.
-- **OCR needs Tesseract** + `nep`/`eng` language packs. MOHA Kathmandu PDF now works; other scanned sources may need it.
+- **Wrong-municipality guard**: If question names municipality with no indexed charter, or names none, returns `not_found`; never answers from another municipality's charter.
+- **OCR needs Tesseract** + `nep`/`eng` language packs. MOHA Kathmandu PDF works; other scanned sources may need it.
 
 ## 15. Roadmap
 
-From `docs/user-story-board.md` (Day 4+):
+From `docs/user-story-board.md` (Palika Guide, Day 1 = Oct 14):
 
-1. **Day 4 (Oct 13)**: BM25/hybrid search, prompt improvements, language handling.
-2. **Day 5 (Oct 14)**: Reranker, evidence threshold tuning, guard threshold calibration.
-3. **Day 6–7**: Glossary-based query expansion, error analysis.
-4. **Day 8+**: Citizenship/passport sources, 80-question evaluation, adversarial testing.
-5. **Day 11+**: Public demo, final evaluation, submission.
+1. **Day 1 (Oct 14)**: Feasibility sheet (~20 municipalities); pick ≤5 text/HTML charters; schema/filter changes; permission draft.
+2. **Day 2 (Oct 15)**: Fetch/process chosen charters; page/section-linked JSONL with municipality; visual inspection; charter-row chunking.
+3. **Day 3 (Oct 16)**: Index + municipality filter + guard; first real cited answer; 20-25 draft questions.
+4. **Day 4 (Oct 17)**: Verify questions against pages; first real eval; BASELINE in `docs/results.md`.
+5. **Day 5 (Oct 18)**: Fix top failures; calibrate `guard_min_score`; checklist fields; UI selector.
+6. **Day 6 (Oct 19)**: Error analysis; adversarial/wrong-municipality/out-of-scope tests; test deploy.
+7. **Day 7 (Oct 20)**: Grow verified set honestly (target 40; report real count); final eval; clean-machine README test.
+8. **Day 8 (Oct 21)**: Code freeze; final README/results; demo script (2 Nepali, 2 English, 1 refusal, 1 wrong-municipality); submission text; tag `v0.1-palika`.
+
+Stretch only if time remains: BM25/hybrid, reranker, glossary, FastAPI, feedback storage. They must not delay the cited-answer flow.
 
 ## 16. Contributing
 
@@ -277,11 +314,12 @@ From `docs/user-story-board.md` (Day 4+):
 | Role | Person |
 |---|---|
 | Member 1 — Data & Documents | (assigned) |
-| Member 2 — Retrieval | (assigned) |
-| Member 3 — Generation & Evaluation | (assigned) |
-| Leader — Integration, UI, Repository, Deployment | **Harikrishna Pokhrel (HAliveKP)** |
-| Presenter | **Harikrishna Pokhrel (HAliveKP)** — **CONFIRMED 2026-10-11** |
-| Backup presenter | **aash-crest01** — **CONFIRMED 2026-10-11** |
+| Member 2 — Retrieval & Generation | (assigned) |
+| Leader — Integration, UI, Evaluation, Repo, Deployment | (assigned) |
+| Presenter | **to be confirmed by a human** |
+| Backup presenter | **to be confirmed by a human** |
+
+(Previous Member 3 role merged into Member 2 and Leader per pivot.)
 
 ## 18. Licence
 
@@ -295,4 +333,4 @@ Official MOHA and Department of Passports source URLs are listed in `data/source
 
 ---
 
-**Project notes:** `docs/results.md` records observed checks and measured metrics; `docs/decisions.md` records confirmed decisions (presenter, API cap, local-only approvals); `docs/user-story-board.md` tracks daily task status.
+**Project notes:** `docs/results.md` records observed checks and measured metrics; `docs/decisions.md` records confirmed decisions (pivot, presenter, API cap, local-only approvals); `docs/user-story-board.md` tracks daily task status; `docs/pivot-addendum.md` summarizes changes vs. blueprint.

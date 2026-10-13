@@ -20,17 +20,27 @@ def chunk_text(
     service: str,
     lang: str,
     source_url: str | None = None,
+    municipality: str | None = None,
+    district: str | None = None,
+    ward: str | None = None,
+    section: str | None = None,
     chunk_size: int = 400,
     overlap: int = 50,
     encode: Callable[[str], list[Any]] | None = None,
     decode: Callable[[list[Any]], str] | None = None,
 ) -> list[dict[str, Any]]:
-    """Return chunks following the blueprint's six-field Chunk contract.
+    """Return chunks following the blueprint's Chunk contract with municipality fields.
 
     ``chunk_size`` defaults to 400 and must remain between 300 and 500.
     ``overlap`` defaults to 50. Without tokenizer functions, whitespace words
     are used as an approximation; for exact model tokens, supply both ``encode``
     and ``decode`` from the embedding model's tokenizer.
+
+    New optional fields (Palika Guide):
+    - municipality: municipality name (e.g., "Lalitpur")
+    - district: district name (e.g., "Lalitpur")
+    - ward: ward number/name (e.g., "5")
+    - section: charter section heading (e.g., "Birth Registration")
     """
     if not isinstance(text, str):
         raise TypeError("text must be a string")
@@ -76,9 +86,17 @@ def chunk_text(
                 }
             if source_url:
                 chunk["source_url"] = source_url
+            # Palika Guide municipality fields (optional, only for palika_guide service)
+            if municipality:
+                chunk["municipality"] = municipality
+            if district:
+                chunk["district"] = district
+            if ward:
+                chunk["ward"] = ward
+            if section:
+                chunk["section"] = section
             chunks.append(chunk)
         if start + chunk_size >= len(units):
             break
 
     return chunks
-
