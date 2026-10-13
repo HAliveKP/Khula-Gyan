@@ -8,7 +8,7 @@ from typing import Any
 
 
 REQUIRED_FIELDS = {"id", "text", "source", "page", "service", "lang"}
-ALLOWED_SERVICES = {"driving_license", "citizenship", "passport"}
+ALLOWED_SERVICES = {"driving_license", "citizenship", "passport", "palika_guide"}
 ALLOWED_LANGUAGES = {"ne", "en"}
 
 
@@ -92,6 +92,10 @@ def index_chunks(
                     "service": item["service"],
                     "lang": item["lang"],
                     **({"source_url": item["source_url"]} if item.get("source_url") else {}),
+                    **({"municipality": item["municipality"]} if item.get("municipality") else {}),
+                    **({"district": item["district"]} if item.get("district") else {}),
+                    **({"ward": item["ward"]} if item.get("ward") else {}),
+                    **({"section": item["section"]} if item.get("section") else {}),
                 }
                 for item in batch
             ],

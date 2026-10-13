@@ -15,6 +15,9 @@ from src.ingest.clean import clean_pages, extraction_rating
 from src.ingest.extract import extract_pages
 
 
+ALLOWED_SERVICES = {"driving_license", "citizenship", "passport", "reference", "palika_guide"}
+
+
 def process_document(
     source_path: str | Path,
     *,
@@ -23,11 +26,15 @@ def process_document(
     source_url: str | None = None,
     output_directory: str | Path = REPO_ROOT / "data" / "processed",
     ocr: bool = True,
+    municipality: str | None = None,
+    district: str | None = None,
+    ward: str | None = None,
+    section: str | None = None,
 ) -> Path:
     """Write one cleaned, source-linked JSONL record per page."""
     source = Path(source_path)
-    if service not in {"driving_license", "citizenship", "passport", "reference"}:
-        raise ValueError("service must be driving_license, citizenship, passport, or reference")
+    if service not in ALLOWED_SERVICES:
+        raise ValueError(f"service must be one of {sorted(ALLOWED_SERVICES)}")
     if lang not in {"ne", "en"}:
         raise ValueError("lang must be ne or en")
 
@@ -49,6 +56,15 @@ def process_document(
             }
             if source_url:
                 row["source_url"] = source_url
+            # Palika Guide municipality fields (optional, only for palika_guide service)
+            if municipality:
+                row["municipality"] = municipality
+            if district:
+                row["district"] = district
+            if ward:
+                row["ward"] = ward
+            if section:
+                row["section"] = section
             for field in ("extraction_status", "extraction_note"):
                 if field in item:
                     row[field] = item[field]
@@ -68,14 +84,29 @@ def process_document(
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("source", type=Path, help="Local PDF or HTML file in data/raw/")
-    parser.add_argument("--service", required=True, choices=("driving_license", "citizenship", "passport", "reference"))
+    parser.add_argument("--service", required=True, choices=sorted(ALLOWED_SERVICES))
     parser.add_argument("--lang", required=True, choices=("ne", "en"))
     parser.add_argument("--source-url", help="Canonical URL recorded with the extracted page")
     parser.add_argument("--no-ocr", action="store_true", help="Skip OCR and keep text-layer extraction only")
+    # Palika Guide municipality fields
+    parser.add_argument("--municipality", help="Municipality name (e.g., Lalitpur)")
+    parser.add_argument("--district", help="District name (e.g., Lalitpur)")
+    parser.add_argument("--ward", help="Ward number/name (e.g., 5)")
+    parser.add_argument("--section", help="Charter section heading (e.g., Birth Registration)")
     args = parser.parse_args()
 
     try:
-        process_document(args.source, service=args.service, lang=args.lang, source_url=args.source_url, ocr=not args.no_ocr)
+        process_document(
+            args.source,
+            service=args.service,
+            lang=args.lang,
+            source_url=args.source_url,
+            ocr=not args.no_ocr,
+            municipality=args.municipality,
+            district=args.district,
+            ward=args.ward,
+            section=args.section,
+        )
     except (FileNotFoundError, RuntimeError, ValueError) as exc:
         parser.error(str(exc))
 

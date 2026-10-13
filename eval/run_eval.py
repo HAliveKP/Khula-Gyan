@@ -61,13 +61,15 @@ def no_questions_message(path: Path) -> str:
             "or use --mock (without --questions) to check the plumbing on synthetic sample questions.")
 
 
-def get_retriever(mock: bool, use_service: bool):
+def get_retriever(mock: bool, use_service: bool, use_municipality: bool):
     k = setting("final_k", 5)
     if mock:
         chunks = json.loads((REPO / "tests" / "fixtures" / "sample_chunks.json").read_text(encoding="utf-8"))
 
         def mock_search(q: dict) -> list[dict]:
             same = [c for c in chunks if c["service"] == q["service"]]
+            if use_municipality and q.get("municipality"):
+                same = [c for c in same if c.get("municipality") == q["municipality"]]
             if same:
                 return sorted(same, key=lambda c: -c["score"])[:k]
             return [dict(c, score=c["score"] * 0.2) for c in chunks][:k]  # off-topic: weak scores
@@ -76,7 +78,8 @@ def get_retriever(mock: bool, use_service: bool):
         from src.retrieval.search import search
     except ImportError:
         sys.exit("src/retrieval/search.py is not available yet. Use --mock until Member 2's PR is merged.")
-    return lambda q: search(q["q"], k=k, service=q["service"] if use_service else None)
+    return lambda q: search(q["q"], k=k, service=q["service"] if use_service else None,
+                            municipality=q.get("municipality") if use_municipality else None)
 
 
 def _norm(s: str) -> str:
@@ -125,6 +128,7 @@ def main() -> None:
     ap.add_argument("--judge", action="store_true", help="use the LLM judge for correctness + hallucination")
     ap.add_argument("--retrieval-only", action="store_true", help="only measure hit@5")
     ap.add_argument("--use-service-filter", action="store_true")
+    ap.add_argument("--use-municipality-filter", action="store_true")
     ap.add_argument("--include-unverified", action="store_true")
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--no-write", action="store_true", help="print only; do not touch docs/results.md")
@@ -140,7 +144,7 @@ def main() -> None:
         questions = questions[: args.limit]
     if not questions:
         sys.exit(no_questions_message(questions_file))
-    retrieve = get_retriever(args.mock, args.use_service_filter)
+    retrieve = get_retriever(args.mock, args.use_service_filter, args.use_municipality_filter)
     if args.judge:
         from judge import judge
 
@@ -232,4 +236,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

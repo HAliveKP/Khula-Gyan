@@ -1,18 +1,32 @@
 # Decision record
 
-Checked 2026-10-11 against the project documents, source register, and recorded GitHub history. "Confirmed" is used only where the cited text directly supports the claim.
+Checked 2026-10-13 against the project documents, source register, and recorded GitHub history. "Confirmed" is used only where the cited text directly supports the claim.
 
-## 1. Source permission and open-licensed sources
+## 1. Pivot to Palika Guide (2026-10-13)
 
-**Decision:** No written permission from MOHA, the Department of Passports, or DoTM is on file in the reviewed repository. Keep their official pages local-only for a demo; keep synthetic fixtures in Git; request written permission before wider reuse. No explicitly open-licensed procedural civic source was verified. The Open Data Nepal environment-statistics dataset is explicitly share-alike licensed and may be retained as a reference source record, but it is unrelated to civic procedures and must not be answer evidence. The NCD dataset is not approved as open because its own metadata says "License Not specified."
+**Decision:** The project pivots from central-government procedures (driving license / citizenship / passport) to "Palika Guide": answering questions about municipal services from each municipality's citizen charter (नागरिक बडापत्र). The original topic had too little usable, permitted data (0 approved civic sources, 0 civic chunks, 0 verified questions). The new scope targets up to 5 municipalities with text/HTML citizen charters, 6-8 common services per municipality, and a municipality filter in retrieval.
+
+**Status:** CONFIRMED (human decision 2026-10-13).
+
+**Evidence:** 
+- Original topic: 0 approved civic sources, 0 civic chunks, 0 verified questions after Oct 8-13 work.
+- New scope: up to 5 municipalities, 6-8 services each, municipality filter in retrieval, wrong-municipality guard.
+- Team reduced to 3 members: Member 1 (Data & Documents), Member 2 (Retrieval & Generation), Leader (Integration, UI, Evaluation, Repo, Deployment).
+- Timeline compressed to 8 days (Day 1 = Oct 14 ... Day 8 = Oct 21 code freeze).
+
+**Who must confirm:** Human project owner confirmed pivot on 2026-10-13.
+
+## 2. Source permission and open-licensed sources
+
+**Decision:** No written permission from any municipality is on file. Keep official charters local-only for demo; keep synthetic fixtures in Git; request written permission before wider reuse. No explicitly open-licensed procedural civic source was verified. The Open Data Nepal environment-statistics dataset is explicitly share-alike licensed and may be retained as a reference source record, but it is unrelated to civic procedures and must not be answer evidence.
 
 **Status:** NOT IN DOCS for publisher permission; PROVISIONAL for the demo source policy.
 
-**Evidence:** `docs/data-sources.md:5`: "Government hosting does not by itself grant redistribution permission." `data/sources.yaml:54` records the MOHA Darchula page as `licence_status: unclear`; line 57 sets `local_only: true`. Lines 95-98 record the Department of Passports process page as `all rights reserved` and `local_only: true`. Open Data Nepal's Data Policy says: "Users are free to use, modify, and share datasets, provided they give appropriate attribution." `data/sources.yaml:174-175` records that exact quote and its [Data Policy URL](https://opendatanepal.com/privacy-policy). Lines 168 and 173 mark the environment-statistics dataset as `Creative Commons Attribution Share-Alike` and `confirmed open` [on its dataset page](https://opendatanepal.com/dataset/environment-statistics-of-nepal-2019); this is environmental data, not civic procedure. Lines 156-160 record the NCD dataset as `unclear` and local-only because its metadata says "License Not specified" [on its dataset page](https://opendatanepal.com/dataset/non-communicable-disease-risk-factors-and-prevalence-nepal-2013-to-2019).
+**Evidence:** `docs/data-sources.md:5`: "Government hosting does not by itself grant redistribution permission." `data/sources.yaml` legacy entries tagged `legacy: true, answer_evidence: false`. New municipality entries will have `answer_evidence: false` until written permission is recorded.
 
-**Who must confirm:** A human project owner must confirm which publishers have given written permission, select suitable open-licensed procedural sources if available, and send permission requests. No publisher has been contacted by this work.
+**Who must confirm:** A human project owner must confirm which municipalities have given written permission, select suitable charters if available, and send permission requests. No publisher has been contacted by this work.
 
-## 2. Branch policy
+## 3. Branch policy
 
 **Decision:** All work must happen on `Hkp` or a feature branch created from `Hkp`. Pull requests go into `Hkp`. Never push to `main`, merge `dev` unless specifically tasked, or force-push. The `dev` branch was previously merged into `main` (PR #5) but this is now disallowed going forward. The `hkp-opencode` branch contained opencode-specific configuration and must not be merged; a clean `hkp-opencode-v2` (renamed `hkp-feat-*`) was created from `origin/main` with only `.opencode/`, `AUDIT_VERIFICATION_TABLE.md`, and `docx/`.
 
@@ -22,7 +36,7 @@ Checked 2026-10-11 against the project documents, source register, and recorded 
 
 **Who must confirm:** Team must follow this policy for all future work.
 
-## 3. Rules 2054 / MOHA local-only approval (2026-10-11)
+## 4. Rules 2054 / MOHA local-only approval (2026-10-11)
 
 **Decision:** The MOHA Kathmandu citizenship PDF (`citizenship_kathmandu_requirements`) is approved as LOCAL-ONLY baseline evidence for development and internal testing only. It has `licence_status: unclear`, `local_only: true`, `answer_evidence: true`, and an `approval_note` documenting the Leader's approval. This source and any index built from it MUST NOT be:
 - Committed to Git (chroma_db/, data/processed/ remain gitignored)
@@ -38,17 +52,15 @@ Written permission from MOHA is still required before any broader reuse. The app
 
 **Who must confirm:** Leader (Harikrishna Pokhrel) approved 2026-10-11. Publisher permission still pending.
 
-## 4. Presenter
+## 5. Presenter
 
-**Decision:** Presenter: **Harikrishna Pokhrel (HAliveKP)**, Leader role. Backup: **aash-crest01** (GitHub handle, Member 3 generation/evaluation work). Both confirmed by Leader on 2026-10-11.
+**Decision:** Presenter: **to be confirmed by a human**. Backup: **to be confirmed by a human**. The old provisional assignment (Harikrishna Pokhrel / aash-crest01) is superseded by the pivot; new human confirmation required.
 
-**Status:** CONFIRMED.
+**Status:** TO BE CONFIRMED.
 
-**Evidence:** `docs/user-story-board.md:12`: "Leader = Integration, UI, Repository, and Deployment." `docs/results.md:25` shows aash-crest01's Member 3 commit history.
+**Who must confirm:** Human project owner must confirm presenter and backup.
 
-**Who must confirm:** Leader (Harikrishna Pokhrel) confirmed 2026-10-11.
-
-## 5. API spending limit
+## 6. API spending limit
 
 **Decision:** Cap: **USD $1.00 per process run** (`MAX_API_SPEND_USD=1.00`). Provider: NVIDIA NIM (Nemotron 3 Super 120B) via `https://integrate.api.nvidia.com/v1` — **free tier**, so input/output costs are $0.00/1M tokens. Local embeddings (BAAI/bge-m3) run on user's machine and are free. Spend cap is configured but will not block on free tier.
 
@@ -58,9 +70,20 @@ Written permission from MOHA is still required before any broader reuse. The app
 
 **Who must confirm:** Leader (Harikrishna Pokhrel) confirmed 2026-10-11.
 
+## 7. Pivot to Palika Guide (2026-10-13) — additional detail
+
+**Decision:** The project pivots to Palika Guide (municipal citizen charters). All legacy central-government sources in `data/sources.yaml` are tagged `legacy: true, answer_evidence: false`. New municipality charter entries will be added with `service: palika_guide` and `answer_evidence: false` until written permission is recorded. The chunk schema gains optional `municipality`, `district`, `ward`, `section` fields. Retrieval gains a `municipality` filter. Pipeline adds a wrong-municipality guard. Team is now 3 members (Member 1, Member 2, Leader). Timeline: 8 days (Oct 14-21), code freeze Day 8.
+
+**Status:** CONFIRMED.
+
+**Evidence:** This decision record; updated `docs/user-story-board.md` with 8-day board; `data/sources.yaml` legacy entries tagged; new municipality charter register template added.
+
+**Who must confirm:** Human project owner confirmed 2026-10-13.
+
 ## Needs human confirmation
 
-- Send permission requests and record any written responses; identify approved sources (optional for local-only; required for public demo).
-- **Presenter/backup: CONFIRMED** (Harikrishna Pokhrel presenter, aash-crest01 backup).
+- Send permission requests to municipalities and record any written responses; identify approved sources.
+- **Presenter/backup: TO BE CONFIRMED BY A HUMAN** (pivot supersedes old assignment).
 - **API spend cap: CONFIRMED** ($1.00, NVIDIA free tier).
 - Confirm branch policy adherence (no direct pushes to main, no dev merges without tasking).
+- Select up to 5 municipalities from Day 1 feasibility sheet for the demo.

@@ -10,7 +10,7 @@ from typing import Any
 MODEL_NAME = "BAAI/bge-m3"
 COLLECTION_NAME = "khula_gyan"
 PERSIST_DIRECTORY = Path("chroma_db")
-ALLOWED_SERVICES = {"driving_license", "citizenship", "passport"}
+ALLOWED_SERVICES = {"driving_license", "citizenship", "passport", "palika_guide"}
 
 
 @lru_cache(maxsize=1)
@@ -46,19 +46,27 @@ def _similarity(distance: float) -> float:
     return max(0.0, min(1.0, 1.0 - float(distance)))
 
 
-def search(query: str, k: int = 5, service: str | None = None) -> list[dict]:
-    """Return top-k chunks with source/page metadata and a 0–1 similarity score.
+def search(
+    query: str,
+    k: int = 5,
+    service: str | None = None,
+    municipality: str | None = None,
+) -> list[dict]:
+    """Return top-k chunks with source/page/municipality metadata and a 0–1 similarity score.
 
     A score of 1 is an identical vector; 0 means cosine distance is 1 or more.
     This is a normalized similarity, not a calibrated probability. The blueprint's
     guard threshold must be tuned against verified questions before production.
+
+    If municipality is provided, only chunks from that municipality are returned.
+    This enforces the safety rule: never answer from another municipality's charter.
     """
     if not isinstance(query, str) or not query.strip():
         raise ValueError("query must be a non-empty string")
     if isinstance(k, bool) or not isinstance(k, int) or k < 1:
         raise ValueError("k must be a positive integer")
     if service is not None and service not in ALLOWED_SERVICES:
-        raise ValueError("service must be driving_license, citizenship, passport, or None")
+        raise ValueError("service must be driving_license, citizenship, passport, palika_guide, or None")
 
     collection = _collection()
     if collection is None or collection.count() == 0:
@@ -67,7 +75,16 @@ def search(query: str, k: int = 5, service: str | None = None) -> list[dict]:
     query_embedding = _load_model().encode(
         [query.strip()], normalize_embeddings=True, show_progress_bar=False
     ).tolist()[0]
-    where = {"service": service} if service else None
+
+    # Build where clause for filtering
+    where_conditions = []
+    if service:
+        where_conditions.append({"service": service})
+    if municipality:
+        where_conditions.append({"municipality": municipality})
+
+    where = {"$and": where_conditions} if len(where_conditions) > 1 else (where_conditions[0] if where_conditions else None)
+
     result = collection.query(
         query_embeddings=[query_embedding],
         n_results=min(k, collection.count()),
@@ -98,6 +115,10 @@ def search(query: str, k: int = 5, service: str | None = None) -> list[dict]:
                 "page": page,
                 "service": metadata.get("service"),
                 "lang": metadata.get("lang"),
+                "municipality": metadata.get("municipality"),
+                "district": metadata.get("district"),
+                "ward": metadata.get("ward"),
+                "section": metadata.get("section"),
                 "source_url": metadata.get("source_url"),
                 "score": _similarity(distance),
             }

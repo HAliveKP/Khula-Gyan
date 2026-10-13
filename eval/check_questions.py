@@ -8,9 +8,10 @@ import sys
 from collections import Counter
 from pathlib import Path
 
+
 LANGS = {"ne", "en", "mixed"}
 TYPES = {"answerable", "out_of_scope"}
-SERVICES = {"driving_license", "citizenship", "passport", "other"}
+SERVICES = {"driving_license", "citizenship", "passport", "palika_guide", "other"}
 
 
 def check(path: Path) -> int:
@@ -38,6 +39,10 @@ def check(path: Path) -> int:
             problems.append(f"{qid}: type must be one of {sorted(TYPES)}")
         if q.get("service") not in SERVICES:
             problems.append(f"{qid}: service must be one of {sorted(SERVICES)}")
+        # municipality field is required for palika_guide
+        if q.get("service") == "palika_guide":
+            if not q.get("municipality"):
+                problems.append(f"{qid}: palika_guide question must have 'municipality' field")
         if q.get("type") == "answerable" and q.get("verified"):
             if not q.get("expected"):
                 problems.append(f"{qid}: verified answerable question needs 'expected' facts")
