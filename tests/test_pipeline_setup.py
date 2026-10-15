@@ -228,6 +228,58 @@ def test_ask_wrong_municipality_guard(tmp_path, monkeypatch):
     assert [record["id"] for record in saved] == ["fixture_verified"]
 
 
+def test_extract_municipality_devanagari_with_case_suffix():
+    from src.pipeline import _extract_municipality_from_query
+
+    assert _extract_municipality_from_query("ललितपुरमा जन्म दर्ता गर्न कुन कागजात चाहिन्छ?") == "Lalitpur"
+
+
+def test_extract_municipality_kathmandu_spelling_variants():
+    from src.pipeline import _extract_municipality_from_query
+
+    assert _extract_municipality_from_query("काठमाडौंको वडा कार्यालय कहाँ छ?") == "Kathmandu"
+    assert _extract_municipality_from_query("काठमाडौँमा बसाइँसराइ कसरी दर्ता गर्ने?") == "Kathmandu"
+
+
+def test_extract_municipality_romanized_and_missing():
+    from src.pipeline import _extract_municipality_from_query
+
+    assert _extract_municipality_from_query("Birth registration in LALITPUR?") == "Lalitpur"
+    assert _extract_municipality_from_query("Kathmandu, Tokha ward 5 recommendation letter") == "Kathmandu"
+    assert _extract_municipality_from_query("जन्म दर्ता गर्न कुन कागजात चाहिन्छ?") is None
+    assert _extract_municipality_from_query("What documents for birth registration?") is None
+
+
+def test_ask_passes_devanagari_municipality_to_search(monkeypatch):
+    from src.pipeline import ask
+    import src.generation.answer as answer_module
+
+    seen = {}
+
+    def fake_search(query, k=5, service=None, municipality=None):
+        seen["municipality"] = municipality
+        return [{"text": "जन्म दर्ता", "source": "lalitpur_charter.pdf", "page": 1, "score": 0.9,
+                 "service": "palika_guide", "municipality": municipality}]
+
+    def fake_answer(query, chunks):
+        return {
+            "status": "answered",
+            "language": "ne",
+            "answer": "Test answer",
+            "checklist": {"documents": [], "fees": [], "steps": [], "where": ""},
+            "citations": [{"source": "lalitpur_charter.pdf", "page": 1, "quote": "जन्म दर्ता"}],
+            "confidence": "high",
+            "disclaimer": "Test disclaimer",
+        }
+
+    monkeypatch.setattr(search_module, "search", fake_search)
+    monkeypatch.setattr(answer_module, "answer", fake_answer)
+
+    response = ask("ललितपुरमा जन्म दर्ता गर्न कुन कागजात चाहिन्छ?", service="palika_guide", municipality=None)
+    assert seen["municipality"] == "Lalitpur"
+    assert response["status"] == "answered"
+
+
 def test_raw_processed_and_chroma_data_are_not_tracked():
     result = subprocess.run(
         ["git", "-c", f"safe.directory={ROOT.as_posix()}", "ls-files"],
