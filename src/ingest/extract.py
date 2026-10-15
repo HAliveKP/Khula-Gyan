@@ -10,34 +10,55 @@ from typing import Any
 
 
 class _VisibleTextParser(HTMLParser):
-    """Small standard-library HTML reader that skips script/style contents."""
+    """Small standard-library HTML reader that skips script/style contents and site chrome
+    (navigation menus, header, footer, sidebars), so a charter page keeps only its content."""
 
-    _BLOCK_TAGS = {"address", "article", "br", "div", "footer", "h1", "h2", "h3", "li", "p", "section", "table", "tr"}
+    _BLOCK_TAGS = {"address", "article", "br", "div", "h1", "h2", "h3", "li", "p", "section", "table", "tr"}
+    _IGNORED_TAGS = {"script", "style", "noscript", "svg", "nav", "header", "footer", "aside", "form"}
+    # Class names of the news ticker, sidebars and tabs in the Drupal template most
+    # municipal (palika) websites share.
+    _IGNORED_CLASSES = {"header-notice", "region-newsticker", "sidebar", "tabs", "breadcrumb"}
 
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
         self.parts: list[str] = []
-        self._ignored_depth = 0
+        self._skip_tag: str | None = None  # tag of the element being skipped
+        self._skip_depth = 0  # nesting of that same tag inside it
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        if tag in {"script", "style", "noscript", "svg"}:
-            self._ignored_depth += 1
-        elif self._ignored_depth == 0 and tag in self._BLOCK_TAGS:
+        if self._skip_tag is not None:
+            if tag == self._skip_tag:
+                self._skip_depth += 1
+            return
+        classes = set((dict(attrs).get("class") or "").split())
+        if tag in self._IGNORED_TAGS or classes & self._IGNORED_CLASSES:
+            self._skip_tag, self._skip_depth = tag, 1
+        elif tag in self._BLOCK_TAGS:
             self.parts.append("\n")
 
     def handle_endtag(self, tag: str) -> None:
-        if tag in {"script", "style", "noscript", "svg"} and self._ignored_depth:
-            self._ignored_depth -= 1
-        elif self._ignored_depth == 0 and tag in self._BLOCK_TAGS:
+        if self._skip_tag is not None:
+            if tag == self._skip_tag:
+                self._skip_depth -= 1
+                if self._skip_depth == 0:
+                    self._skip_tag = None
+            return
+        if tag in self._BLOCK_TAGS:
             self.parts.append("\n")
 
     def handle_data(self, data: str) -> None:
-        if self._ignored_depth == 0:
+        if self._skip_tag is None:
             self.parts.append(data)
 
 
 def _extract_html(path: Path) -> list[dict[str, Any]]:
     raw = path.read_text(encoding="utf-8", errors="replace")
+    # Keep only the page's main content when it is marked up; menus built from plain
+    # <div>s (as on municipal sites) are outside it.
+    lowered = raw.lower()
+    start, end = lowered.find("<main"), lowered.rfind("</main>")
+    if start != -1 and end > start:
+        raw = raw[start:end + len("</main>")]
     parser = _VisibleTextParser()
     parser.feed(raw)
     parser.close()

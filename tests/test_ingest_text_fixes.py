@@ -251,3 +251,43 @@ def test_dotm_directive_matches_rendered_text() -> None:
     assert "बाझिएमा गर्ने" in pages[3]["text"]
     assert "निर्देशक (जनशक्ति व्यवस्थापन शाखा) को जिम्मेवारी" in pages[3]["text"]
     assert "१०" in pages[3]["text"]  # Fontasy Himali page numbers
+
+
+def test_html_extraction_skips_site_navigation(tmp_path):
+    page = tmp_path / "charter.html"
+    page.write_text(
+        "<html><body><header>Logo FAQs</header><nav><li>Home</li><li>Downloads</li></nav>"
+        "<main><table><tr><td>जन्म दर्ता</td><td>१ दिन</td></tr></table></main>"
+        "<aside>Notices</aside><footer>© 2026 Municipality</footer></body></html>",
+        encoding="utf-8",
+    )
+    text = extract._extract_html(page)[0]["text"]
+    assert "जन्म दर्ता" in text and "१ दिन" in text
+    for chrome in ("Logo", "Home", "Downloads", "Notices", "©"):
+        assert chrome not in text
+
+
+def test_html_extraction_keeps_only_main_when_present(tmp_path):
+    page = tmp_path / "charter.html"
+    page.write_text(
+        "<html><body><div class='menu'>Skip to main content FAQs</div>"
+        "<main><p>विवाह दर्ता</p></main><div>Latest news</div></body></html>",
+        encoding="utf-8",
+    )
+    text = extract._extract_html(page)[0]["text"]
+    assert "विवाह दर्ता" in text
+    assert "Skip" not in text and "news" not in text
+
+
+def test_html_extraction_skips_palika_template_blocks(tmp_path):
+    page = tmp_path / "charter.html"
+    page.write_text(
+        "<main><section class='header-notice'><div><div>News item</div></div></section>"
+        "<table><tr><td>मृत्यु दर्ता</td></tr></table>"
+        "<div class='col-md-3'><div class='sidebar'><div>Downloads</div></div></div>"
+        "<p>अन्त्य</p></main>",
+        encoding="utf-8",
+    )
+    text = extract._extract_html(page)[0]["text"]
+    assert "मृत्यु दर्ता" in text and "अन्त्य" in text
+    assert "News" not in text and "Downloads" not in text
