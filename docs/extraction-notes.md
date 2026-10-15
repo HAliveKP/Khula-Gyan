@@ -22,6 +22,24 @@ Extra check: the ASCII digit glyphs of the embedded Kalimati font, rendered on t
 |---|---|---|---|---|
 | 107 | Yes, १०७ | Yes in the image (Preeti-font Devanagari) | No | Image `परिच्छेद - ६ अनुसूचीहरू`; extracted `kl/R5]b – ^ cg';"rLx¿`. The page header reads `यातायात व्यवस्थापन कार्यविधि निर्देशिका, २०७४` (Preeti `@)&$` = २०७४) |
 
+Update 2026-10-15: spans in Preeti, Kantipur or PCS Nepali fonts are now converted to Unicode (`preeti_to_unicode` in `src/ingest/extract.py`); Fontasy Himali spans (page numbers) get Devanagari digits. The embedded font names here are `CIDFont+F*`, so the family is read from the embedded font's name table.
+
+| PDF page | Extraction matches image? | Example |
+|---|---|---|
+| 4 (contents) | Yes (all ~100 sampled words) | `५. बाझिएमा गर्ने ः ... ११`, `निर्देशक (जनशक्ति व्यवस्थापन शाखा) को जिम्मेवारी ... १३` |
+| 107 | Yes | `यातायात व्यवस्थापन कार्यविधि निर्देशिका, २०७४`, `परिच्छेद – ६ अनुसूचीहरू` |
+
+## `palika_hetauda_2083_84.pdf` (Hetauda citizen charter, 24 pages)
+
+Checked 2026-10-15 at 144 dpi. Almost all text is Preeti; before the conversion 22 of 24 pages were marked unusable.
+
+| PDF page | Extraction matches image? | Example |
+|---|---|---|
+| 3 | Yes (all ~150 sampled words) | `१) निवेदन सहित तोकिएको कागजातहरु पेश गर्ने` (source types `ug]{]{`; the doubled sign is drawn once) |
+| 15 | Yes except `सस्ंथा` (image `सस्था`, a stray anusvara in the source), ~150 words | `२) सस्ंथा भाडामा बस्ने भए सम्झौता पत्र र बहाल कर` |
+
+Mixed documents: only spans in a legacy font are converted, so `palika_pokhara_2075.pdf` keeps its Unicode text and gains the Preeti column headers of page 1; its private-use `U+F031` serial-number boxes (another font) are left as they are. In `palika_bharatpur_revenue.pdf` the author typed `IEE`/`EIA` and `आ.व.`'s dots in Preeti; the page image shows Devanagari junk (`क्ष्भ्भ्`) and dandas, and the conversion reproduces what is drawn.
+
 ## `citizenship_kathmandu_requirements.pdf`
 
 | PDF page | Printed page number visible? | Script legible? | Extraction matches image? | Example |

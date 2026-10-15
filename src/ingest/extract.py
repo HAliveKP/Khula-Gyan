@@ -339,6 +339,121 @@ def repair_devanagari_tounicode(document: Any) -> list[str]:
     return repaired
 
 
+# ---------------------------------------------------------------------------
+# Legacy Nepali fonts (Preeti and its look-alikes Kantipur and PCS Nepali).
+#
+# These fonts draw Devanagari shapes on Latin code points, so the PDF text
+# layer holds Latin letters ("l;kmfl/;" for "सिफारिस"). The text is typed in
+# visual order: "ि" (key "l") comes before its consonant cluster and the reph
+# (key "{") after its syllable. Only spans in such a font are converted.
+# The mapping below was checked against rendered pages of the Hetauda
+# charter and the DoTM directive (docs/extraction-notes.md).
+# ---------------------------------------------------------------------------
+
+_PREETI_FONT = re.compile(r"preeti|kantipur|pcs[\s_-]*nepali", re.I)
+_HIMALI_FONT = re.compile(r"himali", re.I)  # Fontasy Himali: digits only seen
+
+_PREETI_MAP = {
+    "a": "ब", "b": "द", "c": "अ", "d": "म", "e": "भ", "f": "ा", "g": "न", "h": "ज", "i": "ष्",
+    "j": "व", "k": "प", "l": _I_SIGN_MARK, "n": "ल", "o": "य", "p": "उ", "q": "त्र", "r": "च",
+    "s": "क", "t": "त", "u": "ग", "v": "ख", "w": "ध", "x": "ह", "y": "थ", "z": "श",
+    "A": "ब्", "B": "द्य", "C": "ऋ", "D": "म्", "E": "भ्", "F": "ँ", "G": "न्", "H": "ज्",
+    "I": "क्ष्", "J": "व्", "K": "प्", "L": "ी", "M": "ः", "N": "ल्", "O": "इ", "P": "ए",
+    "Q": "त्त", "R": "च्", "S": "क्", "T": "त्", "U": "ग्", "V": "ख्", "W": "ध्", "X": "ह्",
+    "Y": "थ्", "Z": "श्",
+    "0": "ण्", "1": "ज्ञ", "2": "द्द", "3": "घ", "4": "द्ध", "5": "छ", "6": "ट", "7": "ठ",
+    "8": "ड", "9": "ढ",
+    "!": "१", "@": "२", "#": "३", "$": "४", "%": "५", "^": "६", "&": "७", "*": "८", "(": "९",
+    ")": "०", "-": "(", "_": ")", "+": "ं", "=": ".", "[": "ृ", "{": _REPH_MARK, "]": "े",
+    "}": "ै", "\\": "्", "|": "्र", ";": "स", ":": "स्", "'": "ु", '"': "ू", ".": "।",
+    ">": "श्र", "/": "र", "?": "रु", "~": "ञ्",
+    "¿": "रू", "÷": "/", "ª": "ङ", "ˆ": "फ्", "«": "्र", "§": "ट्ट", "¶": "ठ्ठ", "Ë": "ङ्ग",
+    "Í": "ङ्क", "å": "द्व", "Ü": "%", "Ø": "्य", "Ù": ";", "¥": "र्‍", "‰": "झ्",
+    "›": "द्र", "•": "ड्ड", "Œ": "त्त्", "…": "‘", "Ú": "’", "æ": "“", "Æ": "”",
+}
+# "m" adds the hook that turns one base glyph into another (k+m = फ, e+m = झ,
+# q+m = क्र). Vowel signs or a halant may be typed between base and hook.
+_PREETI_HOOK = re.compile(r"([kedqQp])([\\'\"\]}{|]*)m")
+_PREETI_HOOKED = {"k": "फ", "e": "झ", "d": "झ", "q": "क्र", "Q": "क्त", "p": "ऊ"}
+_PREETI_AFTER = [
+    ("्ा", ""),  # half form + "ा" is drawn as the full letter
+    ("अाे", "ओ"), ("अाै", "औ"), ("अा", "आ"), ("ाे", "ो"), ("ाै", "ौ"), ("एे", "ऐ"),
+    (f"इ{_REPH_MARK}", "ई"),  # "इ" with the reph-shaped hook is "ई"
+]
+
+
+def preeti_to_unicode(text: str) -> str:
+    """Convert text typed in the Preeti keyboard layout to Unicode Devanagari."""
+    text = re.sub(r"(\]\{)+", "]{", text)  # "]{" typed twice draws once
+    text = _PREETI_HOOK.sub(lambda match: _PREETI_HOOKED[match.group(1)] + match.group(2), text)
+    text = "".join(_PREETI_MAP.get(char, char) for char in text)
+    for old, new in _PREETI_AFTER:
+        text = text.replace(old, new)
+    text = restore_logical_order(text)
+    text = re.sub("([ँं])([ा-ौ])", r"\2\1", text)  # "ँ" typed before its vowel sign
+    text = re.sub("([ा-ौ])\\1+", r"\1", text)  # a vowel sign typed twice draws once
+    return unicodedata.normalize("NFC", text)
+
+
+def _himali_to_unicode(text: str) -> str:
+    return text.translate({ord("0") + digit: 0x966 + digit for digit in range(10)})
+
+
+def legacy_font_converters(document: Any) -> dict[str, Any]:
+    """Map span font names to a converter for legacy-encoded Nepali fonts.
+
+    The span name is the PDF base font without its subset prefix; when it is
+    not descriptive (e.g. "CIDFont+F2") the embedded font's family is used.
+    """
+    converters: dict[str, Any] = {}
+    seen: set[int] = set()
+    for page in document:
+        for xref, _ext, _kind, name, *_rest in page.get_fonts(full=True):
+            if xref in seen:
+                continue
+            seen.add(xref)
+            names = [name, re.sub(r"^[A-Z]{6}\+", "", name)]
+            try:
+                import io
+                from fontTools.ttLib import TTFont
+
+                font = TTFont(io.BytesIO(document.extract_font(xref)[3]), lazy=True)
+                names.append(font["name"].getDebugName(1) or "")
+            except Exception:
+                pass
+            label = " ".join(names)
+            converter = preeti_to_unicode if _PREETI_FONT.search(label) else _himali_to_unicode if _HIMALI_FONT.search(label) else None
+            if converter:
+                converters[names[0]] = converters[names[1]] = converter
+    return converters
+
+
+def _page_text(page: Any, converters: dict[str, Any]) -> str:
+    """Plain page text; runs of legacy-font spans in a line are converted."""
+    if not converters or not any(font[3] in converters for font in page.get_fonts(full=True)):
+        return page.get_text("text")
+    lines: list[str] = []
+    for block in page.get_text("dict")["blocks"]:
+        for line in block.get("lines", []):
+            parts: list[str] = []
+            run: list[str] = []
+            run_converter = None
+            for span in line["spans"]:
+                converter = converters.get(span["font"])
+                if run and converter is not run_converter:
+                    parts.append(run_converter("".join(run)))
+                    run = []
+                if converter:
+                    run.append(span["text"])
+                    run_converter = converter
+                else:
+                    parts.append(span["text"])
+            if run:
+                parts.append(run_converter("".join(run)))
+            lines.append("".join(parts) + "\n")
+    return "".join(lines)
+
+
 def _extract_pdf(
     path: Path,
     *,
@@ -355,8 +470,9 @@ def _extract_pdf(
     with fitz.open(path) as document:
         # In-memory fix for fonts whose ToUnicode map disagrees with the font.
         repaired_fonts = repair_devanagari_tounicode(document)
+        converters = legacy_font_converters(document)
         for page_number, page in enumerate(document, start=1):
-            text = page.get_text("text")
+            text = _page_text(page, converters)
             if repaired_fonts:
                 text = restore_logical_order(text)
             used_ocr = False

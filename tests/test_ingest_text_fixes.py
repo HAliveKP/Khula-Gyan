@@ -23,6 +23,8 @@ from src.ingest.extract import (
 RAW = Path(__file__).resolve().parents[1] / "data" / "raw"
 RULES_PDF = RAW / "dl_vehicle_transport_rules_2054.pdf"
 GHORAHI_PDF = RAW / "palika_ghorahi.pdf"
+HETAUDA_PDF = RAW / "palika_hetauda_2083_84.pdf"
+DOTM_PDF = RAW / "dl_dotm_procedure_directive_2060.pdf"
 
 
 def test_i_sign_moves_after_its_consonant_cluster() -> None:
@@ -177,3 +179,75 @@ def test_rules_2054_pages_match_rendered_text() -> None:
     assert "अनुसूची-३" in schedule_3 and "दस्तुर तालिका" in schedule_3
     assert "८००/-" in schedule_3 and "8००/-" not in schedule_3
     assert all(_I_SIGN_MARK not in page["text"] and _REPH_MARK not in page["text"] for page in pages)
+
+
+# --- Preeti-family legacy fonts -------------------------------------------
+# Each pair was checked against rendered pages of the Hetauda charter, the
+# DoTM directive or the Pokhara rates charter.
+
+
+@pytest.mark.parametrize(
+    ("preeti", "unicode_text"),
+    [
+        ("l;kmfl/;", "सिफारिस"),  # "ि" typed before its consonant; k+m = फ
+        ("sfo{ljlwM", "कार्यविधिः"),  # reph typed after its syllable
+        ("lgb]{lzsf", "निर्देशिका"),  # reph after a vowel sign, "ि" before
+        ("lgMz'Ns", "निःशुल्क"),
+        ("cfjZos kg]{ sfuhft", "आवश्यक पर्ने कागजात"),  # c+f = आ; Z+f = श
+        ("k|df0fkq", "प्रमाणपत्र"),  # "्र" sign; ण् + ा = ण
+        ("hgzlQm", "जनशक्ति"),  # Q+m = क्त, "ि" before the conjunct
+        ("e'mqf] a'e\\mg'", "झुत्रो बुझ्नु"),  # hook typed after a vowel sign / halant
+        ("qm=;+= @)^)", "क्र.सं. २०६०"),  # shifted digits are Devanagari digits
+        ("ug]{]{", "गर्ने"),  # "]{" typed twice is drawn once
+        ("kmFf6sf", "फाँटका"),  # "ँ" typed before "ा"
+        ("cWoIf÷j8f", "अध्यक्ष/वडा"),
+        ('d"NofÍg', "मूल्याङ्कन"),
+        ("……P]gÚÚ", "‘‘ऐन’’"),
+    ],
+)
+def test_preeti_to_unicode(preeti: str, unicode_text: str) -> None:
+    assert extract.preeti_to_unicode(preeti) == unicode_text
+
+
+def test_legacy_font_names() -> None:
+    for name in ["ABCDEE+Preeti", "Kantipur Regular", "PCS NEPALI"]:
+        assert extract._PREETI_FONT.search(name)
+    for name in ["ABCDEE+Mangal", "Kalimati", "Kokila", "TimesNewRomanPSMT", "Fontasy Himali"]:
+        assert not extract._PREETI_FONT.search(name)
+    assert extract._HIMALI_FONT.search("FONTASY_ HIMALI_ TT")
+    assert extract._himali_to_unicode("(10)") == "(१०)"
+
+
+def test_only_legacy_font_spans_are_converted() -> None:
+    fitz = pytest.importorskip("fitz")
+    document = fitz.open()
+    page = document.new_page()
+    page.insert_text((72, 72), "l;kmfl/;", fontname="helv")  # stands in for Preeti
+    page.insert_text((72, 100), "IEE l", fontname="tiro")  # an ordinary font
+    page.insert_text((72, 128), "kg]{", fontname="helv")
+    plain = page.get_text("text")
+    assert extract._page_text(page, {}) == plain  # no legacy font: text unchanged
+    text = extract._page_text(page, {"Helvetica": extract.preeti_to_unicode})
+    assert text.splitlines() == ["सिफारिस", "IEE l", "पर्ने"]
+
+
+@pytest.mark.skipif(not HETAUDA_PDF.is_file(), reason="local source copy not available")
+def test_hetauda_charter_matches_rendered_text() -> None:
+    # Expected strings were checked against the rendered page images (pages 3 and 15).
+    pages = extract_pages(HETAUDA_PDF, ocr=False, expected_language="ne")
+    assert "१) निवेदन पत्र र नागरिकता प्रमाणपत्रको प्रतिलिपि" in pages[2]["text"]
+    assert "२) वडा अध्यक्ष/वडा सदस्य/वडा सचिवले सम्बन्धित" in pages[2]["text"]
+    assert "सम्बन्धित   फाँटका कर्मचारी" in pages[2]["text"]
+    assert "सम्झौता पत्र र बहाल कर" in pages[14]["text"]
+    assert all(page.get("extraction_status") != "unusable" for page in pages)
+
+
+@pytest.mark.skipif(not DOTM_PDF.is_file(), reason="local source copy not available")
+def test_dotm_directive_matches_rendered_text() -> None:
+    # Page 107 is quoted in docs/extraction-notes.md; page 4 is the contents page.
+    pages = extract_pages(DOTM_PDF, ocr=False, expected_language="ne")
+    assert "यातायात व्यवस्थापन कार्यविधि निर्देशिका, २०७४" in pages[106]["text"]
+    assert "अनुसूचीहरू" in pages[106]["text"]
+    assert "बाझिएमा गर्ने" in pages[3]["text"]
+    assert "निर्देशक (जनशक्ति व्यवस्थापन शाखा) को जिम्मेवारी" in pages[3]["text"]
+    assert "१०" in pages[3]["text"]  # Fontasy Himali page numbers
