@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from src.ingest import extract
+from src.ingest.clean import clean_pages
 from src.ingest.extract import (
     _I_SIGN_MARK,
     _REPH_MARK,
@@ -291,3 +292,52 @@ def test_html_extraction_skips_palika_template_blocks(tmp_path):
     text = extract._extract_html(page)[0]["text"]
     assert "मृत्यु दर्ता" in text and "अन्त्य" in text
     assert "News" not in text and "Downloads" not in text
+
+
+# --- Page-number lines vs. numbers in tables (src/ingest/clean.py) ---------
+
+
+def test_clean_keeps_fee_cells_and_drops_page_numbers() -> None:
+    # Ghorahi-style table pages: the printed page number equals the page index,
+    # while fee cells are number-only lines too (here in Devanagari digits).
+    pages = [
+        {"page": 1, "text": "1\nसिफारिस\n४५०\nवडा कार्यालय"},
+        {"page": 2, "text": "2\nदर्ता\n२०० देखी\n९००\nवडा कार्यालय"},
+        {"page": 3, "text": "3\nइजाजत\n२५०००\n७५०"},
+    ]
+    texts = [page["text"] for page in clean_pages(pages)]
+    assert texts[0].splitlines() == ["सिफारिस", "४५०"]  # "वडा कार्यालय" repeats at page edges
+    assert texts[1].splitlines() == ["दर्ता", "२०० देखी", "९००"]
+    assert texts[2].splitlines() == ["इजाजत", "२५०००", "७५०"]
+
+
+def test_clean_drops_offset_and_labelled_page_numbers() -> None:
+    # Printed numbers start at ५ on the first PDF page (offset 4), in Devanagari.
+    pages = [
+        {"page": 1, "text": "क\n५\n१"},
+        {"page": 2, "text": "ख\n६\nPage 2 of 3"},
+        {"page": 3, "text": "ग\n७\n10 of 12"},
+    ]
+    assert [page["text"] for page in clean_pages(pages)] == ["क\n१", "ख", "ग"]
+
+
+def test_clean_keeps_numbers_of_a_single_page() -> None:
+    # One page cannot show a page-number pattern; serial numbers stay.
+    text = "१\nजन्म दर्ता\n\n२\nमृत्यु दर्ता"
+    assert clean_pages([{"page": 1, "text": text}])[0]["text"] == text
+
+
+def test_clean_does_not_leave_double_blank_lines() -> None:
+    pages = [{"page": 1, "text": "क\n\n1\n\nख"}, {"page": 2, "text": "ग\n\n2\n\nघ"}]
+    assert [page["text"] for page in clean_pages(pages)] == ["क\n\nख", "ग\n\nघ"]
+
+
+@pytest.mark.skipif(not GHORAHI_PDF.is_file(), reason="local source copy not available")
+def test_ghorahi_fee_cells_survive_cleaning() -> None:
+    # Checked against the rendered images of pages 1 and 8.
+    pages = clean_pages(extract_pages(GHORAHI_PDF, ocr=False, expected_language="ne"))
+    assert "समावेश भई\n४५०\nसम्बन्धित वडा" in pages[0]["text"]
+    page_8 = pages[7]["text"]
+    assert "४५० देखी\n२५०००" in page_8 and "२०० देखी\n९००" in page_8
+    assert "३ घण्टा\n९००" in page_8 and "\n७५०\n" in page_8
+    assert all(not page["text"].startswith(f"{page['page']}\n") for page in pages)  # page numbers gone
