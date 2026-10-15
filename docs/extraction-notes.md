@@ -27,3 +27,12 @@ Extra check: the ASCII digit glyphs of the embedded Kalimati font, rendered on t
 | PDF page | Printed page number visible? | Script legible? | Extraction matches image? | Example |
 |---|---|---|---|---|
 | 1 | No | Yes: a slightly skewed scan with a stamp and signature | No | Image `१. वंशजको आधारमा नागरिकता प्रमाणपत्र ...`; the scanner's text layer reads `+.) qrg sTrqr ffi Trrrko rTWr:`. Needs OCR (`nep+eng`) |
+
+## `palika_ghorahi.pdf` (Ghorahi citizen charter, 19 pages)
+
+Checked 2026-10-15 at 144 dpi. The Kalimati subset is embedded without a GSUB table, so the font alone explains only its ~80 cmap glyphs; the "ि" width variants (gids 464–468), the reph (gid 91) and the vowel + reph glyphs (566–575) kept Word's wrong ToUnicode text. They are now read from the Kalimati 1.20 reference in `src/ingest/font_reference.json` (built with `scripts/build_font_reference.py` from Kalimati subsets that do carry GSUB), used only when family, glyph count and every Devanagari cmap glyph agree.
+
+| PDF page | Printed page number visible? | Script legible? | Extraction matches image? | Example |
+|---|---|---|---|---|
+| 2 | Yes, 2 | Yes | Before: no for most words with "ि" or reph. After: yes (all ~80 sampled words) | Image `गर्ने व्यक्तिको नागरिकता प्रमाणपत्र`; before `गने व्र्णिको नागररकता प्रमाणपत्र`; after identical to the image |
+| 7 | Yes, 7 | Yes | After: yes (all ~90 sampled words) | Image `सम्बन्धित व्यक्तिको निबेदन, लालपूर्जा, नागरिकता`; after identical |

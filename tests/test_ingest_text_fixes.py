@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from src.ingest import extract
 from src.ingest.extract import (
     _I_SIGN_MARK,
     _REPH_MARK,
@@ -15,10 +16,13 @@ from src.ingest.extract import (
     _write_tounicode,
     extract_pages,
     font_glyph_texts,
+    reference_glyph_texts,
     restore_logical_order,
 )
 
-RULES_PDF = Path(__file__).resolve().parents[1] / "data" / "raw" / "dl_vehicle_transport_rules_2054.pdf"
+RAW = Path(__file__).resolve().parents[1] / "data" / "raw"
+RULES_PDF = RAW / "dl_vehicle_transport_rules_2054.pdf"
+GHORAHI_PDF = RAW / "palika_ghorahi.pdf"
 
 
 def test_i_sign_moves_after_its_consonant_cluster() -> None:
@@ -109,6 +113,57 @@ def test_font_glyph_texts_reads_cmap_and_gsub() -> None:
 
 def test_unreadable_font_returns_none() -> None:
     assert font_glyph_texts(b"not a font") is None
+
+
+def test_reference_fills_glyphs_of_matching_font(monkeypatch: pytest.MonkeyPatch) -> None:
+    font = _tiny_font()
+    _derived, direct = font_glyph_texts(font)
+    reference = {"1": "क", "2": "र", "3": "्", "4": "ि", "5": "०", "8": _REPH_MARK, "9": _I_SIGN_MARK}
+    monkeypatch.setattr(extract, "_MIN_REFERENCE_CHECKS", 3)
+    monkeypatch.setattr(extract, "_font_references", lambda: {"Tiny": {"glyph_count": 10, "glyphs": reference}})
+    # The reference's "ि" marker agrees with the plain "ि" in the subset's cmap.
+    assert reference_glyph_texts(font, direct)[9] == _I_SIGN_MARK
+
+
+@pytest.mark.parametrize(
+    "references",
+    [
+        {"Tiny": {"glyph_count": 11, "glyphs": {"1": "क", "2": "र", "3": "्", "4": "ि", "5": "०"}}},  # other glyph count
+        {"Tiny": {"glyph_count": 10, "glyphs": {"1": "ख", "2": "र", "3": "्", "4": "ि", "5": "०"}}},  # cmap disagrees
+        {"Other": {"glyph_count": 10, "glyphs": {"1": "क", "2": "र", "3": "्", "4": "ि", "5": "०"}}},  # other family
+    ],
+)
+def test_reference_is_not_used_for_a_different_font(monkeypatch: pytest.MonkeyPatch, references: dict) -> None:
+    font = _tiny_font()
+    _derived, direct = font_glyph_texts(font)
+    monkeypatch.setattr(extract, "_MIN_REFERENCE_CHECKS", 3)
+    monkeypatch.setattr(extract, "_font_references", lambda: references)
+    assert reference_glyph_texts(font, direct) == {}
+
+
+def test_reference_needs_enough_cmap_checks(monkeypatch: pytest.MonkeyPatch) -> None:
+    font = _tiny_font()
+    _derived, direct = font_glyph_texts(font)
+    monkeypatch.setattr(extract, "_font_references", lambda: {"Tiny": {"glyph_count": 10, "glyphs": {"1": "क"}}})
+    assert reference_glyph_texts(font, direct) == {}  # default needs 20 Devanagari cmap glyphs
+
+
+def test_shipped_kalimati_reference_reads_reordered_glyphs() -> None:
+    glyphs = extract._font_references()["Kalimati"]["glyphs"]
+    assert glyphs["128"] == "क"
+    assert glyphs["91"] == _REPH_MARK  # reph, which Word mapped to "य" in the Ghorahi charter
+    assert {glyphs[str(gid)] for gid in range(464, 469)} == {_I_SIGN_MARK}  # "ि" width variants
+    assert glyphs["566"] == "े" + _REPH_MARK  # "े" with reph above
+
+
+@pytest.mark.skipif(not GHORAHI_PDF.is_file(), reason="local source copy not available")
+def test_ghorahi_charter_matches_rendered_text() -> None:
+    # Expected strings were checked against the rendered page image (page 2).
+    page = extract_pages(GHORAHI_PDF, ocr=False, expected_language="ne")[1]["text"]
+    assert "गर्ने व्यक्तिको नागरिकता प्रमाणपत्र" in page
+    assert "नाता कायम गर्ने निवेदकले हालसालै खिचेको पासपोर्ट साईजको फोटो ३ प्रति" in page
+    assert "पत्रको प्रतिलिपि र १६ वर्षभन्दा कम उमेरको भएमा जन्म दर्ता प्रमाण–पत्र" in page
+    assert "नागररकता" not in page and "लसफाररस" not in page
 
 
 @pytest.mark.skipif(not RULES_PDF.is_file(), reason="local source copy not available")
