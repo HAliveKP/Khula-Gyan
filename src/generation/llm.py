@@ -127,7 +127,9 @@ def complete(
 
     path = _cache_path(model, messages, json_mode, temperature)
     if use_cache and path.exists():
-        return json.loads(path.read_text(encoding="utf-8"))["text"]
+        cached = json.loads(path.read_text(encoding="utf-8"))["text"]
+        if cached.strip():  # an empty reply was a failed call; ask again
+            return cached
 
     kwargs = {"model": model, "messages": messages, "temperature": temperature}
     kwargs["max_tokens"] = max_output_tokens()
@@ -135,7 +137,7 @@ def complete(
         kwargs["response_format"] = {"type": "json_object"}
     text = _call_with_keys(kwargs, keys, base_url, max_rounds)
 
-    if use_cache:
+    if use_cache and text.strip():  # never cache an empty reply (e.g. output limit used up by reasoning)
         CACHE_DIR.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps({"text": text}, ensure_ascii=False), encoding="utf-8")
     return text

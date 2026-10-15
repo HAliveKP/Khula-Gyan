@@ -92,6 +92,26 @@ def test_cache_is_shared_by_all_keys(monkeypatch):
     assert first == second and len(calls) == 1
 
 
+def test_empty_reply_is_not_cached(monkeypatch):
+    calls = []
+    factory = fake_client_factory({}, calls)
+
+    def empty_client(key, base_url):  # model used its whole output limit on reasoning
+        client = factory(key, base_url)
+        original = client.create
+
+        def create(**kwargs):
+            reply = original(**kwargs)
+            reply.choices[0].message.content = ""
+            return reply
+        client.create = create
+        return client
+    monkeypatch.setattr(llm, "_make_client", empty_client)
+    assert llm.complete(msgs("empty?")) == ""
+    assert llm.complete(msgs("empty?")) == ""
+    assert len(calls) == 2  # the second call asked again instead of reusing the empty reply
+
+
 def test_single_key_still_works(monkeypatch):
     monkeypatch.delenv("LLM_API_KEYS")
     monkeypatch.setenv("LLM_API_KEY", "only-key-9999")
