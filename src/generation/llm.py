@@ -135,6 +135,10 @@ def complete(
     kwargs["max_tokens"] = max_output_tokens()
     if json_mode:
         kwargs["response_format"] = {"type": "json_object"}
+    if os.getenv("LLM_REASONING", "").strip().lower() in ("off", "false", "0", "no"):
+        # Reasoning models (e.g. Nemotron on OpenRouter) can spend the whole output limit
+        # on hidden reasoning and return empty content. OpenRouter's switch to turn it off:
+        kwargs["extra_body"] = {"reasoning": {"enabled": False}}
     text = _call_with_keys(kwargs, keys, base_url, max_rounds)
 
     if use_cache and text.strip():  # never cache an empty reply (e.g. output limit used up by reasoning)

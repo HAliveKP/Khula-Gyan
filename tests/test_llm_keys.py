@@ -39,6 +39,7 @@ def setup(monkeypatch, tmp_path):
     monkeypatch.setenv("LLM_INPUT_COST_PER_1M_USD", "0")   # spend cap needs rates; fake keys are free
     monkeypatch.setenv("LLM_OUTPUT_COST_PER_1M_USD", "0")
     monkeypatch.delenv("LLM_KEY_STRATEGY", raising=False)
+    monkeypatch.delenv("LLM_REASONING", raising=False)
     monkeypatch.setattr(llm, "CACHE_DIR", tmp_path)
     monkeypatch.setattr(llm, "_next_key", 0)
     monkeypatch.setattr(llm, "_rest_until", {})
@@ -110,6 +111,31 @@ def test_empty_reply_is_not_cached(monkeypatch):
     assert llm.complete(msgs("empty?")) == ""
     assert llm.complete(msgs("empty?")) == ""
     assert len(calls) == 2  # the second call asked again instead of reusing the empty reply
+
+
+@pytest.mark.parametrize("setting, expected", [
+    (None, None),
+    ("off", {"reasoning": {"enabled": False}}),
+    ("on", None),
+])
+def test_reasoning_switch(monkeypatch, setting, expected):
+    if setting is not None:
+        monkeypatch.setenv("LLM_REASONING", setting)
+    sent = []
+    factory = fake_client_factory({}, [])
+
+    def recording_client(key, base_url):
+        client = factory(key, base_url)
+        original = client.create
+
+        def create(**kwargs):
+            sent.append(kwargs)
+            return original(**kwargs)
+        client.create = create
+        return client
+    monkeypatch.setattr(llm, "_make_client", recording_client)
+    llm.complete(msgs("think?"), use_cache=False)
+    assert sent[0].get("extra_body") == expected
 
 
 def test_single_key_still_works(monkeypatch):
