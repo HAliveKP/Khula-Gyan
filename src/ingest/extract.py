@@ -318,6 +318,21 @@ def reference_glyph_texts(font_bytes: bytes, direct: dict[int, str]) -> dict[int
     return reference
 
 
+def reference_digit_glyphs(direct: dict[int, str], reference: dict[int, str]) -> dict[int, str]:
+    """ASCII digit glyphs that the reference reads as the same Devanagari digit.
+
+    Kalimati draws its ASCII digit glyphs as Devanagari numerals. A subset
+    with GSUB shows this (``font_glyph_texts``); a subset without GSUB (the
+    Ghorahi and Hetauda charters) only has its cmap, which says "0".."9", so
+    the drawn "१००००" came out as "1००००". Only exact value matches ("1" -> "१") are taken.
+    """
+    return {
+        gid: reference[gid]
+        for gid, text in direct.items()
+        if len(text) == 1 and "0" <= text <= "9" and reference.get(gid) == chr(0x966 + int(text))
+    }
+
+
 def repair_devanagari_tounicode(document: Any) -> list[str]:
     """Fix wrong ToUnicode maps in an open PyMuPDF document, in memory only.
 
@@ -355,7 +370,8 @@ def repair_devanagari_tounicode(document: Any) -> list[str]:
                 continue
             reference = reference_glyph_texts(font_bytes, direct)
             filled = {gid: reference[gid] for gid in current if gid not in derived and gid in reference}
-            document.update_stream(stream_xref, _write_tounicode({**current, **filled, **derived}))
+            digits = reference_digit_glyphs(direct, reference)
+            document.update_stream(stream_xref, _write_tounicode({**current, **filled, **derived, **digits}))
             repaired.append(name)
     return repaired
 

@@ -54,3 +54,8 @@ Checked 2026-10-15 at 144 dpi. The Kalimati subset is embedded without a GSUB ta
 |---|---|---|---|---|
 | 2 | Yes, 2 | Yes | Before: no for most words with "ि" or reph. After: yes (all ~80 sampled words) | Image `गर्ने व्यक्तिको नागरिकता प्रमाणपत्र`; before `गने व्र्णिको नागररकता प्रमाणपत्र`; after identical to the image |
 | 7 | Yes, 7 | Yes | After: yes (all ~90 sampled words) | Image `सम्बन्धित व्यक्तिको निबेदन, लालपूर्जा, नागरिकता`; after identical |
+
+Update 2026-10-15 (fee digits). Two causes, checked against rendered pages 1, 8, 15 and 16:
+
+- Kalimati's ASCII digit glyphs (gids 18–20 in this subset) are drawn as Devanagari numerals, but without GSUB the subset's cmap only says `0`–`9`, so page 15 read `1००००` for the drawn `१००००` and page 16 `200` for `२००`. The Kalimati reference now supplies these readings too (`reference_digit_glyphs`). The same subset font in `palika_hetauda_2083_84.pdf` now gives `२०८३/८४` on page 1 (was `२०८3/८4`).
+- The fee cells `४५०` (page 1) and `२५०००`, `९००`, `९००`, `७५०` (page 8) were extracted but then removed by `src/ingest/clean.py`, which dropped every number-only line as a page number (`\d` also matches Devanagari digits). A number-only line is now removed only when its value minus the page index is an offset shared by at least 60% of the pages, so Ghorahi's printed page numbers `1`–`19` are still removed and fees and table serial numbers in all charters are kept.

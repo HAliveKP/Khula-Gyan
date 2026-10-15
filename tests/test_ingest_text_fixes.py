@@ -159,6 +159,34 @@ def test_shipped_kalimati_reference_reads_reordered_glyphs() -> None:
     assert glyphs["566"] == "े" + _REPH_MARK  # "े" with reph above
 
 
+def test_reference_reads_ascii_digit_glyphs_as_devanagari() -> None:
+    direct = {18: "0", 19: "1", 20: "2", 66: "०", 128: "क", 30: "5"}
+    reference = {18: "०", 19: "१", 20: "३", 66: "०", 128: "क", 30: "5"}
+    # Only a glyph the reference reads as the same digit value is changed.
+    assert extract.reference_digit_glyphs(direct, reference) == {18: "०", 19: "१"}
+    assert extract.reference_digit_glyphs(direct, {}) == {}
+
+
+def test_shipped_kalimati_reference_draws_ascii_digits_as_devanagari() -> None:
+    glyphs = extract._font_references()["Kalimati"]["glyphs"]
+    assert [glyphs[str(gid)] for gid in (18, 19, 20)] == ["०", "१", "२"]
+
+
+@pytest.mark.skipif(not GHORAHI_PDF.is_file(), reason="local source copy not available")
+def test_ghorahi_ascii_digit_glyphs_read_as_drawn() -> None:
+    # Pages 15 and 16 draw "१००००" and "२००" with Kalimati's ASCII digit glyphs.
+    pages = extract_pages(GHORAHI_PDF, ocr=False, expected_language="ne")
+    assert "१००००" in pages[14]["text"] and "1००००" not in pages[14]["text"]
+    assert "२००" in pages[15]["text"] and "200" not in pages[15]["text"]
+
+
+@pytest.mark.skipif(not HETAUDA_PDF.is_file(), reason="local source copy not available")
+def test_hetauda_kalimati_year_reads_as_drawn() -> None:
+    # Page 1 shows the fiscal year "२०८३/८४".
+    pages = extract_pages(HETAUDA_PDF, ocr=False, expected_language="ne")
+    assert "२०८३/८४" in pages[0]["text"]
+
+
 @pytest.mark.skipif(not GHORAHI_PDF.is_file(), reason="local source copy not available")
 def test_ghorahi_charter_matches_rendered_text() -> None:
     # Expected strings were checked against the rendered page image (page 2).
