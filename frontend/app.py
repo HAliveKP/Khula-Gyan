@@ -16,7 +16,8 @@ st.info(
 # Municipality selector (for Palika Guide)
 municipality = st.selectbox(
     "Choose a municipality (पालिका)",
-    options=("", "Lalitpur", "Kathmandu", "Bhaktapur", "Pokhara", "Biratnagar", "Biratnagar"),
+    # Municipalities whose citizen charters are registered in data/sources.yaml.
+    options=("", "Bharatpur", "Dhulikhel", "Ghorahi", "Hetauda", "Pokhara"),
     format_func=lambda value: value if value else "— Select a municipality —",
     help="Required for Palika Guide questions. Answers only come from the selected municipality's citizen charter."
 )

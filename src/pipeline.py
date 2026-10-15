@@ -63,6 +63,8 @@ MUNICIPALITY_ALIASES: dict[str, tuple[str, ...]] = {
     "Lalitpur": ("lalitpur", "ललितपुर"),
     "Bhaktapur": ("bhaktapur", "भक्तपुर"),
     "Pokhara": ("pokhara", "पोखरा"),
+    "Bharatpur": ("bharatpur", "भरतपुर"),
+    "Ghorahi": ("ghorahi", "घोराही"),
     "Biratnagar": ("biratnagar", "विराटनगर", "बिराटनगर"),
     "Birgunj": ("birgunj", "birganj", "वीरगञ्ज", "वीरगंज", "बिरगंज", "बीरगंज"),
     "Dharan": ("dharan", "धरान"),

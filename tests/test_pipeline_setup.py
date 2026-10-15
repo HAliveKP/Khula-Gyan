@@ -291,3 +291,12 @@ def test_raw_processed_and_chroma_data_are_not_tracked():
         if path.replace("\\", "/").startswith(("chroma_db/", "data/raw/", "data/processed/"))
     ]
     assert forbidden == []
+
+
+def test_extract_municipality_covers_indexed_charters():
+    from src.pipeline import _extract_municipality_from_query as extract_name
+    assert extract_name("भरतपुरमा जन्म दर्ता कसरी गर्ने?") == "Bharatpur"
+    assert extract_name("घोराहीमा नाता प्रमाणित सिफारिसको शुल्क कति?") == "Ghorahi"
+    assert extract_name("What does Ghorahi charge for a recommendation?") == "Ghorahi"
+    assert extract_name("हेटौंडामा बसाइँसराइ") == "Hetauda"
+    assert extract_name("धुलिखेलमा विवाह दर्ता") == "Dhulikhel"
