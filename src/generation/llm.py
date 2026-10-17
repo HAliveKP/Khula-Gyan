@@ -127,15 +127,21 @@ def complete(
 
     path = _cache_path(model, messages, json_mode, temperature)
     if use_cache and path.exists():
-        return json.loads(path.read_text(encoding="utf-8"))["text"]
+        cached = json.loads(path.read_text(encoding="utf-8"))["text"]
+        if cached.strip():  # an empty reply was a failed call; ask again
+            return cached
 
     kwargs = {"model": model, "messages": messages, "temperature": temperature}
     kwargs["max_tokens"] = max_output_tokens()
     if json_mode:
         kwargs["response_format"] = {"type": "json_object"}
+    if os.getenv("LLM_REASONING", "").strip().lower() in ("off", "false", "0", "no"):
+        # Reasoning models (e.g. Nemotron on OpenRouter) can spend the whole output limit
+        # on hidden reasoning and return empty content. OpenRouter's switch to turn it off:
+        kwargs["extra_body"] = {"reasoning": {"enabled": False}}
     text = _call_with_keys(kwargs, keys, base_url, max_rounds)
 
-    if use_cache:
+    if use_cache and text.strip():  # never cache an empty reply (e.g. output limit used up by reasoning)
         CACHE_DIR.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps({"text": text}, ensure_ascii=False), encoding="utf-8")
     return text

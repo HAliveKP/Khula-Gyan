@@ -10,34 +10,55 @@ from typing import Any
 
 
 class _VisibleTextParser(HTMLParser):
-    """Small standard-library HTML reader that skips script/style contents."""
+    """Small standard-library HTML reader that skips script/style contents and site chrome
+    (navigation menus, header, footer, sidebars), so a charter page keeps only its content."""
 
-    _BLOCK_TAGS = {"address", "article", "br", "div", "footer", "h1", "h2", "h3", "li", "p", "section", "table", "tr"}
+    _BLOCK_TAGS = {"address", "article", "br", "div", "h1", "h2", "h3", "li", "p", "section", "table", "tr"}
+    _IGNORED_TAGS = {"script", "style", "noscript", "svg", "nav", "header", "footer", "aside", "form"}
+    # Class names of the news ticker, sidebars and tabs in the Drupal template most
+    # municipal (palika) websites share.
+    _IGNORED_CLASSES = {"header-notice", "region-newsticker", "sidebar", "tabs", "breadcrumb"}
 
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
         self.parts: list[str] = []
-        self._ignored_depth = 0
+        self._skip_tag: str | None = None  # tag of the element being skipped
+        self._skip_depth = 0  # nesting of that same tag inside it
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        if tag in {"script", "style", "noscript", "svg"}:
-            self._ignored_depth += 1
-        elif self._ignored_depth == 0 and tag in self._BLOCK_TAGS:
+        if self._skip_tag is not None:
+            if tag == self._skip_tag:
+                self._skip_depth += 1
+            return
+        classes = set((dict(attrs).get("class") or "").split())
+        if tag in self._IGNORED_TAGS or classes & self._IGNORED_CLASSES:
+            self._skip_tag, self._skip_depth = tag, 1
+        elif tag in self._BLOCK_TAGS:
             self.parts.append("\n")
 
     def handle_endtag(self, tag: str) -> None:
-        if tag in {"script", "style", "noscript", "svg"} and self._ignored_depth:
-            self._ignored_depth -= 1
-        elif self._ignored_depth == 0 and tag in self._BLOCK_TAGS:
+        if self._skip_tag is not None:
+            if tag == self._skip_tag:
+                self._skip_depth -= 1
+                if self._skip_depth == 0:
+                    self._skip_tag = None
+            return
+        if tag in self._BLOCK_TAGS:
             self.parts.append("\n")
 
     def handle_data(self, data: str) -> None:
-        if self._ignored_depth == 0:
+        if self._skip_tag is None:
             self.parts.append(data)
 
 
 def _extract_html(path: Path) -> list[dict[str, Any]]:
     raw = path.read_text(encoding="utf-8", errors="replace")
+    # Keep only the page's main content when it is marked up; menus built from plain
+    # <div>s (as on municipal sites) are outside it.
+    lowered = raw.lower()
+    start, end = lowered.find("<main"), lowered.rfind("</main>")
+    if start != -1 and end > start:
+        raw = raw[start:end + len("</main>")]
     parser = _VisibleTextParser()
     parser.feed(raw)
     parser.close()
@@ -244,11 +265,81 @@ def _write_tounicode(mapping: dict[int, str]) -> bytes:
     return "\n".join(lines).encode("ascii")
 
 
+# Some subsets (e.g. the Kalimati in the Ghorahi charter) are embedded
+# without a GSUB table, so only the ~80 glyphs in the subset's cmap can be
+# read from the font; the many other glyphs Word picked (the "ि" width
+# variants, reph, reph + vowel sign, conjuncts) keep their wrong ToUnicode
+# text. Their glyph ids are the same in every copy of the same font version,
+# so a reference reading built from subsets that do carry GSUB fills the gap
+# (see scripts/build_font_reference.py). It is used only when the subset is
+# the same font: family name and glyph count match, and every Devanagari
+# glyph in the subset's own cmap agrees with the reference.
+_FONT_REFERENCE_FILE = Path(__file__).with_name("font_reference.json")
+_MIN_REFERENCE_CHECKS = 20
+
+
+def _font_references() -> dict[str, Any]:
+    import json
+
+    try:
+        return json.loads(_FONT_REFERENCE_FILE.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def reference_glyph_texts(font_bytes: bytes, direct: dict[int, str]) -> dict[int, str]:
+    """Return reference glyph readings for a known font, or {} if unsure.
+
+    ``direct`` is the subset's own cmap reading (from ``font_glyph_texts``).
+    """
+    try:
+        import io
+        from fontTools.ttLib import TTFont
+
+        font = TTFont(io.BytesIO(font_bytes), lazy=True)
+        family = font["name"].getDebugName(1) or ""
+        glyph_count = len(font.getGlyphOrder())
+    except Exception:
+        return {}
+    entry = _font_references().get(family)
+    if not entry or entry.get("glyph_count") != glyph_count:
+        return {}
+    reference = {int(gid): text for gid, text in entry["glyphs"].items()}
+    checks = [gid for gid, text in direct.items() if any("ऀ" <= char <= "ॿ" for char in text)]
+    if len(checks) < _MIN_REFERENCE_CHECKS:
+        return {}
+
+    def plain(text: str) -> str:
+        text = text.replace(_I_SIGN_MARK, "ि").replace(_REPH_MARK, "र्")
+        return unicodedata.normalize("NFC", text)
+
+    if any(plain(reference.get(gid, "")) != plain(direct[gid]) for gid in checks):
+        return {}
+    return reference
+
+
+def reference_digit_glyphs(direct: dict[int, str], reference: dict[int, str]) -> dict[int, str]:
+    """ASCII digit glyphs that the reference reads as the same Devanagari digit.
+
+    Kalimati draws its ASCII digit glyphs as Devanagari numerals. A subset
+    with GSUB shows this (``font_glyph_texts``); a subset without GSUB (the
+    Ghorahi and Hetauda charters) only has its cmap, which says "0".."9", so
+    the drawn "१००००" came out as "1००००". Only exact value matches ("1" -> "१") are taken.
+    """
+    return {
+        gid: reference[gid]
+        for gid, text in direct.items()
+        if len(text) == 1 and "0" <= text <= "9" and reference.get(gid) == chr(0x966 + int(text))
+    }
+
+
 def repair_devanagari_tounicode(document: Any) -> list[str]:
     """Fix wrong ToUnicode maps in an open PyMuPDF document, in memory only.
 
     A Type0/Identity-H font is repaired only when at least one glyph listed in
     its own cmap is mapped to a different letter by the PDF's ToUnicode map.
+    Glyphs the font itself cannot explain are read from a matching reference
+    font (``reference_glyph_texts``) when one is known.
     Returns the names of the repaired fonts.
     """
     repaired: list[str] = []
@@ -267,7 +358,8 @@ def repair_devanagari_tounicode(document: Any) -> list[str]:
             references = re.findall(r"(\d+) 0 R", descendants[1])
             if not references or document.xref_get_key(int(references[0]), "CIDToGIDMap") != ("name", "/Identity"):
                 continue  # glyph ids equal character codes only with an identity map
-            readings = font_glyph_texts(document.extract_font(xref)[3])
+            font_bytes = document.extract_font(xref)[3]
+            readings = font_glyph_texts(font_bytes)
             if not readings:
                 continue
             derived, direct = readings
@@ -276,9 +368,127 @@ def repair_devanagari_tounicode(document: Any) -> list[str]:
             wrong = [gid for gid, text in direct.items() if gid in current and current[gid] != text]
             if not wrong:
                 continue
-            document.update_stream(stream_xref, _write_tounicode({**current, **derived}))
+            reference = reference_glyph_texts(font_bytes, direct)
+            filled = {gid: reference[gid] for gid in current if gid not in derived and gid in reference}
+            digits = reference_digit_glyphs(direct, reference)
+            document.update_stream(stream_xref, _write_tounicode({**current, **filled, **derived, **digits}))
             repaired.append(name)
     return repaired
+
+
+# ---------------------------------------------------------------------------
+# Legacy Nepali fonts (Preeti and its look-alikes Kantipur and PCS Nepali).
+#
+# These fonts draw Devanagari shapes on Latin code points, so the PDF text
+# layer holds Latin letters ("l;kmfl/;" for "सिफारिस"). The text is typed in
+# visual order: "ि" (key "l") comes before its consonant cluster and the reph
+# (key "{") after its syllable. Only spans in such a font are converted.
+# The mapping below was checked against rendered pages of the Hetauda
+# charter and the DoTM directive (docs/extraction-notes.md).
+# ---------------------------------------------------------------------------
+
+_PREETI_FONT = re.compile(r"preeti|kantipur|pcs[\s_-]*nepali", re.I)
+_HIMALI_FONT = re.compile(r"himali", re.I)  # Fontasy Himali: digits only seen
+
+_PREETI_MAP = {
+    "a": "ब", "b": "द", "c": "अ", "d": "म", "e": "भ", "f": "ा", "g": "न", "h": "ज", "i": "ष्",
+    "j": "व", "k": "प", "l": _I_SIGN_MARK, "n": "ल", "o": "य", "p": "उ", "q": "त्र", "r": "च",
+    "s": "क", "t": "त", "u": "ग", "v": "ख", "w": "ध", "x": "ह", "y": "थ", "z": "श",
+    "A": "ब्", "B": "द्य", "C": "ऋ", "D": "म्", "E": "भ्", "F": "ँ", "G": "न्", "H": "ज्",
+    "I": "क्ष्", "J": "व्", "K": "प्", "L": "ी", "M": "ः", "N": "ल्", "O": "इ", "P": "ए",
+    "Q": "त्त", "R": "च्", "S": "क्", "T": "त्", "U": "ग्", "V": "ख्", "W": "ध्", "X": "ह्",
+    "Y": "थ्", "Z": "श्",
+    "0": "ण्", "1": "ज्ञ", "2": "द्द", "3": "घ", "4": "द्ध", "5": "छ", "6": "ट", "7": "ठ",
+    "8": "ड", "9": "ढ",
+    "!": "१", "@": "२", "#": "३", "$": "४", "%": "५", "^": "६", "&": "७", "*": "८", "(": "९",
+    ")": "०", "-": "(", "_": ")", "+": "ं", "=": ".", "[": "ृ", "{": _REPH_MARK, "]": "े",
+    "}": "ै", "\\": "्", "|": "्र", ";": "स", ":": "स्", "'": "ु", '"': "ू", ".": "।",
+    ">": "श्र", "/": "र", "?": "रु", "~": "ञ्",
+    "¿": "रू", "÷": "/", "ª": "ङ", "ˆ": "फ्", "«": "्र", "§": "ट्ट", "¶": "ठ्ठ", "Ë": "ङ्ग",
+    "Í": "ङ्क", "å": "द्व", "Ü": "%", "Ø": "्य", "Ù": ";", "¥": "र्‍", "‰": "झ्",
+    "›": "द्र", "•": "ड्ड", "Œ": "त्त्", "…": "‘", "Ú": "’", "æ": "“", "Æ": "”",
+}
+# "m" adds the hook that turns one base glyph into another (k+m = फ, e+m = झ,
+# q+m = क्र). Vowel signs or a halant may be typed between base and hook.
+_PREETI_HOOK = re.compile(r"([kedqQp])([\\'\"\]}{|]*)m")
+_PREETI_HOOKED = {"k": "फ", "e": "झ", "d": "झ", "q": "क्र", "Q": "क्त", "p": "ऊ"}
+_PREETI_AFTER = [
+    ("्ा", ""),  # half form + "ा" is drawn as the full letter
+    ("अाे", "ओ"), ("अाै", "औ"), ("अा", "आ"), ("ाे", "ो"), ("ाै", "ौ"), ("एे", "ऐ"),
+    (f"इ{_REPH_MARK}", "ई"),  # "इ" with the reph-shaped hook is "ई"
+]
+
+
+def preeti_to_unicode(text: str) -> str:
+    """Convert text typed in the Preeti keyboard layout to Unicode Devanagari."""
+    text = re.sub(r"(\]\{)+", "]{", text)  # "]{" typed twice draws once
+    text = _PREETI_HOOK.sub(lambda match: _PREETI_HOOKED[match.group(1)] + match.group(2), text)
+    text = "".join(_PREETI_MAP.get(char, char) for char in text)
+    for old, new in _PREETI_AFTER:
+        text = text.replace(old, new)
+    text = restore_logical_order(text)
+    text = re.sub("([ँं])([ा-ौ])", r"\2\1", text)  # "ँ" typed before its vowel sign
+    text = re.sub("([ा-ौ])\\1+", r"\1", text)  # a vowel sign typed twice draws once
+    return unicodedata.normalize("NFC", text)
+
+
+def _himali_to_unicode(text: str) -> str:
+    return text.translate({ord("0") + digit: 0x966 + digit for digit in range(10)})
+
+
+def legacy_font_converters(document: Any) -> dict[str, Any]:
+    """Map span font names to a converter for legacy-encoded Nepali fonts.
+
+    The span name is the PDF base font without its subset prefix; when it is
+    not descriptive (e.g. "CIDFont+F2") the embedded font's family is used.
+    """
+    converters: dict[str, Any] = {}
+    seen: set[int] = set()
+    for page in document:
+        for xref, _ext, _kind, name, *_rest in page.get_fonts(full=True):
+            if xref in seen:
+                continue
+            seen.add(xref)
+            names = [name, re.sub(r"^[A-Z]{6}\+", "", name)]
+            try:
+                import io
+                from fontTools.ttLib import TTFont
+
+                font = TTFont(io.BytesIO(document.extract_font(xref)[3]), lazy=True)
+                names.append(font["name"].getDebugName(1) or "")
+            except Exception:
+                pass
+            label = " ".join(names)
+            converter = preeti_to_unicode if _PREETI_FONT.search(label) else _himali_to_unicode if _HIMALI_FONT.search(label) else None
+            if converter:
+                converters[names[0]] = converters[names[1]] = converter
+    return converters
+
+
+def _page_text(page: Any, converters: dict[str, Any]) -> str:
+    """Plain page text; runs of legacy-font spans in a line are converted."""
+    if not converters or not any(font[3] in converters for font in page.get_fonts(full=True)):
+        return page.get_text("text")
+    lines: list[str] = []
+    for block in page.get_text("dict")["blocks"]:
+        for line in block.get("lines", []):
+            parts: list[str] = []
+            run: list[str] = []
+            run_converter = None
+            for span in line["spans"]:
+                converter = converters.get(span["font"])
+                if run and converter is not run_converter:
+                    parts.append(run_converter("".join(run)))
+                    run = []
+                if converter:
+                    run.append(span["text"])
+                    run_converter = converter
+                else:
+                    parts.append(span["text"])
+            if run:
+                parts.append(run_converter("".join(run)))
+            lines.append("".join(parts) + "\n")
+    return "".join(lines)
 
 
 def _extract_pdf(
@@ -297,8 +507,9 @@ def _extract_pdf(
     with fitz.open(path) as document:
         # In-memory fix for fonts whose ToUnicode map disagrees with the font.
         repaired_fonts = repair_devanagari_tounicode(document)
+        converters = legacy_font_converters(document)
         for page_number, page in enumerate(document, start=1):
-            text = page.get_text("text")
+            text = _page_text(page, converters)
             if repaired_fonts:
                 text = restore_logical_order(text)
             used_ocr = False

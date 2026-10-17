@@ -7,6 +7,8 @@ from pathlib import Path
 
 import pytest
 
+from src.ingest import extract
+from src.ingest.clean import clean_pages
 from src.ingest.extract import (
     _I_SIGN_MARK,
     _REPH_MARK,
@@ -15,10 +17,15 @@ from src.ingest.extract import (
     _write_tounicode,
     extract_pages,
     font_glyph_texts,
+    reference_glyph_texts,
     restore_logical_order,
 )
 
-RULES_PDF = Path(__file__).resolve().parents[1] / "data" / "raw" / "dl_vehicle_transport_rules_2054.pdf"
+RAW = Path(__file__).resolve().parents[1] / "data" / "raw"
+RULES_PDF = RAW / "dl_vehicle_transport_rules_2054.pdf"
+GHORAHI_PDF = RAW / "palika_ghorahi.pdf"
+HETAUDA_PDF = RAW / "palika_hetauda_2083_84.pdf"
+DOTM_PDF = RAW / "dl_dotm_procedure_directive_2060.pdf"
 
 
 def test_i_sign_moves_after_its_consonant_cluster() -> None:
@@ -111,6 +118,85 @@ def test_unreadable_font_returns_none() -> None:
     assert font_glyph_texts(b"not a font") is None
 
 
+def test_reference_fills_glyphs_of_matching_font(monkeypatch: pytest.MonkeyPatch) -> None:
+    font = _tiny_font()
+    _derived, direct = font_glyph_texts(font)
+    reference = {"1": "क", "2": "र", "3": "्", "4": "ि", "5": "०", "8": _REPH_MARK, "9": _I_SIGN_MARK}
+    monkeypatch.setattr(extract, "_MIN_REFERENCE_CHECKS", 3)
+    monkeypatch.setattr(extract, "_font_references", lambda: {"Tiny": {"glyph_count": 10, "glyphs": reference}})
+    # The reference's "ि" marker agrees with the plain "ि" in the subset's cmap.
+    assert reference_glyph_texts(font, direct)[9] == _I_SIGN_MARK
+
+
+@pytest.mark.parametrize(
+    "references",
+    [
+        {"Tiny": {"glyph_count": 11, "glyphs": {"1": "क", "2": "र", "3": "्", "4": "ि", "5": "०"}}},  # other glyph count
+        {"Tiny": {"glyph_count": 10, "glyphs": {"1": "ख", "2": "र", "3": "्", "4": "ि", "5": "०"}}},  # cmap disagrees
+        {"Other": {"glyph_count": 10, "glyphs": {"1": "क", "2": "र", "3": "्", "4": "ि", "5": "०"}}},  # other family
+    ],
+)
+def test_reference_is_not_used_for_a_different_font(monkeypatch: pytest.MonkeyPatch, references: dict) -> None:
+    font = _tiny_font()
+    _derived, direct = font_glyph_texts(font)
+    monkeypatch.setattr(extract, "_MIN_REFERENCE_CHECKS", 3)
+    monkeypatch.setattr(extract, "_font_references", lambda: references)
+    assert reference_glyph_texts(font, direct) == {}
+
+
+def test_reference_needs_enough_cmap_checks(monkeypatch: pytest.MonkeyPatch) -> None:
+    font = _tiny_font()
+    _derived, direct = font_glyph_texts(font)
+    monkeypatch.setattr(extract, "_font_references", lambda: {"Tiny": {"glyph_count": 10, "glyphs": {"1": "क"}}})
+    assert reference_glyph_texts(font, direct) == {}  # default needs 20 Devanagari cmap glyphs
+
+
+def test_shipped_kalimati_reference_reads_reordered_glyphs() -> None:
+    glyphs = extract._font_references()["Kalimati"]["glyphs"]
+    assert glyphs["128"] == "क"
+    assert glyphs["91"] == _REPH_MARK  # reph, which Word mapped to "य" in the Ghorahi charter
+    assert {glyphs[str(gid)] for gid in range(464, 469)} == {_I_SIGN_MARK}  # "ि" width variants
+    assert glyphs["566"] == "े" + _REPH_MARK  # "े" with reph above
+
+
+def test_reference_reads_ascii_digit_glyphs_as_devanagari() -> None:
+    direct = {18: "0", 19: "1", 20: "2", 66: "०", 128: "क", 30: "5"}
+    reference = {18: "०", 19: "१", 20: "३", 66: "०", 128: "क", 30: "5"}
+    # Only a glyph the reference reads as the same digit value is changed.
+    assert extract.reference_digit_glyphs(direct, reference) == {18: "०", 19: "१"}
+    assert extract.reference_digit_glyphs(direct, {}) == {}
+
+
+def test_shipped_kalimati_reference_draws_ascii_digits_as_devanagari() -> None:
+    glyphs = extract._font_references()["Kalimati"]["glyphs"]
+    assert [glyphs[str(gid)] for gid in (18, 19, 20)] == ["०", "१", "२"]
+
+
+@pytest.mark.skipif(not GHORAHI_PDF.is_file(), reason="local source copy not available")
+def test_ghorahi_ascii_digit_glyphs_read_as_drawn() -> None:
+    # Pages 15 and 16 draw "१००००" and "२००" with Kalimati's ASCII digit glyphs.
+    pages = extract_pages(GHORAHI_PDF, ocr=False, expected_language="ne")
+    assert "१००००" in pages[14]["text"] and "1००००" not in pages[14]["text"]
+    assert "२००" in pages[15]["text"] and "200" not in pages[15]["text"]
+
+
+@pytest.mark.skipif(not HETAUDA_PDF.is_file(), reason="local source copy not available")
+def test_hetauda_kalimati_year_reads_as_drawn() -> None:
+    # Page 1 shows the fiscal year "२०८३/८४".
+    pages = extract_pages(HETAUDA_PDF, ocr=False, expected_language="ne")
+    assert "२०८३/८४" in pages[0]["text"]
+
+
+@pytest.mark.skipif(not GHORAHI_PDF.is_file(), reason="local source copy not available")
+def test_ghorahi_charter_matches_rendered_text() -> None:
+    # Expected strings were checked against the rendered page image (page 2).
+    page = extract_pages(GHORAHI_PDF, ocr=False, expected_language="ne")[1]["text"]
+    assert "गर्ने व्यक्तिको नागरिकता प्रमाणपत्र" in page
+    assert "नाता कायम गर्ने निवेदकले हालसालै खिचेको पासपोर्ट साईजको फोटो ३ प्रति" in page
+    assert "पत्रको प्रतिलिपि र १६ वर्षभन्दा कम उमेरको भएमा जन्म दर्ता प्रमाण–पत्र" in page
+    assert "नागररकता" not in page and "लसफाररस" not in page
+
+
 @pytest.mark.skipif(not RULES_PDF.is_file(), reason="local source copy not available")
 def test_rules_2054_pages_match_rendered_text() -> None:
     # Expected strings were checked against the rendered page images.
@@ -122,3 +208,164 @@ def test_rules_2054_pages_match_rendered_text() -> None:
     assert "अनुसूची-३" in schedule_3 and "दस्तुर तालिका" in schedule_3
     assert "८००/-" in schedule_3 and "8००/-" not in schedule_3
     assert all(_I_SIGN_MARK not in page["text"] and _REPH_MARK not in page["text"] for page in pages)
+
+
+# --- Preeti-family legacy fonts -------------------------------------------
+# Each pair was checked against rendered pages of the Hetauda charter, the
+# DoTM directive or the Pokhara rates charter.
+
+
+@pytest.mark.parametrize(
+    ("preeti", "unicode_text"),
+    [
+        ("l;kmfl/;", "सिफारिस"),  # "ि" typed before its consonant; k+m = फ
+        ("sfo{ljlwM", "कार्यविधिः"),  # reph typed after its syllable
+        ("lgb]{lzsf", "निर्देशिका"),  # reph after a vowel sign, "ि" before
+        ("lgMz'Ns", "निःशुल्क"),
+        ("cfjZos kg]{ sfuhft", "आवश्यक पर्ने कागजात"),  # c+f = आ; Z+f = श
+        ("k|df0fkq", "प्रमाणपत्र"),  # "्र" sign; ण् + ा = ण
+        ("hgzlQm", "जनशक्ति"),  # Q+m = क्त, "ि" before the conjunct
+        ("e'mqf] a'e\\mg'", "झुत्रो बुझ्नु"),  # hook typed after a vowel sign / halant
+        ("qm=;+= @)^)", "क्र.सं. २०६०"),  # shifted digits are Devanagari digits
+        ("ug]{]{", "गर्ने"),  # "]{" typed twice is drawn once
+        ("kmFf6sf", "फाँटका"),  # "ँ" typed before "ा"
+        ("cWoIf÷j8f", "अध्यक्ष/वडा"),
+        ('d"NofÍg', "मूल्याङ्कन"),
+        ("……P]gÚÚ", "‘‘ऐन’’"),
+    ],
+)
+def test_preeti_to_unicode(preeti: str, unicode_text: str) -> None:
+    assert extract.preeti_to_unicode(preeti) == unicode_text
+
+
+def test_legacy_font_names() -> None:
+    for name in ["ABCDEE+Preeti", "Kantipur Regular", "PCS NEPALI"]:
+        assert extract._PREETI_FONT.search(name)
+    for name in ["ABCDEE+Mangal", "Kalimati", "Kokila", "TimesNewRomanPSMT", "Fontasy Himali"]:
+        assert not extract._PREETI_FONT.search(name)
+    assert extract._HIMALI_FONT.search("FONTASY_ HIMALI_ TT")
+    assert extract._himali_to_unicode("(10)") == "(१०)"
+
+
+def test_only_legacy_font_spans_are_converted() -> None:
+    fitz = pytest.importorskip("fitz")
+    document = fitz.open()
+    page = document.new_page()
+    page.insert_text((72, 72), "l;kmfl/;", fontname="helv")  # stands in for Preeti
+    page.insert_text((72, 100), "IEE l", fontname="tiro")  # an ordinary font
+    page.insert_text((72, 128), "kg]{", fontname="helv")
+    plain = page.get_text("text")
+    assert extract._page_text(page, {}) == plain  # no legacy font: text unchanged
+    text = extract._page_text(page, {"Helvetica": extract.preeti_to_unicode})
+    assert text.splitlines() == ["सिफारिस", "IEE l", "पर्ने"]
+
+
+@pytest.mark.skipif(not HETAUDA_PDF.is_file(), reason="local source copy not available")
+def test_hetauda_charter_matches_rendered_text() -> None:
+    # Expected strings were checked against the rendered page images (pages 3 and 15).
+    pages = extract_pages(HETAUDA_PDF, ocr=False, expected_language="ne")
+    assert "१) निवेदन पत्र र नागरिकता प्रमाणपत्रको प्रतिलिपि" in pages[2]["text"]
+    assert "२) वडा अध्यक्ष/वडा सदस्य/वडा सचिवले सम्बन्धित" in pages[2]["text"]
+    assert "सम्बन्धित   फाँटका कर्मचारी" in pages[2]["text"]
+    assert "सम्झौता पत्र र बहाल कर" in pages[14]["text"]
+    assert all(page.get("extraction_status") != "unusable" for page in pages)
+
+
+@pytest.mark.skipif(not DOTM_PDF.is_file(), reason="local source copy not available")
+def test_dotm_directive_matches_rendered_text() -> None:
+    # Page 107 is quoted in docs/extraction-notes.md; page 4 is the contents page.
+    pages = extract_pages(DOTM_PDF, ocr=False, expected_language="ne")
+    assert "यातायात व्यवस्थापन कार्यविधि निर्देशिका, २०७४" in pages[106]["text"]
+    assert "अनुसूचीहरू" in pages[106]["text"]
+    assert "बाझिएमा गर्ने" in pages[3]["text"]
+    assert "निर्देशक (जनशक्ति व्यवस्थापन शाखा) को जिम्मेवारी" in pages[3]["text"]
+    assert "१०" in pages[3]["text"]  # Fontasy Himali page numbers
+
+
+def test_html_extraction_skips_site_navigation(tmp_path):
+    page = tmp_path / "charter.html"
+    page.write_text(
+        "<html><body><header>Logo FAQs</header><nav><li>Home</li><li>Downloads</li></nav>"
+        "<main><table><tr><td>जन्म दर्ता</td><td>१ दिन</td></tr></table></main>"
+        "<aside>Notices</aside><footer>© 2026 Municipality</footer></body></html>",
+        encoding="utf-8",
+    )
+    text = extract._extract_html(page)[0]["text"]
+    assert "जन्म दर्ता" in text and "१ दिन" in text
+    for chrome in ("Logo", "Home", "Downloads", "Notices", "©"):
+        assert chrome not in text
+
+
+def test_html_extraction_keeps_only_main_when_present(tmp_path):
+    page = tmp_path / "charter.html"
+    page.write_text(
+        "<html><body><div class='menu'>Skip to main content FAQs</div>"
+        "<main><p>विवाह दर्ता</p></main><div>Latest news</div></body></html>",
+        encoding="utf-8",
+    )
+    text = extract._extract_html(page)[0]["text"]
+    assert "विवाह दर्ता" in text
+    assert "Skip" not in text and "news" not in text
+
+
+def test_html_extraction_skips_palika_template_blocks(tmp_path):
+    page = tmp_path / "charter.html"
+    page.write_text(
+        "<main><section class='header-notice'><div><div>News item</div></div></section>"
+        "<table><tr><td>मृत्यु दर्ता</td></tr></table>"
+        "<div class='col-md-3'><div class='sidebar'><div>Downloads</div></div></div>"
+        "<p>अन्त्य</p></main>",
+        encoding="utf-8",
+    )
+    text = extract._extract_html(page)[0]["text"]
+    assert "मृत्यु दर्ता" in text and "अन्त्य" in text
+    assert "News" not in text and "Downloads" not in text
+
+
+# --- Page-number lines vs. numbers in tables (src/ingest/clean.py) ---------
+
+
+def test_clean_keeps_fee_cells_and_drops_page_numbers() -> None:
+    # Ghorahi-style table pages: the printed page number equals the page index,
+    # while fee cells are number-only lines too (here in Devanagari digits).
+    pages = [
+        {"page": 1, "text": "1\nसिफारिस\n४५०\nवडा कार्यालय"},
+        {"page": 2, "text": "2\nदर्ता\n२०० देखी\n९००\nवडा कार्यालय"},
+        {"page": 3, "text": "3\nइजाजत\n२५०००\n७५०"},
+    ]
+    texts = [page["text"] for page in clean_pages(pages)]
+    assert texts[0].splitlines() == ["सिफारिस", "४५०"]  # "वडा कार्यालय" repeats at page edges
+    assert texts[1].splitlines() == ["दर्ता", "२०० देखी", "९००"]
+    assert texts[2].splitlines() == ["इजाजत", "२५०००", "७५०"]
+
+
+def test_clean_drops_offset_and_labelled_page_numbers() -> None:
+    # Printed numbers start at ५ on the first PDF page (offset 4), in Devanagari.
+    pages = [
+        {"page": 1, "text": "क\n५\n१"},
+        {"page": 2, "text": "ख\n६\nPage 2 of 3"},
+        {"page": 3, "text": "ग\n७\n10 of 12"},
+    ]
+    assert [page["text"] for page in clean_pages(pages)] == ["क\n१", "ख", "ग"]
+
+
+def test_clean_keeps_numbers_of_a_single_page() -> None:
+    # One page cannot show a page-number pattern; serial numbers stay.
+    text = "१\nजन्म दर्ता\n\n२\nमृत्यु दर्ता"
+    assert clean_pages([{"page": 1, "text": text}])[0]["text"] == text
+
+
+def test_clean_does_not_leave_double_blank_lines() -> None:
+    pages = [{"page": 1, "text": "क\n\n1\n\nख"}, {"page": 2, "text": "ग\n\n2\n\nघ"}]
+    assert [page["text"] for page in clean_pages(pages)] == ["क\n\nख", "ग\n\nघ"]
+
+
+@pytest.mark.skipif(not GHORAHI_PDF.is_file(), reason="local source copy not available")
+def test_ghorahi_fee_cells_survive_cleaning() -> None:
+    # Checked against the rendered images of pages 1 and 8.
+    pages = clean_pages(extract_pages(GHORAHI_PDF, ocr=False, expected_language="ne"))
+    assert "समावेश भई\n४५०\nसम्बन्धित वडा" in pages[0]["text"]
+    page_8 = pages[7]["text"]
+    assert "४५० देखी\n२५०००" in page_8 and "२०० देखी\n९००" in page_8
+    assert "३ घण्टा\n९००" in page_8 and "\n७५०\n" in page_8
+    assert all(not page["text"].startswith(f"{page['page']}\n") for page in pages)  # page numbers gone

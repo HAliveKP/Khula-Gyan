@@ -249,3 +249,268 @@ sources:
 #   approval_note: null
 #   approved_on: null
 #   approved_by: null
+# --- PALIKA GUIDE entries added 2026-10-15 (data agent). Files are local-only in data/raw/; sha256/size in data/raw/_manifest.json ---
+- id: palika_pokhara_rates_2074_75
+  title: "Pokhara Citizen Charter FY 2074/75 with rates (नागरिक वडापत्र आ.व. २०७४/०७५, badapatrawithrate)"
+  publisher: "Pokhara Metropolitan City (पोखरा महानगरपालिका)"
+  url: "https://pokharamun.gov.np/sites/pokharamun.gov.np/files/badapatrawithrate.pdf"
+  filename: palika_pokhara_rates_2074_75.pdf
+  service: palika_guide
+  lang: ne
+  license: null
+  terms_url: null
+  answer_evidence: false
+  legacy: false
+  municipality: Pokhara
+  district: Kaski
+  province: Gandaki
+  format: text_pdf
+  date_seen: '2026-10-15'
+  reuse_status: unclear
+  reuse_quote: "© 2026  पोखरा महानगरपालिका (footer of https://pokharamun.gov.np/citizen-charter; no licence or reuse terms found on the page or in the PDF)"
+  local_only: true
+  approval_note: null
+  approved_on: null
+  approved_by: null
+- id: palika_pokhara_2075
+  title: "Pokhara Citizen Charter FY 2075/76 (नागरिक बडापत्र - २०७५)"
+  publisher: "Pokhara Metropolitan City (पोखरा महानगरपालिका)"
+  url: "https://pokharamun.gov.np/sites/pokharamun.gov.np/files/%E0%A4%A8%E0%A4%BE%E0%A4%97%E0%A4%B0%E0%A4%BF%E0%A4%95%20%E0%A4%AC%E0%A4%A1%E0%A4%BE%E0%A4%AA%E0%A4%A4%E0%A5%8D%E0%A4%B0%20-%E0%A5%A8%E0%A5%A6%E0%A5%AD%E0%A5%AB.pdf"
+  filename: palika_pokhara_2075.pdf
+  service: palika_guide
+  lang: ne
+  license: null
+  terms_url: null
+  answer_evidence: false
+  legacy: false
+  municipality: Pokhara
+  district: Kaski
+  province: Gandaki
+  format: text_pdf
+  date_seen: '2026-10-15'
+  reuse_status: unclear
+  reuse_quote: "© 2026  पोखरा महानगरपालिका (footer of https://pokharamun.gov.np/citizen-charter; no licence or reuse terms found on the page or in the PDF)"
+  local_only: true
+  approval_note: null
+  approved_on: null
+  approved_by: null
+- id: palika_bharatpur_vital_registration
+  title: "Bharatpur Citizen Charter 2082: Registration and Social Security Section (नागरिक वडापत्र-२०८२, पञ्जिकरण तथा सामाजिक सुरक्षा शाखा)"
+  publisher: "Bharatpur Metropolitan City (भरतपुर महानगरपालिका)"
+  url: "https://bharatpurmun.gov.np/sites/bharatpurmun.gov.np/files/documents/%E0%A4%AA%E0%A4%9E%E0%A5%8D%E0%A4%9C%E0%A4%BF%E0%A4%95%E0%A4%B0%E0%A4%A3%20%E0%A4%A4%E0%A4%A5%E0%A4%BE%20%E0%A4%B8%E0%A4%BE%E0%A4%AE%E0%A4%BE%E0%A4%9C%E0%A4%BF%E0%A4%95%20%E0%A4%B8%E0%A5%81%E0%A4%B0%E0%A4%95%E0%A5%8D%E0%A4%B7%E0%A4%BE%20%E0%A4%B6%E0%A4%BE%E0%A4%96%E0%A4%BE.pdf"
+  filename: palika_bharatpur_vital_registration.pdf
+  service: palika_guide
+  lang: ne
+  license: null
+  terms_url: null
+  answer_evidence: false
+  legacy: false
+  municipality: Bharatpur
+  district: Chitwan
+  province: Bagmati
+  format: text_pdf
+  date_seen: '2026-10-15'
+  reuse_status: unclear
+  reuse_quote: "© 2026  भरतपुर महानगरपालिका (footer of https://bharatpurmun.gov.np/ne/citizen-charter; no licence or reuse terms found on the page or in the PDF)"
+  local_only: true
+  approval_note: null
+  approved_on: null
+  approved_by: null
+- id: palika_bharatpur_general_admin
+  title: "Bharatpur Citizen Charter 2082: General Administration Division (सामान्य प्रशासन महाशाखा)"
+  publisher: "Bharatpur Metropolitan City (भरतपुर महानगरपालिका)"
+  url: "https://bharatpurmun.gov.np/sites/bharatpurmun.gov.np/files/documents/%E0%A4%B8%E0%A4%BE%E0%A4%AE%E0%A4%BE%E0%A4%A8%E0%A5%8D%E0%A4%AF%20%E0%A4%AA%E0%A5%8D%E0%A4%B0%E0%A4%B6%E0%A4%BE%E0%A4%B8%E0%A4%A8%20%E0%A4%AE%E0%A4%B9%E0%A4%BE%E0%A4%B6%E0%A4%BE%E0%A4%96%E0%A4%BE.pdf"
+  filename: palika_bharatpur_general_admin.pdf
+  service: palika_guide
+  lang: ne
+  license: null
+  terms_url: null
+  answer_evidence: false
+  legacy: false
+  municipality: Bharatpur
+  district: Chitwan
+  province: Bagmati
+  format: text_pdf
+  date_seen: '2026-10-15'
+  reuse_status: unclear
+  reuse_quote: "© 2026  भरतपुर महानगरपालिका (footer of https://bharatpurmun.gov.np/ne/citizen-charter; no licence or reuse terms found on the page or in the PDF)"
+  local_only: true
+  approval_note: null
+  approved_on: null
+  approved_by: null
+- id: palika_bharatpur_revenue
+  title: "Bharatpur Citizen Charter 2082: Revenue Management Division (राजस्व व्यवस्थापन महाशाखा)"
+  publisher: "Bharatpur Metropolitan City (भरतपुर महानगरपालिका)"
+  url: "https://bharatpurmun.gov.np/sites/bharatpurmun.gov.np/files/documents/%E0%A4%B0%E0%A4%BE%E0%A4%9C%E0%A4%B8%E0%A5%8D%E0%A4%B5%20%E0%A4%B5%E0%A5%8D%E0%A4%AF%E0%A4%B5%E0%A4%B8%E0%A5%8D%E0%A4%A5%E0%A4%BE%E0%A4%AA%E0%A4%A8%20%E0%A4%AE%E0%A4%B9%E0%A4%BE%E0%A4%B6%E0%A4%BE%E0%A4%96%E0%A4%BE.pdf"
+  filename: palika_bharatpur_revenue.pdf
+  service: palika_guide
+  lang: ne
+  license: null
+  terms_url: null
+  answer_evidence: false
+  legacy: false
+  municipality: Bharatpur
+  district: Chitwan
+  province: Bagmati
+  format: text_pdf
+  date_seen: '2026-10-15'
+  reuse_status: unclear
+  reuse_quote: "© 2026  भरतपुर महानगरपालिका (footer of https://bharatpurmun.gov.np/ne/citizen-charter; no licence or reuse terms found on the page or in the PDF)"
+  local_only: true
+  approval_note: null
+  approved_on: null
+  approved_by: null
+- id: palika_bharatpur_health_social
+  title: "Bharatpur Citizen Charter 2082: Health and Social Development Division (स्वास्थ्य तथा सामाजिक विकास महाशाखा)"
+  publisher: "Bharatpur Metropolitan City (भरतपुर महानगरपालिका)"
+  url: "https://bharatpurmun.gov.np/sites/bharatpurmun.gov.np/files/documents/%E0%A4%B8%E0%A5%8D%E0%A4%B5%E0%A4%BE%E0%A4%B8%E0%A5%8D%E0%A4%A5%E0%A5%8D%E0%A4%AF%20%E0%A4%A4%E0%A4%A5%E0%A4%BE%20%E0%A4%B8%E0%A4%BE%E0%A4%AE%E0%A4%BE%E0%A4%9C%E0%A4%BF%E0%A4%95%20%E0%A4%B5%E0%A4%BF%E0%A4%95%E0%A4%BE%E0%A4%B8%20%E0%A4%AE%E0%A4%B9%E0%A4%BE%E0%A4%B6%E0%A4%BE%E0%A4%96%E0%A4%BE.pdf"
+  filename: palika_bharatpur_health_social.pdf
+  service: palika_guide
+  lang: ne
+  license: null
+  terms_url: null
+  answer_evidence: false
+  legacy: false
+  municipality: Bharatpur
+  district: Chitwan
+  province: Bagmati
+  format: text_pdf
+  date_seen: '2026-10-15'
+  reuse_status: unclear
+  reuse_quote: "© 2026  भरतपुर महानगरपालिका (footer of https://bharatpurmun.gov.np/ne/citizen-charter; no licence or reuse terms found on the page or in the PDF)"
+  local_only: true
+  approval_note: null
+  approved_on: null
+  approved_by: null
+- id: palika_bharatpur_education
+  title: "Bharatpur Citizen Charter 2082: Education Administration Division (शैक्षिक प्रशासन महाशाखा)"
+  publisher: "Bharatpur Metropolitan City (भरतपुर महानगरपालिका)"
+  url: "https://bharatpurmun.gov.np/sites/bharatpurmun.gov.np/files/documents/%E0%A4%B6%E0%A5%88%E0%A4%95%E0%A5%8D%E0%A4%B7%E0%A4%BF%E0%A4%95%20%E0%A4%AA%E0%A5%8D%E0%A4%B0%E0%A4%B6%E0%A4%BE%E0%A4%B8%E0%A4%A8%20%E0%A4%AE%E0%A4%B9%E0%A4%BE%E0%A4%B6%E0%A4%BE%E0%A4%96%E0%A4%BE.pdf"
+  filename: palika_bharatpur_education.pdf
+  service: palika_guide
+  lang: ne
+  license: null
+  terms_url: null
+  answer_evidence: false
+  legacy: false
+  municipality: Bharatpur
+  district: Chitwan
+  province: Bagmati
+  format: text_pdf
+  date_seen: '2026-10-15'
+  reuse_status: unclear
+  reuse_quote: "© 2026  भरतपुर महानगरपालिका (footer of https://bharatpurmun.gov.np/ne/citizen-charter; no licence or reuse terms found on the page or in the PDF)"
+  local_only: true
+  approval_note: null
+  approved_on: null
+  approved_by: null
+- id: palika_bharatpur_women_children
+  title: "Bharatpur Citizen Charter 2082: Women, Children and Social Welfare Section (महिला बालबालिका तथा समाजकल्याण शाखा)"
+  publisher: "Bharatpur Metropolitan City (भरतपुर महानगरपालिका)"
+  url: "https://bharatpurmun.gov.np/sites/bharatpurmun.gov.np/files/documents/%E0%A4%AE%E0%A4%B9%E0%A4%BF%E0%A4%B2%E0%A4%BE%20%E0%A4%AC%E0%A4%BE%E0%A4%B2%E0%A4%AC%E0%A4%BE%E0%A4%B2%E0%A4%BF%E0%A4%95%E0%A4%BE%20%E0%A4%A4%E0%A4%A5%E0%A4%BE%20%E0%A4%B8%E0%A4%AE%E0%A4%BE%E0%A4%9C%E0%A4%95%E0%A4%B2%E0%A5%8D%E0%A4%AF%E0%A4%BE%E0%A4%A3%20%E0%A4%B6%E0%A4%BE%E0%A4%96%E0%A4%BE.pdf"
+  filename: palika_bharatpur_women_children.pdf
+  service: palika_guide
+  lang: ne
+  license: null
+  terms_url: null
+  answer_evidence: false
+  legacy: false
+  municipality: Bharatpur
+  district: Chitwan
+  province: Bagmati
+  format: text_pdf
+  date_seen: '2026-10-15'
+  reuse_status: unclear
+  reuse_quote: "© 2026  भरतपुर महानगरपालिका (footer of https://bharatpurmun.gov.np/ne/citizen-charter; no licence or reuse terms found on the page or in the PDF)"
+  local_only: true
+  approval_note: null
+  approved_on: null
+  approved_by: null
+- id: palika_bharatpur_ngo_coordination
+  title: "Bharatpur Citizen Charter 2082: NGO Coordination Section (गैरसरकारी संस्था समन्वय शाखा)"
+  publisher: "Bharatpur Metropolitan City (भरतपुर महानगरपालिका)"
+  url: "https://bharatpurmun.gov.np/sites/bharatpurmun.gov.np/files/documents/%E0%A4%97%E0%A5%88%E0%A4%B0%E0%A4%B8%E0%A4%B0%E0%A4%95%E0%A4%BE%E0%A4%B0%E0%A5%80%20%E0%A4%B8%E0%A4%82%E0%A4%B8%E0%A5%8D%E0%A4%A5%E0%A4%BE%20%E0%A4%B8%E0%A4%AE%E0%A4%A8%E0%A5%8D%E0%A4%B5%E0%A4%AF%20%E0%A4%B6%E0%A4%BE%E0%A4%96%E0%A4%BE.pdf"
+  filename: palika_bharatpur_ngo_coordination.pdf
+  service: palika_guide
+  lang: ne
+  license: null
+  terms_url: null
+  answer_evidence: false
+  legacy: false
+  municipality: Bharatpur
+  district: Chitwan
+  province: Bagmati
+  format: text_pdf
+  date_seen: '2026-10-15'
+  reuse_status: unclear
+  reuse_quote: "© 2026  भरतपुर महानगरपालिका (footer of https://bharatpurmun.gov.np/ne/citizen-charter; no licence or reuse terms found on the page or in the PDF)"
+  local_only: true
+  approval_note: null
+  approved_on: null
+  approved_by: null
+- id: palika_dhulikhel
+  title: "Dhulikhel Citizen Charter (क्षतिपूर्ति सहितको नागरिक वडापत्र र गुनासो व्यावस्थापन, HTML table)"
+  publisher: "Dhulikhel Municipality (धुलिखेल नगरपालिका)"
+  url: "https://dhulikhelmun.gov.np/ne/citizen-charter"
+  filename: palika_dhulikhel.html
+  service: palika_guide
+  lang: ne
+  license: null
+  terms_url: null
+  answer_evidence: false
+  legacy: false
+  municipality: Dhulikhel
+  district: Kavrepalanchok
+  province: Bagmati
+  format: html
+  date_seen: '2026-10-15'
+  reuse_status: unclear
+  reuse_quote: "© 2026  धुलिखेल नगरपालिका (footer of https://dhulikhelmun.gov.np/ne/citizen-charter; no licence or reuse terms found)"
+  local_only: true
+  approval_note: null
+  approved_on: null
+  approved_by: null
+- id: palika_ghorahi
+  title: "Ghorahi Citizen Charter (घोराही उपमहानगरपालिकाबाट प्रवाह हुने सेवाको मापदण्ड (नागरिक वडापत्र), PDF created 2021-04-13)"
+  publisher: "Ghorahi Sub-Metropolitan City (घोराही उप-महानगरपालिका)"
+  url: "https://ghorahimun.gov.np/sites/ghorahimun.gov.np/files/documents/%E0%A4%B5%E0%A4%A1%E0%A4%BE%E0%A4%AA%E0%A4%A4%E0%A5%8D%E0%A4%B0%20(%E0%A4%AE%E0%A4%BE%E0%A4%AA%E0%A4%A6%E0%A4%A3%E0%A5%8D%E0%A4%A1).pdf"
+  filename: palika_ghorahi.pdf
+  service: palika_guide
+  lang: ne
+  license: null
+  terms_url: null
+  answer_evidence: false
+  legacy: false
+  municipality: Ghorahi
+  district: Dang
+  province: Lumbini
+  format: text_pdf
+  date_seen: '2026-10-15'
+  reuse_status: unclear
+  reuse_quote: "© 2026  स्थानीय सरकार, घोराही उप-महानगरपालिका, नगर कार्यपालिकाको कार्यालय (footer of https://ghorahimun.gov.np/ne/citizen-charter; no licence or reuse terms found on the page or in the PDF)"
+  local_only: true
+  approval_note: null
+  approved_on: null
+  approved_by: null
+- id: palika_hetauda_2083_84
+  title: "Hetauda Citizen Charter FY 2083/84 (नागरिक वडापत्र २०८३/८४)"
+  publisher: "Hetauda Sub-Metropolitan City (हेटौंडा उपमहानगरपालिका)"
+  url: "https://hetaudamun.gov.np/sites/hetaudamun.gov.np/files/documents/%E0%A4%A8%E0%A4%BE%E0%A4%97%E0%A4%B0%E0%A4%BF%E0%A4%95%20%E0%A4%B5%E0%A4%A1%E0%A4%BE%E0%A4%AA%E0%A4%A4%E0%A5%8D%E0%A4%B0%20%E0%A5%A8%E0%A5%A6%E0%A5%AE%E0%A5%A9.%E0%A5%AE%E0%A5%AA.pdf"
+  filename: palika_hetauda_2083_84.pdf
+  service: palika_guide
+  lang: ne
+  license: null
+  terms_url: null
+  answer_evidence: false
+  legacy: false
+  municipality: Hetauda
+  district: Makwanpur
+  province: Bagmati
+  format: legacy_font_pdf
+  date_seen: '2026-10-15'
+  reuse_status: unclear
+  reuse_quote: "© 2026  हेटौंडा उपमहानगरपालिका, नगर कार्यपालिकाको कार्यालय (footer of https://hetaudamun.gov.np/ne/node/390; no licence or reuse terms found on the page; PDF body is Preeti and was searched only for the Preeti spelling of सर्वाधिकार)"
+  local_only: true
+  approval_note: null
+  approved_on: null
+  approved_by: null

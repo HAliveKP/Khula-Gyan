@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from importlib import import_module
 from typing import Any
+import unicodedata
 
 
 DISCLAIMER = "Verify procedures with the relevant official office. This tool does not provide legal advice."
@@ -52,26 +53,75 @@ def _valid_response(response: Any) -> bool:
     return True
 
 
+# Canonical municipality name (as stored in chunk metadata and offered by the
+# UI selector) -> aliases that may appear in a question. Romanized aliases are
+# lowercase; Devanagari aliases are matched as substrings so Nepali case
+# suffixes still match (ललितपुरमा, काठमाडौंको). Names without a Devanagari
+# alias are ones whose standard spelling has not been confirmed yet.
+MUNICIPALITY_ALIASES: dict[str, tuple[str, ...]] = {
+    "Kathmandu": ("kathmandu", "काठमाडौं", "काठमाडौँ", "काठमाण्डौं", "काठमाण्डौ"),
+    "Lalitpur": ("lalitpur", "ललितपुर"),
+    "Bhaktapur": ("bhaktapur", "भक्तपुर"),
+    "Pokhara": ("pokhara", "पोखरा"),
+    "Bharatpur": ("bharatpur", "भरतपुर"),
+    "Ghorahi": ("ghorahi", "घोराही"),
+    "Biratnagar": ("biratnagar", "विराटनगर", "बिराटनगर"),
+    "Birgunj": ("birgunj", "birganj", "वीरगञ्ज", "वीरगंज", "बिरगंज", "बीरगंज"),
+    "Dharan": ("dharan", "धरान"),
+    "Hetauda": ("hetauda", "hetaunda", "हेटौंडा", "हेटौडा"),
+    "Butwal": ("butwal", "बुटवल"),
+    "Dhangadhi": ("dhangadhi", "धनगढी"),
+    "Mahendranagar": ("mahendranagar", "महेन्द्रनगर"),
+    "Nepalgunj": ("nepalgunj", "nepalganj", "नेपालगञ्ज", "नेपालगंज"),
+    "Janakpur": ("janakpur", "जनकपुर"),
+    "Dhulikhel": ("dhulikhel", "धुलिखेल"),
+    "Banepa": ("banepa", "बनेपा"),
+    "Panauti": ("panauti", "पनौती"),
+    "Kirtipur": ("kirtipur", "कीर्तिपुर", "किर्तिपुर"),
+    "Madhyapur": ("madhyapur", "मध्यपुर"),
+    "Thimi": ("thimi", "थिमी"),
+    "Gokarneshwor": ("gokarneshwor", "गोकर्णेश्वर"),
+    "Chandragiri": ("chandragiri", "चन्द्रागिरि", "चन्द्रागिरी"),
+    "Tokha": ("tokha", "टोखा"),
+    "Nagarjun": ("nagarjun", "नागार्जुन"),
+    "Dakshinkali": ("dakshinkali", "दक्षिणकाली"),
+    "Kageshwari": ("kageshwari", "कागेश्वरी"),
+    "Manohara": ("manohara", "मनोहरा"),
+    "Suryabinayak": ("suryabinayak", "सूर्यविनायक"),
+    "Godawari": ("godawari", "गोदावरी"),
+    "Konjyosome": ("konjyosome",),
+    "Mahalaxmi": ("mahalaxmi", "महालक्ष्मी"),
+    "Budhanilkantha": ("budhanilkantha", "बुढानीलकण्ठ", "बूढानीलकण्ठ"),
+    "Shankharapur": ("shankharapur", "शङ्खरापुर", "शंखरापुर"),
+    "Tarakeshwor": ("tarakeshwor", "तारकेश्वर"),
+}
+_ALIAS_TO_MUNICIPALITY: list[tuple[str, str]] = [
+    (unicodedata.normalize("NFC", alias).lower(), name)
+    for name, aliases in MUNICIPALITY_ALIASES.items()
+    for alias in aliases
+]
+
+
 def _extract_municipality_from_query(query: str) -> str | None:
     """Best-effort extraction of municipality name from query.
-    Returns the municipality name if found, else None.
+    Returns the canonical municipality name if found, else None.
     This is a simple heuristic; the UI selector is the primary source.
+
+    The query is NFC-normalized and lowercased (affects Latin only) and each
+    alias is matched as a substring. If several names match, the one appearing
+    earliest in the query wins; ties at the same position go to the longest
+    alias (e.g. "Kathmandu, Tokha ward 5" -> "Kathmandu").
     """
-    # Common Nepali municipality names that might appear in queries
-    municipalities = [
-        "kathmandu", "lalitpur", "bhaktapur", "pokhara", "biratnagar", "birgunj",
-        "dharan", "hetauda", "butwal", "dhangadhi", "mahendranagar", "nepalgunj",
-        "janakpur", "dhulikhel", "banepa", "panauti", "kirtipur", "madhyapur",
-        "thimi", "gokarneshwor", "chandragiri", "tokha", "nagarjun", "dakshinkali",
-        "kageshwari", "manohara", "suryabinayak", "godawari", "konjyosome",
-        "mahalaxmi", "lalitpur", "kathmandu", "budhanilkantha", "dakshinkali",
-        "shankharapur", "kageshwari", "manohara", "tarakeshwor", "dakshinkali",
-    ]
-    query_lower = query.lower()
-    for mun in municipalities:
-        if mun in query_lower:
-            return mun.title()
-    return None
+    text = unicodedata.normalize("NFC", query).lower()
+    best: tuple[int, int, str] | None = None
+    for alias, name in _ALIAS_TO_MUNICIPALITY:
+        position = text.find(alias)
+        if position == -1:
+            continue
+        candidate = (position, -len(alias), name)
+        if best is None or candidate < best:
+            best = candidate
+    return best[2] if best else None
 
 
 def ask(query: str, service: str | None = None, municipality: str | None = None) -> dict[str, Any]:
