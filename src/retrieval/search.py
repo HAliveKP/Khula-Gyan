@@ -66,7 +66,8 @@ def search(
     if isinstance(k, bool) or not isinstance(k, int) or k < 1:
         raise ValueError("k must be a positive integer")
     if service is not None and service not in ALLOWED_SERVICES:
-        raise ValueError("service must be driving_license, citizenship, passport, palika_guide, or None")
+        # Unknown service (e.g., "other") — return empty so pipeline treats as not_found
+        return []
 
     collection = _collection()
     if collection is None or collection.count() == 0:
