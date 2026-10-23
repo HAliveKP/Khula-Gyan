@@ -137,8 +137,8 @@ def ask(query: str, service: str | None = None, municipality: str | None = None)
     """
     if not isinstance(query, str):
         raise TypeError("query must be a string")
-    if service is not None and service not in {"driving_license", "citizenship", "passport", "palika_guide"}:
-        raise ValueError("service must be driving_license, citizenship, passport, palika_guide, or None")
+    if service is not None and service not in {"driving_license", "citizenship", "passport", "palika_guide", "other"}:
+        raise ValueError("service must be driving_license, citizenship, passport, palika_guide, other, or None")
     if municipality is not None and not isinstance(municipality, str):
         raise TypeError("municipality must be a string or None")
     if not query.strip():
