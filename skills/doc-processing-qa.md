@@ -1,6 +1,6 @@
 ---
 name: doc-processing-qa
-description: 'Runs process_document.py. Flags corrupted Nepali, checks page numbers, Devanagari share, marks usable/unusable pages.'
+description: 'Doc processing QA: corruption, pages, Devanagari share.'
 ---
 # doc-processing-qa Skill
 
