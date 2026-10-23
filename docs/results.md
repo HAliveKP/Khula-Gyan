@@ -425,6 +425,27 @@ No new civic evaluation metrics were measured. All values remain `-`:
 | hit@5 | - |
 | Citation accuracy | - |
 | Answer correctness | - |
-| Refusal rate | - |
+|| Refusal rate | - |
 
-Human decisions still needed: written permission from MOHA (request pending), confirm presenter/backup, confirm or change provisional USD $1.00 API cap, configure provider rates before paid calls.
+---
+
+## Verification 2026-10-23 (post-pivot, Day 8 freeze)
+
+Verified by running actual commands in this workspace (`.venv` with Python 3.15, `pytest -q --basetemp=.pytest_tmp`, `streamlit-1.66.1`, `scripts/fetch_sources.py --include-unclear`, `eval/run_eval.py --fake-llm --include-unverified --no-write`).
+
+|| Area | Status | Evidence / limits |
+||---|---|---|
+|| Environment / pytest | Pass | `.venv` exists; `pip check`: `No broken requirements found.`; `pytest -q --basetemp=.pytest_tmp` → **95 passed, 7 skipped** (2026-10-23). |
+|| Embedding smoke (`BAAI/bge-m3`) | Not verified | `scripts/smoke_test_embedding.py` requires `sentence-transformers`; after `pip install sentence-transformers`, model download times out; not completed in this session. |
+|| Source fetch (`scripts/fetch_sources.py --include-unclear`) | Partial | Downloads 1 `confirmed open` reference (`opendatanepal_environment_statistics_2019`, 18532 bytes). All 12 `palika_guide` URLs (`pokharamun.gov.np`, `bharatpurmun.gov.np`, `dhulikhelmun.gov.np`, `ghorahimun.gov.np`, `hetaudamun.gov.np`) fail with `WinError 10060` / `WinError 10061`. |
+|| Index (`scripts/build_index.py`) | Blocked (expected) | Reports: `Processed page records: 0`; `Eligible civic chunks: 0`; `Indexed records: 0`; `No source passed both open-license and civic-answer-evidence checks; no Chroma index was built.` (`chroma_db/` does not exist). |
+|| Pipeline (`search()` / `ask()` / `pipeline.py`) | Partial / verified | `search()` returns `[]` (empty index). `ask()` connects `search()` + `answer()`; wrong-municipality guard works (`palika_guide` without `municipality` → `not_found`). `service='other'` fixed (`search()` returns `[]` instead of `ValueError`). |
+|| Streamlit (`frontend/app.py`) | Pass | `streamlit-1.66.1` installed; `frontend/app.py` serves HTML (`curl -s http://localhost:8501` returns `<!DOCTYPE html>`); municipality selector present; refusal message (`not_found`) appears when query submitted with empty index. |
+|| Real LLM (`NVIDIA Nemotron`) | Blocked (same pre-pivot) | `.env` configured (`LLM_PROVIDER=openrouter`, `LLM_MODEL=nvidia/nemotron-3-super-120b-a12b`, `LLM_API_KEYS=...` not printed/committed, `MAX_API_SPEND_USD=1.00`, rates `0.00/1M`). Returns empty for prompts with passages. No real quality evaluation possible. |
+|| Verified civic metrics (`eval/run_eval.py`) | Not measured (`-`) | `eval/questions.jsonl` has 40 records (39 verified with `municipality` + `must_cite`; 1 draft `pq009`). Without index, `eval/run_eval.py --fake-llm --use-service-filter --use-municipality-filter --include-unverified --note "plumbing" --no-write` runs plumbing only; all verified palika questions return `not_found`. Metrics (`hit@5`, `citation_acc`, `correct`, `false_refusal`) remain `-`. |
+|| Source rights (`skills/source-rights-check.md`) | Verified | `data/sources.yaml`: 12 palika sources (`service=palika_guide`); none have `approval_note`; all `answer_evidence: false`; all `local_only: true`; `licence_status` `null`/unclear. No open-licensed civic source found. No permission request sent (`docs/permission_request.md` draft only; `AGENTS.md` §108: no contacting publishers). |
+|| Human decisions | Pending | Presenter/backup (`docs/decisions.md` §5: `TO BE CONFIRMED BY A HUMAN`). Municipality selection (≤5; `docs/user-story-board.md` Day 1: Backlog). Written permission from each municipality. Provider/rate confirmation (current `.env` uses NVIDIA free tier, rates $0.00`). |
+
+No synthetic evaluation numbers were added to the evaluation table. All civic metrics stay `-`.
+
+Human decisions still needed: written permission from MOHA (request pending), confirm presenter/backup, confirm or change provisional USD $1.00 API cap, configure provider rates before paid calls, select ≤5 municipalities from Day 1 feasibility sheet, fix real LLM provider (alternative to NVIDIA Nemotron or empty-response fix).

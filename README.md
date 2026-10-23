@@ -38,7 +38,7 @@ Khula Gyan (Palika Guide) is intended for people who need help finding informati
 - **Wrong-municipality guard**: if question names municipality with no indexed charter, or names none, returns `not_found`; never answers from another municipality's charter.
 - **Chunk schema** gains optional `municipality`, `district`, `ward`, `section` fields (carried through chunker, indexer, Chroma metadata).
 - **Checklist fields** reused for fee, time, officer (unknown stays empty).
-- **30 draft questions** (26 palika_guide + 1 passport + 3 out_of_scope) with `municipality` field, all `verified=false`, `expected=TODO`.
+- **40 questions** in `eval/questions.jsonl` (26 `palika_guide` + 3 `other` out-of-scope + 10 legacy drafts moved; 39 verified with `municipality` + `must_cite`, 1 draft `pq009` with `expected=["TODO"]`).
 - **Legacy sources** tagged `legacy: true, answer_evidence: false` in `data/sources.yaml`; new municipality charter register template added.
 
 ### Not yet verified / Day 1-8
@@ -46,7 +46,7 @@ Khula Gyan (Palika Guide) is intended for people who need help finding informati
 - No municipality charters indexed yet (Day 1 feasibility, Day 2 processing).
 - Municipality filter in `search()` implemented; needs Day 2 index test.
 - Wrong-municipality guard in `ask()` implemented; needs Day 3 test.
-- 30 draft questions all `verified=false`, `expected=TODO`.
+- `eval/questions.jsonl`: 40 records; 39 `verified=true` with `municipality` + `must_cite`; 1 `verified=false` draft (`pq009`).
 - Real LLM (NVIDIA Nemotron) returns empty for prompts with passages — may need provider change.
 - No municipality charters approved yet; written permission required.
 
@@ -233,7 +233,7 @@ The legacy question file has 25 records: 15 verified (citizenship), 10 draft (7 
 
 ### Palika Guide evaluation (Day 4+)
 
-New municipal question set: 30 drafts in `eval/questions.jsonl` (26 palika_guide + 1 passport + 3 out_of_scope), all `verified=false`, `expected=TODO`, with `municipality` field. Target: up to 40 verified questions across 5 municipalities × 6-8 services.
+New municipal question set: 40 records in `eval/questions.jsonl` (26 `palika_guide` verified + 3 `other` out-of-scope verified + 10 legacy drafts moved + 1 draft `pq009`). 39 verified (`verified=true`, `expected` filled, `must_cite` filled, `municipality` present); 1 draft (`pq009`) with `expected=["TODO"]`. Target remains up to 40 verified questions across 5 municipalities × 6-8 services.
 
 Day 4 baseline will be recorded in `docs/results.md` via `eval/run_eval.py --use-service-filter --use-municipality-filter`.
 
@@ -272,13 +272,13 @@ The suite covers:
 - Build_index source eligibility logic (confirmed-open path and local-only approval path)
 - **NEW**: Municipality filter tests (service + municipality combined filter)
 
-Latest run: **54 passed, 1 skipped** (all legacy tests pass; new code integrates without breaking existing tests).
+Latest run: **95 passed, 7 skipped** (verified 2026-10-23 with `--basetemp=.pytest_tmp`). All tests pass; 7 skipped (embedding model download/time-sensitive tests).
 
 ## 14. Known limitations and caveats
 
 - **Real LLM integration blocked**: NVIDIA Nemotron 3 Super returns empty response for prompts containing passage content (even with 1 passage). Fake LLM works for plumbing; real quality evaluation needs fix or provider change.
 - **No municipality charters indexed yet**: Day 1 feasibility, Day 2 processing, Day 3 indexing.
-- **0 verified Palika Guide questions**: All 30 drafts are `verified=false`, `expected=TODO`.
+- **39 verified Palika Guide questions** (26 `palika_guide` + 3 `other` out-of-scope; 1 `verified=false` draft `pq009` with `expected=["TODO"]`). No civic evaluation baseline recorded (`hit@5=-`, `citation_acc=-`, `correct=-`) because no municipality charter is indexed.
 - **No municipality permissions**: Written permission required from each municipality before public demo/deployment.
 - **Search similarities are not probabilities**; refusal threshold (0.35) uncalibrated.
 - **Answers may be wrong**. Verify any procedure with the responsible official office. This project is not legal advice.
