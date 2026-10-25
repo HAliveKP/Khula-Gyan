@@ -1,348 +1,265 @@
-# Khula Gyan
+# Khula Gyan: Palika Guide
 
-A Nepali civic-document assistant prototype that retrieves document passages and aims to answer with page-linked citations. It must refuse when evidence is insufficient and is not legal advice.
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) ![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)
 
-**Product name:** Palika Guide — municipal citizen charter Q&A.
+Palika Guide answers questions about Nepali **municipal services** (birth and death registration, recommendations, business registration, fees, time limits, responsible office) from each municipality's citizen charter (नागरिक बडापत्र), in Nepali or English. Every answer cites the document and page it came from. When the charter does not support an answer, or the question's municipality has no indexed charter, it returns `not_found` instead of guessing or using another municipality's charter. It is a retrieval-augmented generation (RAG) prototype built during a student hackathon (October 2026); the repository is named Khula Gyan.
 
-## 1. Project status and badges
+> **Read this first:** the municipal charters used during development are **not** in this repository (no reuse permission yet). A fresh clone installs, passes its tests and runs the UI, but answers `not_found` until you add documents you are allowed to use. See [Data: use your own documents](#data-use-your-own-documents).
 
-[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)]
+## Features
 
-**Pivot (2026-10-13):** Project pivoted from central-government procedures (driving license / citizenship / passport — 0 approved sources, 0 civic chunks, 0 verified questions) to **Palika Guide**: questions about municipal services answered from each municipality's citizen charter (नागरिक बडापत्र).
+- **Cited answers.** Every answer has `citations[{source, page, quote}]`, and each quote must appear word for word in a retrieved passage (`src/generation/guard.py`). If it doesn't, the answer is refused.
+- **`not_found` refusal.** The app refuses when retrieval scores are below `guard_min_score`, when the model output is invalid or uncited, when a quote is not grounded, or when the LLM call fails.
+- **Municipality filter and wrong-municipality guard.** With a municipality selected, search returns only that municipality's chunks. Without one, `ask()` tries to find a municipality name in the question and otherwise asks the user to pick one.
+- **Nepali and English.** Questions can be in Nepali, English or a mix (language is detected). Municipality names are recognised in romanized and Devanagari spelling, including case suffixes (for example "ललितपुरमा"). All Nepali text comparisons use Unicode NFC.
+- **Document repair.** PDF/HTML extraction keeps page numbers, repairs broken Devanagari glyph maps (Kalimati subsets), converts legacy Preeti/Kantipur text to Unicode, and can OCR scanned pages with Tesseract (`nep+eng`).
+- **Evaluation harness.** `eval/run_eval.py` reports hit@5, citation accuracy, correctness, correct refusal, false refusal and p95 latency over human-verified questions.
+- **Spend cap.** Each process reserves a cost estimate before every API call and stops before sending if `MAX_API_SPEND_USD` would be exceeded. Real calls are blocked until per-token rates are set.
+- **Fixed response contract.** Every response matches [docs/ask-response.schema.json](docs/ask-response.schema.json) (see [docs/response-contract.md](docs/response-contract.md)).
 
-**Day 1 = Oct 14 ... Day 8 = Oct 21** (code freeze). Team of 3: Member 1 (Data & Documents), Member 2 (Retrieval & Generation), Leader (Integration, UI, Evaluation, Repo, Deployment). Presenter/backup: to be confirmed by a human.
+## How it works
 
-## 2. What it does and who it is for
-
-Khula Gyan (Palika Guide) is intended for people who need help finding information in Nepali municipal citizen charters (नागरिक बडापत्र), and for the student team building and reviewing that assistant. It is a retrieval-augmented generation (RAG) prototype: it searches source passages from a specific municipality's citizen charter, asks a language model to answer from those passages, and returns citations that identify a source, page, municipality, and section. It must say it cannot answer when the available evidence does not support a response, and must never answer from another municipality's charter.
-
-## 3. Demo
-
-**Local demo available.** Run `make run` to start the Streamlit app. The app has a municipality selector (required for Palika Guide questions). No municipality charters are indexed yet — Day 1 feasibility sheet and Day 2 processing will populate the index. *Update 2026-10-25:* feasibility and processing are done on aash-crest01's machine (5 municipalities, 12 charter files, see `docs/data-sources.md`); the index is still empty because no charter has a local-only approval in `data/sources.yaml`.
-
-## 4. Features
-
-### Working in the repository (Day 0 legacy)
-
-- **PDF/HTML document processing** preserves page and source metadata. Flags corrupted Nepali PDF text as unusable and attempts OCR (Tesseract + nep/eng). Synthetic regression test covers missing-OCR case.
-- **Tesseract OCR** v5.4.0 with eng+nep language data installed. MOHA Kathmandu PDF (5 pages) now extracts readable Nepali text (was 5/5 unusable, now 5/5 good).
-- **Dense Chroma retrieval** supports service filtering and reports 0–1 similarity score. Synthetic Chroma test checks result limits, score range, and filtering. Scores are similarities, not probabilities.
-- **Answer schema, citation guard, and provider adapter** implemented. Provider calls protected by per-process spend cap ($1.00, NVIDIA free tier).
-- **Streamlit Q&A screen** exists and launches. Now includes municipality selector for Palika Guide.
-- **Evaluation runner** supports draft-question skipping, fake LLM for plumbing checks, real LLM for quality evaluation.
-- **Day 3 baseline** (legacy citizenship): hit@5=100%, citation_acc=67%, correct=0% (fake LLM), false_refusal=0%.
-
-### Palika Guide (Day 1-8, Oct 14-21)
-
-- **Municipality filter** in `search()` and municipality selector in UI.
-- **Wrong-municipality guard**: if question names municipality with no indexed charter, or names none, returns `not_found`; never answers from another municipality's charter.
-- **Chunk schema** gains optional `municipality`, `district`, `ward`, `section` fields (carried through chunker, indexer, Chroma metadata).
-- **Checklist fields** reused for fee, time, officer (unknown stays empty).
-- **40 questions** in `eval/questions.jsonl` (26 `palika_guide` + 3 `other` out-of-scope + 10 legacy drafts moved; 39 verified with `municipality` + `must_cite`, 1 draft `pq009` with `expected=["TODO"]`). *Update 2026-10-25 (counted in the file):* 37 `palika_guide` (36 verified + draft `pq009`) and 3 `other`, all 40 `pq###`; no legacy questions are in this file (they are in `eval/legacy_questions.jsonl`). 39 verified by Aashish on 2026-10-17 (`ef07ac0`, PR #21).
-- **Legacy sources** tagged `legacy: true, answer_evidence: false` in `data/sources.yaml`; new municipality charter register template added.
-
-### Not yet verified / Day 1-8
-
-- No municipality charters indexed yet (Day 1 feasibility, Day 2 processing).
-- Municipality filter in `search()` implemented; needs Day 2 index test.
-- Wrong-municipality guard in `ask()` implemented; needs Day 3 test.
-- `eval/questions.jsonl`: 40 records; 39 `verified=true` with `municipality` + `must_cite`; 1 `verified=false` draft (`pq009`).
-- Real LLM (NVIDIA Nemotron) returns empty for prompts with passages — may need provider change.
-- No municipality charters approved yet; written permission required.
-
-*Update 2026-10-25* (checked at `main` `c7fab92`; evidence in `docs/results.md`, Day checklist rows "update 2026-10-25"):
-
-- **Charters fetched and processed, not indexed.** All 12 charter files for Pokhara, Bharatpur, Dhulikhel, Ghorahi and Hetauda were downloaded and processed on 2026-10-15 on aash-crest01's machine into ignored `data/raw/` and `data/processed/`. The Leader's machine could not reach the .gov.np sites (`WinError 10060`/`10061`). The index is still empty by design: all 12 entries have `answer_evidence: false` and no `approval_note`, so `scripts/build_index.py` skips them. It needs a Leader local-only approval in `data/sources.yaml`, then `make index` on a machine that has the files.
-- **Empty Nemotron replies: cause found and fixed.** The model's hidden reasoning used the whole `MAX_API_OUTPUT_TOKENS=1024`, leaving empty content (`finish_reason=length`). Set `LLM_REASONING=off` (`952f058`; empty replies are no longer cached, `4567b75`; both merged via PR #20; see `.env.example`). This sends OpenRouter's `reasoning` parameter and was tested with the OpenRouter base URL (`https://openrouter.ai/api/v1`, model `nvidia/nemotron-3-super-120b-a12b:free`). It is untested with the NVIDIA NIM base URL shown in section 9.
-- **Filter and guard:** tested by the suite (`python -m pytest -q` → 102 passed on aash-crest01's laptop, 2026-10-25), not yet on a real charter index.
-- **Permission:** emails to the 5 municipalities drafted; sending pending; no reply on file.
-- No civic evaluation numbers exist for Palika Guide yet.
-
-## 5. How it works
-
-The intended data path for Palika Guide:
-
-~~~mermaid
+```mermaid
 flowchart LR
-  S["Municipality citizen charter (text PDF/HTML)"] --> P["Extract text with page, municipality, section"]
-  P --> C["Chunk while retaining municipality, district, ward, section"]
+  S["Charter PDF/HTML in data/raw/"] --> P["Extract + clean pages (PyMuPDF, glyph repair, OCR)"]
+  P --> C["Chunk with municipality, district, page"]
   C --> E["BAAI/bge-m3 embeddings"]
-  E --> V["Chroma index"]
-  Q["User question + municipality"] --> R["Dense retrieval + municipality filter"]
+  E --> V["ChromaDB (chroma_db/)"]
+  Q["Question + municipality"] --> R["Dense search + municipality filter"]
   V --> R
-  R --> G["Answer generation (LLM)"]
-  G --> A["Schema and citation-grounding checks"]
-  A --> O["Answer with source, page, municipality, section, quote"]
-  A --> N["not_found when evidence insufficient or wrong municipality"]
-~~~
-
-Search score is a normalized cosine similarity from 0 to 1; it is not a calibrated confidence or probability.
-
-## 6. Tech stack and pinned versions
-
-| Package | Version |
-|---|---:|
-| Python target | 3.12 |
-| PyTorch | 2.14.1 |
-| sentence-transformers | 6.1.0 |
-| ChromaDB | 1.5.9 |
-| Streamlit | 1.65.0 |
-| rank-bm25 | 0.2.2 |
-| PyMuPDF | 1.28.2 |
-| pdfplumber | 0.11.7 |
-| FastAPI | 0.140.1 |
-| Uvicorn | 0.38.0 |
-| PyYAML | 6.0.3 |
-| python-dotenv | 1.2.1 |
-| pytesseract | 0.3.13 |
-| Pillow | 12.0.0 |
-| OpenAI Python client | 3.27.0 |
-| jsonschema | 4.26.0 |
-| matplotlib | 3.10.8 |
-| pytest | 9.1.1 |
-| requests | 2.32.5 |
-
-## 7. Prerequisites
-
-- Python 3.12 and Git.
-- GNU Make for the Makefile commands (optional; direct Python commands work).
-- Network access and enough free disk space for dependency installation and the BAAI/bge-m3 embedding model download.
-- **Tesseract OCR** plus the Nepali (`nep`) and English (`eng`) language packs for scanned document OCR.
-  - Windows: install to `D:\tx` (or add to PATH). Verify with `tesseract --list-langs` showing `eng`, `nep`, `osd`.
-- A paid LLM provider is optional. To use one, select a provider/model, configure its current rates, and keep its key in a local `.env` file. No API key is needed for the fake provider or synthetic tests.
-
-## 8. Quick start and command verification
-
-Run commands from the repository root.
-
-### Option A: Using Make (requires GNU Make)
-
-```sh
-make setup      # create .venv, install pinned deps (CPU Torch first)
-make fetch      # download only confirmed-open sources (currently only Open Data Nepal env dataset)
-make index      # process eligible local sources, build Chroma index
-make test       # run pytest suite
-make eval       # run evaluation (fake LLM by default; real LLM needs .env)
-make run        # start Streamlit app
+  R --> G["LLM answer from passages (JSON)"]
+  G --> K["Schema + quote-grounding checks"]
+  K --> A["Answer with citations"]
+  K --> N["not_found"]
 ```
 
-### Option B: Direct Python commands (Windows, no Make needed)
+Code path: `src/ingest/` → `scripts/build_index.py` → `src/retrieval/search.py` → `src/generation/answer.py` → `src/pipeline.py` `ask()` → `frontend/app.py`. The search `score` is cosine similarity mapped to 0–1. It is not a probability.
 
-```powershell
-# Setup
-.\.venv\Scripts\python.exe -m pip install --upgrade pip
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+## Tech stack
 
-# Fetch sources (only confirmed-open; currently only Open Data Nepal env dataset)
-.\.venv\Scripts\python.exe scripts/fetch_sources.py
+Python 3.12 · PyMuPDF and fontTools (extraction, glyph repair) · Tesseract via pytesseract (optional OCR) · sentence-transformers with `BAAI/bge-m3` · ChromaDB · OpenAI Python client for any OpenAI-compatible chat API · Streamlit · pytest. Exact versions are pinned in [requirements.txt](requirements.txt). CPU-only PyTorch is installed first.
 
-# Process local sources and build index (requires Tesseract in PATH for OCR)
-$env:PATH = "D:\tx;" + $env:PATH
-.\.venv\Scripts\python.exe scripts/build_index.py
+## Prerequisites
 
-# Run tests
-.\.venv\Scripts\python.exe -m pytest -q --basetemp=.pytest_tmp
+- **Python 3.12** and Git.
+- **GNU Make** (optional). Every Make target has a plain command shown below.
+- **About 2.5 GB of free disk space and network access** for the `BAAI/bge-m3` model, which Hugging Face downloads on first index or search. PyTorch and the other dependencies need more space on top of that.
+- **Tesseract OCR** with `nep` and `eng` language data (optional). Only needed for scanned PDF pages. It must be on `PATH` (`tesseract --list-langs`).
+- **An API key for any OpenAI-compatible LLM provider**, or `LLM_PROVIDER=fake` to run everything with no key. Fake answers are deliberately nonsense and only test the plumbing.
 
-# Run evaluation (fake LLM for plumbing; real LLM needs .env configured)
-.\.venv\Scripts\python.exe eval/run_eval.py --fake-llm --use-service-filter --use-municipality-filter --include-unverified --note "test run"
+## Setup
 
-# Start Streamlit
-.\.venv\Scripts\python.exe -m streamlit run frontend/app.py
-```
-
-### Observed status (2026-10-13, post-pivot)
-
-| Command | Status |
-|---|---|
-| Setup | ✅ `.venv` created, deps installed, embedding smoke check passed |
-| Fetch | ✅ Works; only confirmed-open sources downloaded |
-| Index (legacy) | ✅ MOHA Kathmandu PDF indexed (5 pages, 5 chunks) |
-| Index (Palika) | ⏳ No municipality charters indexed yet (Day 2) |
-| Test | ✅ **54 passed, 1 skipped** (all legacy tests pass) |
-| Eval (fake LLM) | ✅ Runs; legacy Day 3 baseline recorded |
-| Eval (real LLM) | ⚠️ **Blocked** — NVIDIA Nemotron returns empty for prompts with passages. *Update 2026-10-25:* cause fixed with `LLM_REASONING=off` (OpenRouter base URL); still blocked by the empty charter index *Update 2026-10-25 (evening):* first official BASELINE run by `eval/run_eval.py` (see the Eval runs table in `docs/results.md`): official index from 11 local-only approved charters (`palika_pokhara_2075` excluded; approved by Aashish with authority delegated by the Leader), `nvidia/nemotron-3.5-super-vl:free` with `LLM_REASONING=off`, 39 verified questions: hit@5 81%, citation_acc 93%, correct 19% (exact keyword match), correct_refusal 100%, false_refusal 48%; 2 questions hit LLM provider errors and count as not correct. |
-| Streamlit run | ✅ Launches; municipality selector present |
-
-### Embedding smoke check
-
-```powershell
-.\.venv\Scripts\python.exe scripts/smoke_test_embedding.py
-```
-Passed for 10 examples (5 Nepali + 5 English), vector size 1024.
-
-## 9. Configuration
-
-Copy `.env.example` to `.env` and set local values. **Never commit `.env`** or include real keys in source, documentation, or issue comments.
-
-| Variable | Example / default | Use |
-|---|---|---|
-| `LLM_PROVIDER` | `openrouter` (or `fake`) | Select provider; `fake` avoids API calls, returns non-realistic answers. |
-| `LLM_BASE_URL` | `https://integrate.api.nvidia.com/v1` | OpenAI-compatible provider endpoint. |
-| `LLM_MODEL` | `nvidia/nemotron-3-super-120b-a12b` | Model identifier. |
-| `LLM_API_KEYS` | *your key here* | Provider secret; supply locally only. |
-| `LLM_KEY_STRATEGY` | optional | Optional key-pool behavior. |
-| `MAX_API_SPEND_USD` | `1.00` | Per-process cap (confirmed). |
-| `LLM_INPUT_COST_PER_1M_USD` | `0.00` | NVIDIA free tier input cost. |
-| `LLM_OUTPUT_COST_PER_1M_USD` | `0.00` | NVIDIA free tier output cost. |
-| `MAX_API_OUTPUT_TOKENS` | `1024` | Maximum output reservation/request size. |
-
-Paid calls are stopped before sending when rates are missing or a request's estimated reservation would exceed the cap. Estimates are not invoices.
-
-### Current `.env` (example — replace key)
+Run all commands from the repository root.
 
 ```bash
-LLM_PROVIDER=openrouter
-LLM_BASE_URL=https://integrate.api.nvidia.com/v1
-LLM_MODEL=nvidia/nemotron-3-super-120b-a12b
-LLM_API_KEYS=nvapi-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-MAX_API_SPEND_USD=1.00
-LLM_INPUT_COST_PER_1M_USD=0.00
-LLM_OUTPUT_COST_PER_1M_USD=0.00
-MAX_API_OUTPUT_TOKENS=1024
+git clone https://github.com/HAliveKP/Khula-Gyan.git
+cd Khula-Gyan
 ```
 
-## 10. Data and licensing
+### Option A: Make
 
-The current source registry is `data/sources.yaml`.
+```bash
+make setup     # creates .venv, installs CPU-only torch, then requirements.txt
+```
 
-### Legacy sources (central-government, not used for Palika Guide)
+The Makefile calls `py -3.12` on Windows and `python3.12` elsewhere. `py -3.12` works only if Python came from the python.org Windows installer. If it reports "No runtime installed that matches 3.12" (for example, Python installed with uv), pass the interpreter explicitly:
 
-| Source group | Registry status | Current use |
+```bash
+make setup PYTHON=python3.12     # or PYTHON=python if `python --version` shows 3.12.x
+```
+
+### Option B: Plain commands
+
+Check `python --version` (or `python3.12 --version`) shows 3.12.x first.
+
+Windows (Git Bash):
+
+```bash
+python -m venv .venv                 # or: py -3.12 -m venv .venv  /  uv venv --python 3.12 .venv
+source .venv/Scripts/activate
+python -m pip install --upgrade pip
+python -m pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
+python -m pip install -r requirements.txt
+```
+
+macOS / Linux:
+
+```bash
+python3.12 -m venv .venv             # or: uv venv --python 3.12 .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
+python -m pip install -r requirements.txt
+```
+
+If you create the venv with uv, it may not include pip. Install with `uv pip install ...` instead, or run `python -m ensurepip` first.
+
+### Configure
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` (never commit it). Either set `LLM_PROVIDER=fake` for a key-free trial, or set `LLM_MODEL`, `LLM_API_KEYS`, `LLM_BASE_URL` and both cost rates for a real provider (see [Environment variables](#environment-variables)). Then check the setup:
+
+```bash
+python scripts/smoke_test_embedding.py   # downloads bge-m3 on first run; checks 1024-dim vectors
+python scripts/smoke_test_llm.py         # real provider only: a "Say ok" call per key, then 2 short questions
+```
+
+### Run
+
+```bash
+make run                         # or: python -m streamlit run frontend/app.py
+```
+
+Pick a municipality, keep the service on "Palika Guide", and ask a question. Without an index, every question returns `not_found`.
+
+## Usage
+
+- **UI:** `frontend/app.py` shows the answer, a checklist (documents, fees, steps, where), citations with quotes, confidence and a disclaimer.
+- **Python:**
+  ```python
+  from src.pipeline import ask
+  ask("पोखरामा जन्म दर्ता गर्न कति शुल्क लाग्छ?", service="palika_guide", municipality="Pokhara")
+  ```
+  `service` is one of `palika_guide`, `driving_license`, `citizenship`, `passport` (the last three are legacy, from before the pivot), `other`, or `None`.
+- **`python scripts/demo_script.py`** prints a scripted demo walkthrough: six example questions (2 Nepali, 2 English, 1 refusal, 1 wrong municipality) with their verified expected facts, plus a check of which local data folders exist. It makes no LLM calls. Its status lines were written on 2026-10-23, before the charters were indexed locally.
+- **`python scripts/try_answer.py`** runs `answer()` on the synthetic passages in `tests/fixtures/sample_chunks.json` with the LLM configured in `.env` (use `LLM_PROVIDER=fake` for no key).
+
+## Environment variables
+
+Set these in `.env`, which is loaded with python-dotenv. The values below are defaults or examples, never real secrets.
+
+| Variable | Default | Purpose |
 |---|---|---|
-| DoTM driving-license pages/manual | unclear; local_only: true; **legacy: true** | Not approved as answer evidence. Request permission before broader reuse; do not commit copies. |
-| Rules 2054 (Vehicle and Transport Management Rules) | unclear; local_only: true; **legacy: true** | Readable text via ToUnicode repair. Questions not yet verified. No deployment until written permission. |
-| MOHA Kathmandu citizenship PDF | unclear; local_only: true; **legacy: true** | **OCR working** — 5 pages indexed, 15 questions verified. No redistribution; permission request pending. |
-| Department of Passports pages | all rights reserved; local_only: true; **legacy: true** | Not approved for redistribution or answer evidence; do not commit copies. |
-| Open Data Nepal Environment Statistics 2019 | confirmed open; CC BY-SA; local_only: false | Reference-only environmental data, not civic procedure. |
+| `LLM_PROVIDER` | empty | `fake` uses the offline fake generator (no key, nonsense answers). Any other value (for example `openrouter`) is only a label: the real client is used. |
+| `LLM_MODEL` | empty | Model id at your provider. Required unless `LLM_PROVIDER=fake`. |
+| `LLM_BASE_URL` | empty (OpenAI default) | OpenAI-compatible endpoint, for example `https://openrouter.ai/api/v1`. |
+| `LLM_API_KEYS` | empty | One key, or several separated by commas (key pool). `LLM_API_KEY` is also accepted for a single key. Keys are only ever printed masked (`...abcd`). |
+| `LLM_KEY_STRATEGY` | `round_robin` | `failover` = always start from the first key and use the others only as backups. A rate-limited (429) or out-of-credit (402) key rests for 60 s. An invalid key (401/403) is skipped for the rest of the run. |
+| `LLM_REASONING` | empty (on) | `off` sends OpenRouter's `reasoning: {enabled: false}`. Reasoning models such as Nemotron can otherwise spend the whole output limit on hidden reasoning and return an empty answer. Tested with OpenRouter only. |
+| `MAX_API_SPEND_USD` | `1.00` | Estimated spend cap per process run. A request is stopped before sending if its reservation would exceed the cap. |
+| `LLM_INPUT_COST_PER_1M_USD` | empty | Provider input price in USD per 1M tokens. **Blank blocks every real call.** Use `0` only for a confirmed free model. |
+| `LLM_OUTPUT_COST_PER_1M_USD` | empty | Same, for output tokens. |
+| `MAX_API_OUTPUT_TOKENS` | `1024` | `max_tokens` sent with each call and used in the cost reservation. |
+| `LLM_CACHE_DIR` | `artifacts/llm_cache` | On-disk reply cache shared by all keys. Empty replies are never cached. Clear it, or change `PROMPT_VERSION` in `src/generation/prompt.py`, to force fresh calls. |
 
-### Palika Guide municipality charter register (to be populated Day 1-2)
+Tested configuration (2026-10-25 baseline): OpenRouter, `LLM_MODEL=nvidia/nemotron-3.5-super-vl:free`, `LLM_REASONING=off`.
 
-| Municipality | District | Province | URL | Format | Date seen | Reuse status | Local only | Answer evidence |
-|---|---|---|---|---|---|---|---|---|
-| *(to be filled Day 1)* | | | | | | | | |
+## Data: use your own documents
 
-*Update 2026-10-25:* filled on 2026-10-15 with 12 files for 5 municipalities (`94341a8`, PR #20). All are `reuse_status: unclear`, `local_only: true`, `answer_evidence: false`. Full table in `docs/data-sources.md`; URLs in `data/sources.yaml`.
+**What is not included.** During development, 12 citizen-charter files for 5 municipalities (Pokhara, Bharatpur, Dhulikhel, Ghorahi, Hetauda) were downloaded and processed on one team member's machine. None of these municipalities grants reuse or redistribution, and no written permission has been received. So the files, the processed text (`data/processed/`) and the index (`chroma_db/`) are **local-only and not in this repository**. [data/sources.yaml](data/sources.yaml) still lists each file with its official URL, reuse status and the local-only approval used for the baseline. [docs/data-sources.md](docs/data-sources.md) summarises them.
 
-All legacy sources tagged `legacy: true, answer_evidence: false` in `data/sources.yaml`. New municipality charter entries will have `service: palika_guide`, `answer_evidence: false` until written permission is recorded.
+**What a fresh clone does.** `scripts/fetch_sources.py` (`make fetch`) downloads only sources whose `licence_status` is `confirmed open`. No charter entry has that status, so nothing municipal is downloaded. `make index` then finds no eligible charter and builds no index, and every question returns `not_found`. That is the expected behaviour, not a bug.
 
-`make fetch` downloads only registry entries marked `confirmed open` to ignored `data/raw/`. `make index` processes eligible locally available sources to ignored `data/processed/` and `chroma_db/` and excludes sources not marked confirmed open and approved as answer evidence. See `data/sources.yaml` for URLs, terms notes, and attribution.
+**To use documents you are allowed to use:**
 
-## 11. Evaluation
+1. Put the PDF or HTML file in `data/raw/` (ignored by Git), for example `data/raw/palika_example.pdf`.
+2. Register it in `data/sources.yaml`. Copy the template comment in the Palika Guide section. `scripts/build_index.py` needs at least `id`, `filename`, `url`, `service: palika_guide`, `lang` (`ne` or `en`) and `municipality`, and it reads `district`, `ward` and `section` when present. A source is indexed only if `answer_evidence: true` **and** either:
+   - `licence_status: confirmed open` (an open licence you have quoted), or
+   - `local_only: true` plus a non-empty `approval_note` (also record `approved_on` and `approved_by`), for documents you may use privately but not redistribute.
 
-**Legacy Day 3 baseline (2026-10-11)** recorded in `docs/results.md`:
+   Do not mark something approved just because a government site hosts it.
+3. Optional: preview the extraction before indexing.
+   ```bash
+   python scripts/process_document.py data/raw/palika_example.pdf --service palika_guide --lang ne \
+     --municipality Example --district ExampleDistrict --source-url https://example.gov.np/charter.pdf
+   ```
+   This writes `data/processed/palika_example.jsonl` and prints per-page ratings (good/ok/bad). Compare a few pages with the original. Use `--no-ocr` to skip Tesseract.
+4. Build the index:
+   ```bash
+   make index          # or: python scripts/build_index.py
+   ```
+   It re-processes every eligible source listed in `sources.yaml` and upserts the chunks into `chroma_db/`. Lines starting with `SKIP` explain each excluded source. The index is only ever added to, so to remove a source, delete `chroma_db/` and rebuild.
+5. If the municipality is new, add it to the selector in `frontend/app.py` and to `MUNICIPALITY_ALIASES` in `src/pipeline.py` (romanized and Devanagari spellings). The `municipality` value must be spelled the same in all three places: `sources.yaml`, the UI selector and the alias table.
 
-| Civic metric | Recorded value | Notes |
-|---|---:|---|
-| Questions in measured baseline | 15 | Verified citizenship questions from MOHA PDF |
-| hit@5 | 100% | Dense search finds correct source for all 15 |
-| Citation accuracy | 67% | 10/15 cited exact must_cite page |
-| Answer correctness | 0% | Fake LLM returns raw OCR fragments |
-| False refusal rate | 0% | No answerable questions refused |
+## Evaluation
 
-The legacy question file has 25 records: 15 verified (citizenship), 10 draft (7 driving-license, 3 out-of-scope). Moved to `eval/legacy_questions.jsonl`.
-
-### Palika Guide evaluation (Day 4+)
-
-New municipal question set: 40 records in `eval/questions.jsonl` (26 `palika_guide` verified + 3 `other` out-of-scope verified + 10 legacy drafts moved + 1 draft `pq009`). 39 verified (`verified=true`, `expected` filled, `must_cite` filled, `municipality` present); 1 draft (`pq009`) with `expected=["TODO"]`. Target remains up to 40 verified questions across 5 municipalities × 6-8 services.
-
-Day 4 baseline will be recorded in `docs/results.md` via `eval/run_eval.py --use-service-filter --use-municipality-filter`.
-
-## 12. Project structure
-
-~~~text
-.
-├── data/                 source registry; ignored raw/ and processed/ data
-├── docs/                 decisions, source notes, story board, results, pivot addendum
-├── eval/                 question sets (legacy + municipal), runner, judge, chart helpers
-├── frontend/             Streamlit interface with municipality selector
-├── scripts/              source fetch, document processing, index, smoke check
-├── src/api/              optional API package; not part of the verified app flow
-├── src/generation/       prompts, answer schema/guard, provider, spend control
-├── src/ingest/           extraction, cleanup, chunking (municipality fields), embedding storage
-├── src/retrieval/        dense Chroma search with municipality filter
-├── tests/fixtures/       synthetic pages, chunks, and eval fixture
-├── chroma_db/            generated local index; ignored by Git
-└── docx/                 project blueprint
-~~~
-
-## 13. Testing
-
-Run the full test suite:
-
-```powershell
-.\.venv\Scripts\python.exe -m pytest -q --basetemp=.pytest_tmp
+```bash
+python eval/check_questions.py                                   # validate eval/questions.jsonl
+python eval/run_eval.py --mock --fake-llm --note "plumbing"      # synthetic fixtures, no index or key needed
+make eval                                                        # same idea on tests/fixtures/eval_questions.jsonl
+python eval/run_eval.py --use-service-filter --use-municipality-filter --note "..."   # real run (needs index + LLM)
+python eval/run_eval.py --retrieval-only --note "..."            # hit@5 only, no LLM calls
+python eval/sweep_threshold.py                                   # what-if table for guard_min_score from the newest run
 ```
 
-The suite covers:
-- Synthetic HTML processing and source/service metadata
-- Top-k and score-range checks plus service filtering with temporary Chroma index
-- Evaluation output and draft skipping
-- Git tracking guard for raw/processed/index data
-- Pre-send API spend-cap behavior
-- Build_index source eligibility logic (confirmed-open path and local-only approval path)
-- **NEW**: Municipality filter tests (service + municipality combined filter)
+Other `run_eval.py` flags: `--questions FILE`, `--judge` (LLM judge for correctness and hallucination), `--include-unverified`, `--limit N`, `--no-write` (print only), `--runs-dir DIR`. Only questions with `verified: true` that are not drafts are scored. Per-question records go to `eval/runs/` (ignored). Unless `--no-write` is passed, each run appends one row to the Eval runs table in [docs/results.md](docs/results.md). Correctness without `--judge` is a keyword match: at least half of the expected facts must appear in the answer.
 
-Latest run: **95 passed, 7 skipped** (verified 2026-10-23 with `--basetemp=.pytest_tmp`). All tests pass; 7 skipped (embedding model download/time-sensitive tests).
+**2026-10-25 baseline** (index of 11 local-only charters, with `palika_pokhara_2075` excluded; `nvidia/nemotron-3.5-super-vl:free`, `LLM_REASONING=off`, prompt v0; 39 verified questions). Copied from the Eval runs table in `docs/results.md`:
 
-## 14. Known limitations and caveats
+| N | hit@5 | Citation acc. | Correct | Hallucination | Correct refusal | False refusal | p95 s |
+|---|---|---|---|---|---|---|---|
+| 39 | 81% | 93% | 19% | - | 100% | 48% | 503.8 |
 
-- **Real LLM integration blocked**: NVIDIA Nemotron 3 Super returns empty response for prompts containing passage content (even with 1 passage). Fake LLM works for plumbing; real quality evaluation needs fix or provider change.
-  - *Update 2026-10-25:* cause found: hidden reasoning used the whole output limit (`finish_reason=length`). Fix: `LLM_REASONING=off` (`952f058`, `4567b75`, PR #20), tested with the OpenRouter base URL only; untested with the NVIDIA NIM base URL.
-- **No municipality charters indexed yet**: Day 1 feasibility, Day 2 processing, Day 3 indexing.
-  - *Update 2026-10-25:* Day 1-2 done on aash-crest01's machine (12 files fetched and processed, local only). Indexing waits for a Leader local-only approval in `data/sources.yaml`; without it `scripts/build_index.py` skips every charter.
-- **39 verified Palika Guide questions** (26 `palika_guide` + 3 `other` out-of-scope; 1 `verified=false` draft `pq009` with `expected=["TODO"]`). No civic evaluation baseline recorded (`hit@5=-`, `citation_acc=-`, `correct=-`) because no municipality charter is indexed.
-- **No municipality permissions**: Written permission required from each municipality before public demo/deployment.
-- **Search similarities are not probabilities**; refusal threshold (0.35) uncalibrated.
-- **Answers may be wrong**. Verify any procedure with the responsible official office. This project is not legal advice.
-- **Wrong-municipality guard**: If question names municipality with no indexed charter, or names none, returns `not_found`; never answers from another municipality's charter.
-- **OCR needs Tesseract** + `nep`/`eng` language packs. MOHA Kathmandu PDF works; other scanned sources may need it.
+`-` = not measured. The charters behind these numbers are not distributed, so you cannot reproduce this row from a fresh clone. See [docs/error-analysis.md](docs/error-analysis.md) for failure categories.
 
-## 15. Roadmap
+## Project structure
 
-From `docs/user-story-board.md` (Palika Guide, Day 1 = Oct 14):
+```text
+.
+├── config.yaml              thresholds: guard_min_score, final_k, chunk sizes, support_check
+├── Makefile                 setup / fetch / index / test / eval / run
+├── requirements.txt         pinned dependencies (Python 3.12)
+├── .env.example             template for .env (never commit .env)
+├── data/
+│   └── sources.yaml         source register (URLs, rights, approvals); raw/ processed/ readable/ are ignored
+├── docs/
+│   ├── ask-response.schema.json, response-contract.md   response contract
+│   ├── data-sources.md, extraction-notes.md             sources and extraction details
+│   ├── error-analysis.md, results.md                    eval failure analysis; work log + eval runs
+│   └── history/             hackathon process notes (decisions, pivot, story board, ...)
+├── eval/                    questions.jsonl, run_eval.py, check_questions.py, judge.py,
+│                            sweep_threshold.py, make_charts.py, update_log.py, results_log.py
+├── frontend/app.py          Streamlit UI
+├── scripts/                 fetch_sources, process_document, build_index, build_font_reference,
+│                            make_readable_pdfs, smoke_test_embedding, smoke_test_llm,
+│                            try_answer, demo_script
+├── src/
+│   ├── ingest/              extract (PDF/HTML, glyph repair, Preeti, OCR), clean, chunk, embed_store
+│   ├── retrieval/search.py  dense Chroma search with service + municipality filters
+│   ├── generation/          answer, prompt, llm (key pool, cache), spend, guard, schema, language, fake_llm
+│   └── pipeline.py          ask(): municipality guard + response validation
+└── tests/                   offline pytest suite and synthetic fixtures
+```
 
-1. **Day 1 (Oct 14)**: Feasibility sheet (~20 municipalities); pick ≤5 text/HTML charters; schema/filter changes; permission draft.
-2. **Day 2 (Oct 15)**: Fetch/process chosen charters; page/section-linked JSONL with municipality; visual inspection; charter-row chunking.
-3. **Day 3 (Oct 16)**: Index + municipality filter + guard; first real cited answer; 20-25 draft questions.
-4. **Day 4 (Oct 17)**: Verify questions against pages; first real eval; BASELINE in `docs/results.md`.
-5. **Day 5 (Oct 18)**: Fix top failures; calibrate `guard_min_score`; checklist fields; UI selector.
-6. **Day 6 (Oct 19)**: Error analysis; adversarial/wrong-municipality/out-of-scope tests; test deploy.
-7. **Day 7 (Oct 20)**: Grow verified set honestly (target 40; report real count); final eval; clean-machine README test.
-8. **Day 8 (Oct 21)**: Code freeze; final README/results; demo script (2 Nepali, 2 English, 1 refusal, 1 wrong-municipality); submission text; tag `v0.1-palika`.
+Generated and ignored: `.venv/`, `chroma_db/`, `artifacts/`, `eval/runs/`, `.pytest_tmp/`.
 
-Stretch only if time remains: BM25/hybrid, reranker, glossary, FastAPI, feedback storage. They must not delay the cited-answer flow.
+## Adapting it
 
-## 16. Contributing
-
-- Work on `Hkp` or on a feature branch created from `Hkp`.
-- Open pull requests into `Hkp`. Do not push changes to `main` or force-push.
-- Make small commits with clear messages such as `feat:`, `fix:`, `test:`, or `docs:`.
-- Before opening a PR, run tests and review `README.md` and `docs/results.md` for claims that need evidence.
-- Track tasks in `docs/user-story-board.md`; update statuses only when the documented completion checks pass.
-- Follow `AGENTS.md` for source, secret, generated-data, and API-spend rules.
-
-## 17. Team and roles
-
-| Role | Person |
+| To change | Edit |
 |---|---|
-| Member 1 — Data & Documents | (assigned) |
-| Member 2 — Retrieval & Generation | (assigned) |
-| Leader — Integration, UI, Evaluation, Repo, Deployment | (assigned) |
-| Presenter | **to be confirmed by a human** |
-| Backup presenter | **to be confirmed by a human** |
+| Refusal threshold, number of passages, chunk size, second-pass support check | `config.yaml` (`guard_min_score` is uncalibrated; tune it with `eval/sweep_threshold.py`) |
+| Prompt wording or answer rules | `src/generation/prompt.py` (bump `PROMPT_VERSION` so cached replies are not reused) |
+| Municipalities offered, title, captions, branding | `frontend/app.py` |
+| Municipality names recognised in questions | `MUNICIPALITY_ALIASES` in `src/pipeline.py` |
+| LLM provider, model, keys, cost cap | `.env` (no code change; any OpenAI-compatible endpoint) |
+| Documents | `data/raw/` + `data/sources.yaml`, then `make index` |
 
-(Previous Member 3 role merged into Member 2 and Leader per pivot.)
+## Tests
 
-## 18. Licence
+```bash
+make test                 # runs pytest with --basetemp=.pytest_tmp
+python -m pytest -q       # same suite; pytest.ini limits collection to tests/
+```
 
-The repository contains a `LICENSE` file with the MIT License for the project code. This code licence does not grant rights to redistribute the external source documents listed in `data/sources.yaml`.
+The tests are offline and synthetic: extraction and text fixes, Chroma filters and score range, the index eligibility rules, the generation guard, the key pool, the spend cap, the municipality guard, eval checks and the results-log rules. They need no API key and no charter files. A few regression tests run against real charter PDFs; when those files are not in `data/raw/` (as in a fresh clone), the tests are skipped.
 
-## 19. Acknowledgements and data attribution
+## Screenshots
 
-Open Data Nepal's Environment Statistics of Nepal 2019 record is attributed in `data/sources.yaml` to Open Knowledge Nepal / Open Data Nepal and credits source data to Nepal's Central Bureau of Statistics. Its dataset record lists Creative Commons Attribution Share-Alike and the Data Policy states: "Users are free to use, modify, and share datasets, provided they give appropriate attribution." It is retained as reference only and is not used as civic answer evidence.
+_Screenshot placeholder: add `docs/screenshot.png` (UI with a cited answer) and link it here._
 
-Official MOHA and Department of Passports source URLs are listed in `data/sources.yaml` for tracking. Their content is local-only or all-rights-reserved as recorded there; no copies are included or redistributed. No publisher permission email has been sent by this work.
+## Disclaimer
 
----
+Palika Guide is an **unofficial** student prototype. It is not affiliated with any municipality or government office, and it is **not legal advice**. Answers can be wrong or out of date even when cited. Always check fees, documents and procedures with the responsible municipal or ward office.
 
-**Project notes:** `docs/results.md` records observed checks and measured metrics; `docs/decisions.md` records confirmed decisions (pivot, presenter, API cap, local-only approvals); `docs/user-story-board.md` tracks daily task status; `docs/pivot-addendum.md` summarizes changes vs. blueprint.
+## License and community
+
+Code: [MIT License](LICENSE), © 2026 Harikrishna Pokhrel. The licence covers this code only. It grants no rights to the external documents listed in `data/sources.yaml`.
+
+- [CONTRIBUTING.md](CONTRIBUTING.md): development setup, branches, commit style, PR checklist
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+- [SECURITY.md](SECURITY.md): reporting vulnerabilities, handling secrets
+- [CHANGELOG.md](CHANGELOG.md)
+- [docs/history/](docs/history/): hackathon decisions, the pivot from central-government services to Palika Guide, and planning notes
