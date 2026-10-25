@@ -27,6 +27,8 @@ This list maps the current blockers to `docs/user-story-board.md` for the Palika
 
 ## Current blockers (2026-10-25)
 
+*Update 2026-10-25 (evening):* first official BASELINE run by `eval/run_eval.py` (see the Eval runs table in `docs/results.md`): official index from 11 local-only approved charters (`palika_pokhara_2075` excluded; approved by Aashish with authority delegated by the Leader), `nvidia/nemotron-3.5-super-vl:free` with `LLM_REASONING=off`, 39 verified questions: hit@5 81%, citation_acc 93%, correct 19% (exact keyword match), correct_refusal 100%, false_refusal 48%; 2 questions hit LLM provider errors and count as not correct.
+
 Checked on aash-crest01's laptop at `main` `c7fab92` (evidence in `docs/results.md`, Day checklist rows "update 2026-10-25").
 
 1. **Official index has 0 eligible charter chunks (by design).** All 12 `palika_*` entries in `data/sources.yaml` have `answer_evidence: false` and `approval_note: null`, so `scripts/build_index.py` skips them. Unblock: the Leader records a local-only approval (`answer_evidence: true`, `approval_note`, `approved_on`, `approved_by`), as was done for the MOHA PDF on 2026-10-11 (`docs/decisions.md` §4), then `make index` runs on the machine that has the files (aash-crest01's laptop) or on a machine given a privately shared copy. The charter files must stay out of Git.

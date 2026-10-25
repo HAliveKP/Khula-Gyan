@@ -259,6 +259,7 @@ Rows are added only by `eval/run_eval.py`; `-` = not measured. Never type number
 | Date | Change | Prompt | N | hit@5 | Citation acc. | Correct | Hallucination | Correct refusal | False refusal | p95 s |
 |---|---|---|---|---|---|---|---|---|---|---|
 | 2026-10-11 | Day 3 baseline: 15 verified citizenship questions from MOHA Kathmandu PDF + 10 draft driving-license questions | v0 | 15 | 100% | 67% | 0% | - | - | 0% | 42.3 |
+| 2026-10-25 | BASELINE: official index, 11 local-only approved charters (Pokhara 2075 excluded), nemotron-3.5-super-vl:free, LLM_REASONING=off, 39 verified | v0 | 39 | 81% | 93% | 19% | - | 100% | 48% | 503.8 |
 
 
 ## Day 3 failure analysis (2026-10-11)

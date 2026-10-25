@@ -160,7 +160,7 @@ $env:PATH = "D:\tx;" + $env:PATH
 | Index (Palika) | ⏳ No municipality charters indexed yet (Day 2) |
 | Test | ✅ **54 passed, 1 skipped** (all legacy tests pass) |
 | Eval (fake LLM) | ✅ Runs; legacy Day 3 baseline recorded |
-| Eval (real LLM) | ⚠️ **Blocked** — NVIDIA Nemotron returns empty for prompts with passages. *Update 2026-10-25:* cause fixed with `LLM_REASONING=off` (OpenRouter base URL); still blocked by the empty charter index |
+| Eval (real LLM) | ⚠️ **Blocked** — NVIDIA Nemotron returns empty for prompts with passages. *Update 2026-10-25:* cause fixed with `LLM_REASONING=off` (OpenRouter base URL); still blocked by the empty charter index *Update 2026-10-25 (evening):* first official BASELINE run by `eval/run_eval.py` (see the Eval runs table in `docs/results.md`): official index from 11 local-only approved charters (`palika_pokhara_2075` excluded; approved by Aashish with authority delegated by the Leader), `nvidia/nemotron-3.5-super-vl:free` with `LLM_REASONING=off`, 39 verified questions: hit@5 81%, citation_acc 93%, correct 19% (exact keyword match), correct_refusal 100%, false_refusal 48%; 2 questions hit LLM provider errors and count as not correct. |
 | Streamlit run | ✅ Launches; municipality selector present |
 
 ### Embedding smoke check
