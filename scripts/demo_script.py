@@ -10,6 +10,7 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO))
+sys.stdout.reconfigure(encoding="utf-8")  # print Nepali correctly on Windows, also when output goes to a file
 
 
 def main():

@@ -300,3 +300,23 @@ def test_extract_municipality_covers_indexed_charters():
     assert extract_name("What does Ghorahi charge for a recommendation?") == "Ghorahi"
     assert extract_name("हेटौंडामा बसाइँसराइ") == "Hetauda"
     assert extract_name("धुलिखेलमा विवाह दर्ता") == "Dhulikhel"
+
+
+def test_ask_returns_not_found_when_the_llm_fails(monkeypatch):
+    from src.pipeline import ask
+    import src.generation.answer as answer_module
+
+    def fake_search(query, k=5, service=None, municipality=None):
+        return [{"text": "जन्म दर्ता", "source": "pokhara.pdf", "page": 1, "score": 0.9,
+                 "service": "palika_guide", "municipality": municipality}]
+
+    def failing_answer(query, chunks):
+        raise RuntimeError("LLM call failed on all 1 key(s). Last error: NotFoundError (status 404)")
+
+    monkeypatch.setattr(search_module, "search", fake_search)
+    monkeypatch.setattr(answer_module, "answer", failing_answer)
+
+    response = ask("पोखरामा जन्म दर्ता कसरी गर्ने?", service="palika_guide", municipality="Pokhara")
+    assert response["status"] == "not_found"
+    assert response["citations"] == []
+    assert "not available" in response["answer"]

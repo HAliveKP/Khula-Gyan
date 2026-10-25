@@ -259,7 +259,7 @@ sources:
   lang: ne
   license: null
   terms_url: null
-  answer_evidence: false
+  answer_evidence: true
   legacy: false
   municipality: Pokhara
   district: Kaski
@@ -269,9 +269,9 @@ sources:
   reuse_status: unclear
   reuse_quote: "© 2026  पोखरा महानगरपालिका (footer of https://pokharamun.gov.np/citizen-charter; no licence or reuse terms found on the page or in the PDF)"
   local_only: true
-  approval_note: null
-  approved_on: null
-  approved_by: null
+  approval_note: "LOCAL-ONLY baseline approval for development, evaluation and internal demo only; not for commit of data or index, public deployment or redistribution; written municipal permission still pending. palika_pokhara_2075 left out (overlaps the 2074/75 rates charter)."
+  approved_on: '2026-10-25'
+  approved_by: "Aashish (aash-crest01), with change authority delegated by Leader Harikrishna Pokhrel on 2026-10-25"
 - id: palika_pokhara_2075
   title: "Pokhara Citizen Charter FY 2075/76 (नागरिक बडापत्र - २०७५)"
   publisher: "Pokhara Metropolitan City (पोखरा महानगरपालिका)"
@@ -303,7 +303,7 @@ sources:
   lang: ne
   license: null
   terms_url: null
-  answer_evidence: false
+  answer_evidence: true
   legacy: false
   municipality: Bharatpur
   district: Chitwan
@@ -313,9 +313,9 @@ sources:
   reuse_status: unclear
   reuse_quote: "© 2026  भरतपुर महानगरपालिका (footer of https://bharatpurmun.gov.np/ne/citizen-charter; no licence or reuse terms found on the page or in the PDF)"
   local_only: true
-  approval_note: null
-  approved_on: null
-  approved_by: null
+  approval_note: "LOCAL-ONLY baseline approval for development, evaluation and internal demo only; not for commit of data or index, public deployment or redistribution; written municipal permission still pending. palika_pokhara_2075 left out (overlaps the 2074/75 rates charter)."
+  approved_on: '2026-10-25'
+  approved_by: "Aashish (aash-crest01), with change authority delegated by Leader Harikrishna Pokhrel on 2026-10-25"
 - id: palika_bharatpur_general_admin
   title: "Bharatpur Citizen Charter 2082: General Administration Division (सामान्य प्रशासन महाशाखा)"
   publisher: "Bharatpur Metropolitan City (भरतपुर महानगरपालिका)"
@@ -325,7 +325,7 @@ sources:
   lang: ne
   license: null
   terms_url: null
-  answer_evidence: false
+  answer_evidence: true
   legacy: false
   municipality: Bharatpur
   district: Chitwan
@@ -335,9 +335,9 @@ sources:
   reuse_status: unclear
   reuse_quote: "© 2026  भरतपुर महानगरपालिका (footer of https://bharatpurmun.gov.np/ne/citizen-charter; no licence or reuse terms found on the page or in the PDF)"
   local_only: true
-  approval_note: null
-  approved_on: null
-  approved_by: null
+  approval_note: "LOCAL-ONLY baseline approval for development, evaluation and internal demo only; not for commit of data or index, public deployment or redistribution; written municipal permission still pending. palika_pokhara_2075 left out (overlaps the 2074/75 rates charter)."
+  approved_on: '2026-10-25'
+  approved_by: "Aashish (aash-crest01), with change authority delegated by Leader Harikrishna Pokhrel on 2026-10-25"
 - id: palika_bharatpur_revenue
   title: "Bharatpur Citizen Charter 2082: Revenue Management Division (राजस्व व्यवस्थापन महाशाखा)"
   publisher: "Bharatpur Metropolitan City (भरतपुर महानगरपालिका)"
@@ -347,7 +347,7 @@ sources:
   lang: ne
   license: null
   terms_url: null
-  answer_evidence: false
+  answer_evidence: true
   legacy: false
   municipality: Bharatpur
   district: Chitwan
@@ -357,9 +357,9 @@ sources:
   reuse_status: unclear
   reuse_quote: "© 2026  भरतपुर महानगरपालिका (footer of https://bharatpurmun.gov.np/ne/citizen-charter; no licence or reuse terms found on the page or in the PDF)"
   local_only: true
-  approval_note: null
-  approved_on: null
-  approved_by: null
+  approval_note: "LOCAL-ONLY baseline approval for development, evaluation and internal demo only; not for commit of data or index, public deployment or redistribution; written municipal permission still pending. palika_pokhara_2075 left out (overlaps the 2074/75 rates charter)."
+  approved_on: '2026-10-25'
+  approved_by: "Aashish (aash-crest01), with change authority delegated by Leader Harikrishna Pokhrel on 2026-10-25"
 - id: palika_bharatpur_health_social
   title: "Bharatpur Citizen Charter 2082: Health and Social Development Division (स्वास्थ्य तथा सामाजिक विकास महाशाखा)"
   publisher: "Bharatpur Metropolitan City (भरतपुर महानगरपालिका)"
@@ -369,7 +369,7 @@ sources:
   lang: ne
   license: null
   terms_url: null
-  answer_evidence: false
+  answer_evidence: true
   legacy: false
   municipality: Bharatpur
   district: Chitwan
@@ -379,9 +379,9 @@ sources:
   reuse_status: unclear
   reuse_quote: "© 2026  भरतपुर महानगरपालिका (footer of https://bharatpurmun.gov.np/ne/citizen-charter; no licence or reuse terms found on the page or in the PDF)"
   local_only: true
-  approval_note: null
-  approved_on: null
-  approved_by: null
+  approval_note: "LOCAL-ONLY baseline approval for development, evaluation and internal demo only; not for commit of data or index, public deployment or redistribution; written municipal permission still pending. palika_pokhara_2075 left out (overlaps the 2074/75 rates charter)."
+  approved_on: '2026-10-25'
+  approved_by: "Aashish (aash-crest01), with change authority delegated by Leader Harikrishna Pokhrel on 2026-10-25"
 - id: palika_bharatpur_education
   title: "Bharatpur Citizen Charter 2082: Education Administration Division (शैक्षिक प्रशासन महाशाखा)"
   publisher: "Bharatpur Metropolitan City (भरतपुर महानगरपालिका)"
@@ -391,7 +391,7 @@ sources:
   lang: ne
   license: null
   terms_url: null
-  answer_evidence: false
+  answer_evidence: true
   legacy: false
   municipality: Bharatpur
   district: Chitwan
@@ -401,9 +401,9 @@ sources:
   reuse_status: unclear
   reuse_quote: "© 2026  भरतपुर महानगरपालिका (footer of https://bharatpurmun.gov.np/ne/citizen-charter; no licence or reuse terms found on the page or in the PDF)"
   local_only: true
-  approval_note: null
-  approved_on: null
-  approved_by: null
+  approval_note: "LOCAL-ONLY baseline approval for development, evaluation and internal demo only; not for commit of data or index, public deployment or redistribution; written municipal permission still pending. palika_pokhara_2075 left out (overlaps the 2074/75 rates charter)."
+  approved_on: '2026-10-25'
+  approved_by: "Aashish (aash-crest01), with change authority delegated by Leader Harikrishna Pokhrel on 2026-10-25"
 - id: palika_bharatpur_women_children
   title: "Bharatpur Citizen Charter 2082: Women, Children and Social Welfare Section (महिला बालबालिका तथा समाजकल्याण शाखा)"
   publisher: "Bharatpur Metropolitan City (भरतपुर महानगरपालिका)"
@@ -413,7 +413,7 @@ sources:
   lang: ne
   license: null
   terms_url: null
-  answer_evidence: false
+  answer_evidence: true
   legacy: false
   municipality: Bharatpur
   district: Chitwan
@@ -423,9 +423,9 @@ sources:
   reuse_status: unclear
   reuse_quote: "© 2026  भरतपुर महानगरपालिका (footer of https://bharatpurmun.gov.np/ne/citizen-charter; no licence or reuse terms found on the page or in the PDF)"
   local_only: true
-  approval_note: null
-  approved_on: null
-  approved_by: null
+  approval_note: "LOCAL-ONLY baseline approval for development, evaluation and internal demo only; not for commit of data or index, public deployment or redistribution; written municipal permission still pending. palika_pokhara_2075 left out (overlaps the 2074/75 rates charter)."
+  approved_on: '2026-10-25'
+  approved_by: "Aashish (aash-crest01), with change authority delegated by Leader Harikrishna Pokhrel on 2026-10-25"
 - id: palika_bharatpur_ngo_coordination
   title: "Bharatpur Citizen Charter 2082: NGO Coordination Section (गैरसरकारी संस्था समन्वय शाखा)"
   publisher: "Bharatpur Metropolitan City (भरतपुर महानगरपालिका)"
@@ -435,7 +435,7 @@ sources:
   lang: ne
   license: null
   terms_url: null
-  answer_evidence: false
+  answer_evidence: true
   legacy: false
   municipality: Bharatpur
   district: Chitwan
@@ -445,9 +445,9 @@ sources:
   reuse_status: unclear
   reuse_quote: "© 2026  भरतपुर महानगरपालिका (footer of https://bharatpurmun.gov.np/ne/citizen-charter; no licence or reuse terms found on the page or in the PDF)"
   local_only: true
-  approval_note: null
-  approved_on: null
-  approved_by: null
+  approval_note: "LOCAL-ONLY baseline approval for development, evaluation and internal demo only; not for commit of data or index, public deployment or redistribution; written municipal permission still pending. palika_pokhara_2075 left out (overlaps the 2074/75 rates charter)."
+  approved_on: '2026-10-25'
+  approved_by: "Aashish (aash-crest01), with change authority delegated by Leader Harikrishna Pokhrel on 2026-10-25"
 - id: palika_dhulikhel
   title: "Dhulikhel Citizen Charter (क्षतिपूर्ति सहितको नागरिक वडापत्र र गुनासो व्यावस्थापन, HTML table)"
   publisher: "Dhulikhel Municipality (धुलिखेल नगरपालिका)"
@@ -457,7 +457,7 @@ sources:
   lang: ne
   license: null
   terms_url: null
-  answer_evidence: false
+  answer_evidence: true
   legacy: false
   municipality: Dhulikhel
   district: Kavrepalanchok
@@ -467,9 +467,9 @@ sources:
   reuse_status: unclear
   reuse_quote: "© 2026  धुलिखेल नगरपालिका (footer of https://dhulikhelmun.gov.np/ne/citizen-charter; no licence or reuse terms found)"
   local_only: true
-  approval_note: null
-  approved_on: null
-  approved_by: null
+  approval_note: "LOCAL-ONLY baseline approval for development, evaluation and internal demo only; not for commit of data or index, public deployment or redistribution; written municipal permission still pending. palika_pokhara_2075 left out (overlaps the 2074/75 rates charter)."
+  approved_on: '2026-10-25'
+  approved_by: "Aashish (aash-crest01), with change authority delegated by Leader Harikrishna Pokhrel on 2026-10-25"
 - id: palika_ghorahi
   title: "Ghorahi Citizen Charter (घोराही उपमहानगरपालिकाबाट प्रवाह हुने सेवाको मापदण्ड (नागरिक वडापत्र), PDF created 2021-04-13)"
   publisher: "Ghorahi Sub-Metropolitan City (घोराही उप-महानगरपालिका)"
@@ -479,7 +479,7 @@ sources:
   lang: ne
   license: null
   terms_url: null
-  answer_evidence: false
+  answer_evidence: true
   legacy: false
   municipality: Ghorahi
   district: Dang
@@ -489,9 +489,9 @@ sources:
   reuse_status: unclear
   reuse_quote: "© 2026  स्थानीय सरकार, घोराही उप-महानगरपालिका, नगर कार्यपालिकाको कार्यालय (footer of https://ghorahimun.gov.np/ne/citizen-charter; no licence or reuse terms found on the page or in the PDF)"
   local_only: true
-  approval_note: null
-  approved_on: null
-  approved_by: null
+  approval_note: "LOCAL-ONLY baseline approval for development, evaluation and internal demo only; not for commit of data or index, public deployment or redistribution; written municipal permission still pending. palika_pokhara_2075 left out (overlaps the 2074/75 rates charter)."
+  approved_on: '2026-10-25'
+  approved_by: "Aashish (aash-crest01), with change authority delegated by Leader Harikrishna Pokhrel on 2026-10-25"
 - id: palika_hetauda_2083_84
   title: "Hetauda Citizen Charter FY 2083/84 (नागरिक वडापत्र २०८३/८४)"
   publisher: "Hetauda Sub-Metropolitan City (हेटौंडा उपमहानगरपालिका)"
@@ -501,7 +501,7 @@ sources:
   lang: ne
   license: null
   terms_url: null
-  answer_evidence: false
+  answer_evidence: true
   legacy: false
   municipality: Hetauda
   district: Makwanpur
@@ -511,6 +511,6 @@ sources:
   reuse_status: unclear
   reuse_quote: "© 2026  हेटौंडा उपमहानगरपालिका, नगर कार्यपालिकाको कार्यालय (footer of https://hetaudamun.gov.np/ne/node/390; no licence or reuse terms found on the page; PDF body is Preeti and was searched only for the Preeti spelling of सर्वाधिकार)"
   local_only: true
-  approval_note: null
-  approved_on: null
-  approved_by: null
+  approval_note: "LOCAL-ONLY baseline approval for development, evaluation and internal demo only; not for commit of data or index, public deployment or redistribution; written municipal permission still pending. palika_pokhara_2075 left out (overlaps the 2074/75 rates charter)."
+  approved_on: '2026-10-25'
+  approved_by: "Aashish (aash-crest01), with change authority delegated by Leader Harikrishna Pokhrel on 2026-10-25"
