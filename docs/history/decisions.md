@@ -78,7 +78,7 @@ Written permission from MOHA is still required before any broader reuse. The app
 
 **Status:** CONFIRMED.
 
-**Evidence:** This decision record; updated `docs/user-story-board.md` with 8-day board; `data/sources.yaml` legacy entries tagged; new municipality charter register template added.
+**Evidence:** This decision record; updated `docs/history/user-story-board.md` with 8-day board; `data/sources.yaml` legacy entries tagged; new municipality charter register template added.
 
 **Who must confirm:** Human project owner confirmed 2026-10-13.
 
@@ -99,7 +99,7 @@ Written permission from MOHA is still required before any broader reuse. The app
 ### 8.2 LLM provider and empty replies
 
 **Facts:**
-- §6 names NVIDIA NIM (`https://integrate.api.nvidia.com/v1`). Aashish's working setup is OpenRouter (`https://openrouter.ai/api/v1`) with `nvidia/nemotron-3-super-120b-a12b:free`. `docs/submission_text.md` records the Leader's `.env` as `LLM_PROVIDER=openrouter` with `LLM_BASE_URL=https://integrate.api.nvidia.com/v1`, so provider name and base URL disagree there.
+- §6 names NVIDIA NIM (`https://integrate.api.nvidia.com/v1`). Aashish's working setup is OpenRouter (`https://openrouter.ai/api/v1`) with `nvidia/nemotron-3-super-120b-a12b:free`. `docs/history/submission_text.md` records the Leader's `.env` as `LLM_PROVIDER=openrouter` with `LLM_BASE_URL=https://integrate.api.nvidia.com/v1`, so provider name and base URL disagree there.
 - **Empty replies, root cause (found 2026-10-15):** Nemotron is a reasoning model. Its hidden reasoning used the whole `MAX_API_OUTPUT_TOKENS=1024`, so `content` came back empty with `finish_reason=length`. With reasoning turned off, the same Nepali prompt returned valid JSON in 284 tokens (Aashish's local notes, 2026-10-15).
 - **Fix (merged via PR #20):** `LLM_REASONING=off` sends OpenRouter's `reasoning: {enabled: false}` (`952f058`); empty replies are never cached (`4567b75`). Documented in `.env.example`.
 

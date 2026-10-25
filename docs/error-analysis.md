@@ -1,6 +1,6 @@
 # Error analysis — Palika Guide (2026-10-23)
 
-No civic index exists (`chroma_db/` contains only previous attempt; 0 eligible civic chunks). No verified evaluation against indexed charter pages has been run. The categories below are defined per `eval/run_eval.py` `categorize()` and `docs/retrieval-score.md`.
+No civic index exists (`chroma_db/` contains only previous attempt; 0 eligible civic chunks). No verified evaluation against indexed charter pages has been run. The categories below are defined per `eval/run_eval.py` `categorize()` and `docs/history/retrieval-score.md`.
 
 ## Failure categories (defined; not measured against real index)
 
@@ -41,4 +41,4 @@ Once index exists (`build_index.py` produces `collection.count() > 0`) and verif
 1. Run `eval/run_eval.py --judge --use-service-filter --use-municipality-filter --note "Day 4 baseline"`.
 2. Record metrics (`hit@5`, `citation_acc`, `correct`, `hallucination`, `correct_refusal`, `false_refusal`, `p95_s`) in `docs/results.md` (only real numbers).
 3. List top 10 failures with categories (this file) based on `rec["category"]` from `run_eval.py`.
-4. Fix top failures: improve prompt (`src/generation/prompt.py`); calibrate `guard_min_score` (`eval/sweep_threshold.py`); fix extraction (`docs/next-steps.md` Day 5); add adversarial tests.
+4. Fix top failures: improve prompt (`src/generation/prompt.py`); calibrate `guard_min_score` (`eval/sweep_threshold.py`); fix extraction (`docs/history/next-steps.md` Day 5); add adversarial tests.
