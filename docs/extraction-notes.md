@@ -1,6 +1,6 @@
 # Extraction notes: page-level QA
 
-Checked 2026-10-11 by rendering each page to PNG (100–120 dpi) and comparing it by eye with the extracted text. "PDF page" is the 1-based page index in the file; the JSONL `page` field uses the same number. "Before" is the original PyMuPDF text and "after" is the text after the ToUnicode repair in `src/ingest/extract.py` (see `docs/extraction-report.md`).
+Checked 2026-10-11 by rendering each page to PNG (100–120 dpi) and comparing it by eye with the extracted text. "PDF page" is the 1-based page index in the file; the JSONL `page` field uses the same number. "Before" is the original PyMuPDF text and "after" is the text after the ToUnicode repair in `src/ingest/extract.py` (see `docs/history/extraction-report.md`).
 
 ## `dl_vehicle_transport_rules_2054.pdf`
 

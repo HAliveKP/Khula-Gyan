@@ -232,3 +232,10 @@ eval/runs/
 .venv/
 .pytest_tmp/
 
+
+# Editor, OS and local agent files
+.vscode/
+.idea/
+.claude/
+.DS_Store
+Thumbs.db

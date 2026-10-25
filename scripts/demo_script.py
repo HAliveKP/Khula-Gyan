@@ -1,7 +1,7 @@
 """Demo script for Khula Gyan (Palika Guide) — ready to record (2–3 min).
 Uses --fake-llm only. All results clearly state "not_found" (no index) or
 label synthetic plumbing checks. Never claims real cited answers.
-Matches docs/submission_text.md requirements.
+Matches docs/history/submission_text.md requirements.
 """
 import argparse
 import os
@@ -112,7 +112,7 @@ def main():
     print("=" * 60)
     print("DEMO COMPLETE — No synthetic answers claimed as real.")
     print("All results show refusal/not_found (honest, verified).")
-    print("Next steps (see docs/next-steps.md, docs/user-story-board.md):")
+    print("Next steps (see docs/history/next-steps.md, docs/history/user-story-board.md):")
     print("  1. Fetch/process municipality charters (blocked by network / needs permission).")
     print("  2. Build index (`scripts/build_index.py`).")
     print("  3. Verify questions against real pages (`eval/check_questions.py` + manual).")

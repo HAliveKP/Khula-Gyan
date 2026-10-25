@@ -1,120 +1,48 @@
-# Khula Gyan agent guide
+# Agent guide: Palika Guide (Khula Gyan)
 
-Khula Gyan is a Nepali civic-document assistant that retrieves passages from approved documents and answers with page-linked citations. It must refuse when it cannot find reliable evidence and must not present itself as legal advice.
+Palika Guide answers questions about Nepali municipal services from each municipality's citizen charter (नागरिक बडापत्र), in Nepali and English. Every answer cites a document and page. It must return `not_found` when the evidence is missing or weak, or when the question's municipality has no indexed charter. It must never answer from another municipality's charter or present itself as legal advice.
 
 ## Repository map
 
-- `data/sources.yaml`: source URLs, publishers, reuse status, and local filenames. Legacy central-government sources tagged `legacy: true, answer_evidence: false`. New municipality charter entries with `service: palika_guide`, `municipality`, `district`, `province`, `format`, `reuse_status`, `local_only`, `answer_evidence`.
-- `data/raw/`: local source downloads; ignored by Git.
-- `data/processed/`: extracted page-linked JSONL; ignored by Git.
-- `docs/`: response contract, source notes, task board, extraction notes, results log, pivot addendum.
-- `eval/`: question sets (legacy + municipal), runner, result logging, judge, and chart helpers.
-- `frontend/app.py`: Streamlit interface with municipality selector.
-- `scripts/fetch_sources.py`: fetches locally allowed sources into `data/raw/`.
-- `scripts/process_document.py`: extracts PDF/HTML into page-linked records (carries municipality fields).
-- `scripts/build_index.py`: processes eligible local sources and builds Chroma.
-- `scripts/smoke_test_embedding.py`: embedding model smoke check.
-- `src/ingest/`: extraction, cleaning, chunking (with municipality fields), and embedding storage.
-- `src/retrieval/search.py`: dense Chroma search with optional `municipality` filter; scores are 0–1 similarities, not probabilities.
-- `src/generation/`: answer generation, citation guard, prompts, schema, and LLM provider adapter.
-- `src/pipeline.py`: connects search and answer functions; wrong-municipality guard for Palika Guide.
-- `tests/`: small synthetic fixtures and offline regression tests (including municipality filter tests).
-- `chroma_db/`: generated local search index; ignored by Git.
+- `src/ingest/`: `extract.py` (PDF/HTML, Devanagari glyph-map repair, Preeti→Unicode, Tesseract OCR fallback), `clean.py` (NFC, header/page-number removal), `chunk.py`, `embed_store.py` (bge-m3 → Chroma).
+- `src/retrieval/search.py`: `search(query, k=5, service=None, municipality=None)`. Dense Chroma search with filters. `score` is a 0–1 similarity, not a probability. Returns `[]` with no index.
+- `src/generation/`: `answer.py` (`answer()` / `answer_with_trace()`), `prompt.py` (`PROMPT_VERSION`), `llm.py` (OpenAI-compatible client, key pool, disk cache, `mask()`), `spend.py` (spend cap), `guard.py` (score guard, quote grounding, support check), `schema.py`, `language.py`, `fake_llm.py`, `settings.py` (reads `config.yaml`).
+- `src/pipeline.py`: `ask(query, service=None, municipality=None)`. Wrong-municipality guard (`MUNICIPALITY_ALIASES`) and response validation.
+- `frontend/app.py`: Streamlit UI.
+- `scripts/`: `fetch_sources.py`, `process_document.py`, `build_index.py`, `build_font_reference.py`, `make_readable_pdfs.py`, `smoke_test_embedding.py`, `smoke_test_llm.py`, `try_answer.py`, `demo_script.py`.
+- `eval/`: `questions.jsonl`, `run_eval.py`, `check_questions.py`, `judge.py`, `sweep_threshold.py`, `make_charts.py`, `results_log.py`, `update_log.py`.
+- `data/sources.yaml`: source register (URLs, rights, approvals). `data/raw/`, `data/processed/`, `data/readable/` are ignored.
+- `docs/`: response contract (`ask-response.schema.json`, `response-contract.md`), `data-sources.md`, `extraction-notes.md`, `error-analysis.md`, `results.md` (work log and eval runs), `history/` (hackathon notes, read-only).
+- `tests/`: offline pytest suite with synthetic fixtures.
 
-## Setup and commands
+## Commands
 
-Run from the repository root. Install GNU Make and Python 3.12 first.
+Run from the repository root with the venv active (`source .venv/Scripts/activate` on Windows Git Bash, `source .venv/bin/activate` elsewhere).
 
-- `make setup` creates `.venv` and installs pinned dependencies (CPU Torch first).
-- `make fetch` downloads only sources marked `confirmed open` in the local registry.
-- `make index` processes eligible local sources and builds the ignored Chroma index.
-- `make test` runs the pytest suite.
-- `make eval` runs the mock evaluator and fake generator on the synthetic fixture question and writes an ignored run record; it is not a civic quality metric.
-- `make run` starts the Streamlit app.
+- `make setup`: create `.venv` and install CPU torch + `requirements.txt`. Use `make setup PYTHON=python` if `py -3.12` is not available.
+- `make test` / `python -m pytest -q`: the offline suite (`pytest.ini` limits it to `tests/`).
+- `make index` / `python scripts/build_index.py`: build `chroma_db/` from eligible sources in `data/raw/`.
+- `make run` / `python -m streamlit run frontend/app.py`: start the UI.
+- `make eval`: fake-LLM plumbing check on fixtures. Not a quality metric.
+- `python eval/check_questions.py`: validate the question file.
+- `python eval/run_eval.py --use-service-filter --use-municipality-filter --note "..."`: real eval. Appends a row to `docs/results.md`.
+- `LLM_PROVIDER=fake` in `.env` runs everything without a key (answers are nonsense on purpose).
 
-## Branch and data rules
+## Branches
 
-- Work on `Hkp` or a feature branch created from `Hkp`; open pull requests into `Hkp`.
-- Never push to `main`, merge `dev` unless specifically tasked, or force-push. The `dev` branch was merged into `main` historically (PR #5) but this is now disallowed.
-- The `hkp-opencode` branch contained opencode-specific config and must not be merged. A clean baseline `hkp-opencode-v2` (renamed to `hkp-feat-*` style) was created from `origin/main` with only `.opencode/`, `AUDIT_VERIFICATION_TABLE.md`, and `docx/`.
-- MOHA pages are not cleared for redistribution. Department of Passports pages state all rights reserved. Fetch them locally only when appropriate, and keep them ignored; do not commit them.
-- The MOHA Kathmandu citizenship PDF (`citizenship_kathmandu_requirements`) has Leader-approved LOCAL-ONLY baseline status (2026-10-11). It has `answer_evidence: true`, `approval_note`, `local_only: true`, `licence_status: unclear`. Any index built from it stays in gitignored `chroma_db/`; no Hugging Face deployment or commit until written permission is on file.
-- **Legacy central-government sources** in `data/sources.yaml` are tagged `legacy: true, answer_evidence: false`. **New municipality charter entries** have `service: palika_guide`, `answer_evidence: false` until written permission is recorded with `approval_note`, `approved_on`, `approved_by`.
-- Never commit raw source data, `.env` files, API keys, or the Chroma database. Only source data explicitly marked `confirmed open` with a quoted license may be considered for version control; generated/private copies stay local.
-- Use only the license status and quote recorded in `data/sources.yaml`; do not infer permission from government hosting.
+Branch from `main` as `feature/…`, `fix/…` or `docs/…`, and open PRs into `main`. Never push directly to `main`, force-push, or rewrite shared history. Use Conventional Commits. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Honesty and done criteria
+## Data and secret rules
 
-- Do not invent source text, expected answers, citations, or evaluation numbers.
-- Mark unverified questions as `draft`; use `-` for metrics that were not measured.
-- A task is done only when the relevant tests pass and `README.md` and `docs/results.md` describe verified behavior and results accurately.
-- Stop and ask before any run that could exceed the configured API spend cap. Paid calls require explicit provider rates and are blocked before sending if a request reservation would exceed `MAX_API_SPEND_USD`.
+- Never commit `.env`, API keys, `data/raw/`, `data/processed/`, `data/readable/`, `chroma_db/`, `artifacts/` or `eval/runs/`. Never print a full key; use `mask()`.
+- Municipal charters are local-only: none has a reuse grant. `scripts/build_index.py` indexes a source only if `answer_evidence: true` and either `licence_status: confirmed open`, or `local_only: true` with an `approval_note`. Do not set these fields without a human's decision, and do not infer permission from government hosting.
+- Do not fetch sources that `data/sources.yaml` does not permit. Do not contact publishers.
+- Real LLM calls need both cost rates set and stay under `MAX_API_SPEND_USD`. Stop and ask before any run that could exceed the cap.
 
-## Multi-subagent workflow
+## Honesty rules
 
-### Roles
-
-- **Orchestrator** (main agent): makes decisions, delegates, resolves conflicts, only agent that commits. Appends one row per commit to `docs/results.md`.
-- **Subagents** (spawned only for independent work; never repeat a search you delegated):
-  1. **data-fetcher/processor**: fetches/processes municipality charters; owns `scripts/fetch_sources.py`, `scripts/process_document.py`, `data/raw/`, `data/processed/`, `src/ingest/extract.py`, `src/ingest/clean.py`.
-  2. **retrieval**: implements `search()`, municipality filter, wrong-municipality guard; owns `src/retrieval/search.py`, `src/ingest/chunk.py`, `src/ingest/embed_store.py`, `scripts/build_index.py`.
-  3. **generation**: answer generation, citation guard, prompts, schema, LLM adapter; owns `src/generation/`.
-  4. **eval/verification**: `eval/run_eval.py`, `eval/check_questions.py`, `eval/questions.jsonl`, `eval/sweep_threshold.py`, tests in `tests/`.
-  5. **docs**: `docs/*.md`, `README.md`, `docs/results.md`, `docs/user-story-board.md`, `docs/next-steps.md`, `docs/decisions.md`, `AGENTS.md`.
-  6. **reviewer**: verifies claims in README/results against evidence before a task is marked done; did not write the code being reviewed.
-
-### Parallelism
-
-- Independent tasks run in parallel in one batch (e.g., data-fetcher + retrieval schema changes).
-- Dependent tasks run in sequence: process → index → eval.
-
-### File ownership
-
-- Each subagent owns a disjoint set of files/directories listed in its brief.
-- Two subagents never edit the same file in the same round.
-- Shared files (`README.md`, `docs/results.md`, `docs/user-story-board.md`, `AGENTS.md`) are edited **only by the orchestrator or the docs subagent after others finish**.
-
-### Isolation
-
-- Code-editing subagents work in separate git worktrees/branches created from `Hkp` (e.g., `feature/data-fetcher-day2`, `feature/retrieval-municipality-filter`).
-- The orchestrator merges, resolves conflicts, and runs the full test suite before any PR into `Hkp`.
-
-### Briefs
-
-Every subagent brief states:
-- Goal
-- Input files
-- Owned files
-- Forbidden actions
-- Interface contract it must meet
-- Exact output to return
-
-### Return format
-
-Each subagent returns a short report:
-- What changed
-- Commands run with real outputs
-- What was not verified
-- Open questions
-
-The orchestrator **must not trust a report without re-running the key check** (tests, a quick file inspection).
-
-### Verification
-
-A separate **reviewer subagent** that did not write the code checks claims in `README.md` and `docs/results.md` against evidence before a task is marked done.
-
-### Hard stops for all subagents
-
-- No contacting publishers or sending email.
-- No fetching sources not permitted by `data/sources.yaml`.
-- No committing raw data, keys, or Chroma.
-- Paid calls only with configured rates, and subagents share the single `MAX_API_SPEND_USD` cap, which the orchestrator allocates.
-- Stop and ask the human on cap overruns, source-permission questions, or any listed human decision.
-
-### Escalation
-
-- If two subagents' outputs conflict, or a task needs a decision listed under "human decisions", stop and report to the human.
-
-### Logging
-
-The orchestrator appends one row per commit to `docs/results.md` (commit log format: date, full hash, author, message, task, check result).
+- Do not invent source text, expected answers, citations or evaluation numbers.
+- Expected answers in `eval/questions.jsonl` come only from real pages checked by a human. Unchecked questions stay `verified: false`.
+- `docs/results.md` is append-only. Eval numbers come only from `eval/run_eval.py`; use `-` for anything not measured. Do not edit `docs/history/`.
+- Use Unicode NFC whenever you compare Nepali text.
+- A task is done only when the tests pass and the docs describe behaviour that was actually checked. Report what was not verified.

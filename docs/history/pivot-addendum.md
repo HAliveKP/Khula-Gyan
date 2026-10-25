@@ -97,7 +97,7 @@ if service == "palika_guide" and not municipality:
   "municipality": "Lalitpur"  // required for palika_guide; null for others
 }
 ```
-- Old 25 drafts moved to `eval/legacy_questions.jsonl`
+- Old 25 drafts moved to `docs/history/legacy_questions.jsonl`
 - New 30 drafts in `eval/questions.jsonl` with `municipality` field
 - Checker (`eval/check_questions.py`) enforces `municipality` for `palika_guide`
 
@@ -148,7 +148,7 @@ if service == "palika_guide" and not municipality:
 
 ## Human decisions still needed
 
-1. **Permission emails** to municipalities (draft in `docs/permission_request.md`)
+1. **Permission emails** to municipalities (draft in `docs/history/permission_request.md`)
 2. **Which municipalities** to include (from Day 1 feasibility sheet)
 3. **Presenter / backup** (to be confirmed by a human)
 4. **API cap** confirmed ($1.00, NVIDIA free tier)
