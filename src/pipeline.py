@@ -173,7 +173,11 @@ def ask(query: str, service: str | None = None, municipality: str | None = None)
             msg += f" No indexed charter found for {municipality}."
         return _not_found(msg)
 
-    response = answer_fn(query, chunks)
+    try:
+        response = answer_fn(query, chunks)
+    except RuntimeError:
+        # The language model (or its spend cap) failed: say so instead of crashing the app.
+        return _not_found("The answer service is not available right now, so no answer was generated. Please try again later.")
     if not _valid_response(response):
         return _not_found("The answer component returned an invalid response. Please try again later.")
     return response

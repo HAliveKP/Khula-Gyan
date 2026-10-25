@@ -70,6 +70,8 @@ Written permission from MOHA is still required before any broader reuse. The app
 
 **Who must confirm:** Leader (Harikrishna Pokhrel) confirmed 2026-10-11.
 
+*Update 2026-10-25:* "LLM call tested and working" held for short prompts only; prompts with passages came back empty. Root cause and fix are in §8. The provider configuration in use differs between machines (§8).
+
 ## 7. Pivot to Palika Guide (2026-10-13) — additional detail
 
 **Decision:** The project pivots to Palika Guide (municipal citizen charters). All legacy central-government sources in `data/sources.yaml` are tagged `legacy: true, answer_evidence: false`. New municipality charter entries will be added with `service: palika_guide` and `answer_evidence: false` until written permission is recorded. The chunk schema gains optional `municipality`, `district`, `ward`, `section` fields. Retrieval gains a `municipality` filter. Pipeline adds a wrong-municipality guard. Team is now 3 members (Member 1, Member 2, Leader). Timeline: 8 days (Oct 14-21), code freeze Day 8.
@@ -80,10 +82,37 @@ Written permission from MOHA is still required before any broader reuse. The app
 
 **Who must confirm:** Human project owner confirmed 2026-10-13.
 
+## 8. Municipalities chosen and LLM provider facts (2026-10-25)
+
+### 8.1 Five municipalities
+
+**Decision:** Palika Guide covers Pokhara (Kaski, Gandaki), Bharatpur (Chitwan, Bagmati), Dhulikhel (Kavrepalanchok, Bagmati), Ghorahi (Dang, Lumbini) and Hetauda (Makwanpur, Bagmati): 12 charter files in all.
+
+**Status:** CHOSEN by Aashish (`aash-crest01`) on 2026-10-15; merged by the Leader in PR #20 (`f879fa5`, 2026-10-17). The Leader has not confirmed the set in writing; merging the PR is not counted as an explicit confirmation.
+
+**Evidence:**
+- 20 municipality websites checked on 2026-10-15 (charter present, format, date, reuse text). The sheet is a local draft (`.local-backups/drafts/feasibility_sheet.md` on aash-crest01's machine, git-excluded, marked "needs human check"). No site grants reuse. For the 5 chosen, the charter pages show only a "© 2026 <municipality>" footer (quoted in each entry's `reuse_quote`).
+- `94341a8` registers the 12 files in `data/sources.yaml`: all `reuse_status: unclear`, `local_only: true`, `answer_evidence: false`, `approval_note: null`.
+
+**Who must confirm:** Leader (Harikrishna Pokhrel).
+
+### 8.2 LLM provider and empty replies
+
+**Facts:**
+- §6 names NVIDIA NIM (`https://integrate.api.nvidia.com/v1`). Aashish's working setup is OpenRouter (`https://openrouter.ai/api/v1`) with `nvidia/nemotron-3-super-120b-a12b:free`. `docs/submission_text.md` records the Leader's `.env` as `LLM_PROVIDER=openrouter` with `LLM_BASE_URL=https://integrate.api.nvidia.com/v1`, so provider name and base URL disagree there.
+- **Empty replies, root cause (found 2026-10-15):** Nemotron is a reasoning model. Its hidden reasoning used the whole `MAX_API_OUTPUT_TOKENS=1024`, so `content` came back empty with `finish_reason=length`. With reasoning turned off, the same Nepali prompt returned valid JSON in 284 tokens (Aashish's local notes, 2026-10-15).
+- **Fix (merged via PR #20):** `LLM_REASONING=off` sends OpenRouter's `reasoning: {enabled: false}` (`952f058`); empty replies are never cached (`4567b75`). Documented in `.env.example`.
+
+**Status:** Fix CONFIRMED with the OpenRouter base URL only. With the NVIDIA NIM base URL the switch is untested; NIM may need a different parameter.
+
+**Who must confirm:** Leader: use the OpenRouter base URL with `LLM_REASONING=off`, or test NIM directly; then correct §6.
+
 ## Needs human confirmation
 
 - Send permission requests to municipalities and record any written responses; identify approved sources.
 - **Presenter/backup: TO BE CONFIRMED BY A HUMAN** (pivot supersedes old assignment).
 - **API spend cap: CONFIRMED** ($1.00, NVIDIA free tier).
 - Confirm branch policy adherence (no direct pushes to main, no dev merges without tasking).
-- Select up to 5 municipalities from Day 1 feasibility sheet for the demo.
+- Select up to 5 municipalities from Day 1 feasibility sheet for the demo. *Update 2026-10-25:* 5 chosen (§8.1); Leader to confirm explicitly.
+- *Added 2026-10-25:* LLM base URL for the Leader's machine (§8.2).
+- *Added 2026-10-25:* Local-only approval for the 12 charters (`approval_note`, `approved_on`, `approved_by` in `data/sources.yaml`, as in §4) if the team wants a local charter index before any municipality replies.

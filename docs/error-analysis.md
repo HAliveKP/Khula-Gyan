@@ -12,6 +12,20 @@ No civic index exists (`chroma_db/` contains only previous attempt; 0 eligible c
 | `generation_error: wrong/incomplete answer` | LLM produces answer not supported by chunks (`keyword_correct()` checks at least 50% of expected facts present). | Theoretical for real LLM; with `fake-llm`, `keyword_correct()` returns `False` (by design — fake generator returns non-realistic answers). |
 | `generation_error: hallucination` | LLM introduces facts not in retrieved chunks (`judge()` checks). | Theoretical; `judge()` requires `judge.py` module (not fully verified). |
 
+## Extraction failures found and fixed (added 2026-10-25)
+
+*Update 2026-10-25:* the table above covers only answer-time categories. Processing the 12 charter files on aash-crest01's machine on 2026-10-15 found these `source/extraction` failures. Each was fixed with a regression test in `tests/test_ingest_text_fixes.py`, merged via PR #20 (`f879fa5`). Page-by-page checks against rendered page images are in `docs/extraction-notes.md`. These are counts from document processing, not evaluation metrics.
+
+| Failure | Where seen | Effect before the fix | Fix (commit) |
+|---|---|---|---|
+| Wrong ToUnicode glyph map in an embedded Kalimati subset with no GSUB table | `palika_ghorahi.pdf`; some Bharatpur files | Words with "ि" or reph came out wrong, e.g. image `गर्ने व्यक्तिको नागरिकता` read `गने व्र्णिको नागररकता` (Ghorahi page 2) | Glyphs read from a Kalimati 1.20 reference (`src/ingest/font_reference.json`, built by `scripts/build_font_reference.py`), used only when font family, glyph count and every Devanagari cmap glyph agree (`47d3851`; its message says other Bharatpur charters gain `दर्ता`, `सम्बन्धित`, `कार्यालय` and Pokhara output is unchanged) |
+| Kalimati ASCII digit glyphs drawn as Devanagari numerals | `palika_ghorahi.pdf` pages 15-16; `palika_hetauda_2083_84.pdf` page 1 | Fees read `1००००` for `१००००`, `200` for `२००`; Hetauda title `२०८3/८4` | Reference also supplies the digit glyphs (`880998c`) |
+| Legacy Preeti / Kantipur / PCS Nepali font text | `palika_hetauda_2083_84.pdf` (almost all text); parts of Pokhara FY 2075/76 and Bharatpur revenue | Text extracted as Latin letters; 22 of 24 Hetauda pages were marked unusable | Spans in those fonts converted to Unicode (`627eaa1`) |
+| Number-only lines deleted as page numbers | All charters; seen on `palika_ghorahi.pdf` pages 1 and 8 | Fee cells such as `४५०`, `२५०००`, `९००`, `७५०` and table serial numbers were removed by `src/ingest/clean.py` | A number-only line is removed only when its value minus the page index is an offset shared by at least 60% of pages (`4d6e8e9`) |
+| Website menus, headers and footers mixed into HTML charter text | `palika_dhulikhel.html` | Menu and news text of the shared Drupal site template went into the extracted page | nav/header/footer/aside/form, news ticker, sidebar, tabs and breadcrumb skipped; Dhulikhel lost 53 menu/news words and kept all service rows (`d9b1fbf`) |
+
+Not re-checked here: the feasibility check saw wrong glyph mapping in `palika_pokhara_2075.pdf` (e.g. `घर` read as `घय`); `47d3851` did not change Pokhara output. Not fixed: `palika_pokhara_2075.pdf` keeps its private-use `U+F031` serial-number boxes; in `palika_bharatpur_revenue.pdf`, text the author typed in Preeti (`IEE`/`EIA`) is reproduced as drawn (`docs/extraction-notes.md`).
+
 ## Evidence (verified commands, 2026-10-23)
 
 - `pytest -q --basetemp=.pytest_tmp` → 95 passed, 7 skipped.

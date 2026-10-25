@@ -31,6 +31,7 @@ from results_log import EVAL_SECTION, add_rows, cell  # noqa: E402
 RUNS_DIR = REPO / "eval" / "runs"
 REAL_QUESTIONS = REPO / "eval" / "questions.jsonl"
 MOCK_QUESTIONS = REPO / "tests" / "fixtures" / "sample_questions.jsonl"  # synthetic, not drafts
+MAX_ERRORS_IN_A_ROW = 3  # stop when the LLM provider looks down instead of failing every question
 
 
 def read_jsonl(path: Path) -> list[dict]:
@@ -97,6 +98,8 @@ def keyword_correct(expected: list[str], resp: dict) -> bool:
 
 def categorize(q: dict, rec: dict) -> str:
     """First guess at the failure category for docs/error-analysis.md ('' = no failure)."""
+    if rec["status"] == "error":
+        return "llm_error"
     answered = rec["status"] == "answered"
     if q["type"] == "out_of_scope":
         return "guard_error: answered out-of-scope" if answered else ""
@@ -149,6 +152,7 @@ def main() -> None:
         from judge import judge
 
     records = []
+    errors_in_a_row = 0
     try:
         for q in questions:
             t0 = time.perf_counter()
@@ -158,7 +162,23 @@ def main() -> None:
                    "hit": any(c["source"] == mc.get("source") and int(c["page"]) == mc.get("page") for c in chunks),
                    "retrieved": [f'{c["source"]}#p{c["page"]} ({float(c.get("score", 0)):.3f})' for c in chunks]}
             if not args.retrieval_only:
-                resp, trace = answer_with_trace(q["q"], chunks)
+                try:
+                    resp, trace = answer_with_trace(q["q"], chunks)
+                except SpendLimitError:
+                    raise
+                except RuntimeError as err:  # provider failure: record it and go on; it counts as not correct
+                    errors_in_a_row += 1
+                    if errors_in_a_row >= MAX_ERRORS_IN_A_ROW:
+                        print(f"Evaluation stopped: {errors_in_a_row} LLM calls in a row failed. Last error: {err}",
+                              file=sys.stderr)
+                        raise SystemExit(3) from err
+                    rec.update(status="error", reason=f"llm_error: {err}", correct=False)
+                    rec["category"] = categorize(q, rec)
+                    rec["seconds"] = round(time.perf_counter() - t0, 2)
+                    records.append(rec)
+                    print(f'{rec["id"]:6s} error     hit={int(rec["hit"])} llm_error')
+                    continue
+                errors_in_a_row = 0
                 rec.update(status=resp["status"], reason=trace["reason"], top_score=trace["top_score"],
                            answer=resp["answer"],
                            citations=resp["citations"],
@@ -198,6 +218,10 @@ def main() -> None:
         "p95_s": f"{p95:.1f}",
     }
     print("\n" + json.dumps(metrics, indent=2))
+    failed_calls = [r["id"] for r in records if r.get("status") == "error"]
+    if failed_calls:
+        print(f"Warning: {len(failed_calls)} LLM call(s) failed and count as not correct: {', '.join(failed_calls)}",
+              file=sys.stderr)
     cats = {}
     for r in records:
         if r.get("category"):

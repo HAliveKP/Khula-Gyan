@@ -3,6 +3,8 @@ from pathlib import Path
 import subprocess
 import sys
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "eval"))
 
@@ -101,3 +103,39 @@ def test_only_drafts_gives_clear_message(tmp_path):
     assert "2 skipped as drafts" in result.stderr
     assert "--mock" in result.stderr
     assert not (tmp_path / "runs").exists()
+
+
+def _run_main_with_answer(monkeypatch, tmp_path, fake_answer):
+    monkeypatch.setattr(run_eval, "answer_with_trace", fake_answer)
+    monkeypatch.setattr(sys, "argv", ["run_eval.py", "--mock", "--fake-llm", "--no-write",
+                                      "--runs-dir", str(tmp_path / "runs"), "--note", "pytest llm errors"])
+    run_eval.main()
+
+
+def test_eval_records_a_failed_llm_call_and_continues(monkeypatch, tmp_path, capsys):
+    real_answer = run_eval.answer_with_trace
+    calls = []
+
+    def flaky_answer(query, chunks):
+        calls.append(query)
+        if len(calls) == 1:
+            raise RuntimeError("LLM call failed on all 1 key(s)")
+        return real_answer(query, chunks)
+
+    _run_main_with_answer(monkeypatch, tmp_path, flaky_answer)
+    err = capsys.readouterr().err
+    assert len(calls) == 3  # every sample question was still asked
+    assert "1 LLM call(s) failed" in err
+
+
+def test_eval_stops_when_the_llm_provider_is_down(monkeypatch, tmp_path):
+    def down(query, chunks):
+        raise RuntimeError("LLM call failed on all 1 key(s)")
+
+    with pytest.raises(SystemExit) as stop:
+        _run_main_with_answer(monkeypatch, tmp_path, down)
+    assert stop.value.code == 3
+
+
+def test_failed_llm_call_has_its_own_category():
+    assert run_eval.categorize({"type": "answerable"}, {"status": "error", "hit": True}) == "llm_error"
