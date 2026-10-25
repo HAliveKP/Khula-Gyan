@@ -18,7 +18,7 @@ Khula Gyan (Palika Guide) is intended for people who need help finding informati
 
 ## 3. Demo
 
-**Local demo available.** Run `make run` to start the Streamlit app. The app has a municipality selector (required for Palika Guide questions). No municipality charters are indexed yet — Day 1 feasibility sheet and Day 2 processing will populate the index.
+**Local demo available.** Run `make run` to start the Streamlit app. The app has a municipality selector (required for Palika Guide questions). No municipality charters are indexed yet — Day 1 feasibility sheet and Day 2 processing will populate the index. *Update 2026-10-25:* feasibility and processing are done on aash-crest01's machine (5 municipalities, 12 charter files, see `docs/data-sources.md`); the index is still empty because no charter has a local-only approval in `data/sources.yaml`.
 
 ## 4. Features
 
@@ -38,7 +38,7 @@ Khula Gyan (Palika Guide) is intended for people who need help finding informati
 - **Wrong-municipality guard**: if question names municipality with no indexed charter, or names none, returns `not_found`; never answers from another municipality's charter.
 - **Chunk schema** gains optional `municipality`, `district`, `ward`, `section` fields (carried through chunker, indexer, Chroma metadata).
 - **Checklist fields** reused for fee, time, officer (unknown stays empty).
-- **40 questions** in `eval/questions.jsonl` (26 `palika_guide` + 3 `other` out-of-scope + 10 legacy drafts moved; 39 verified with `municipality` + `must_cite`, 1 draft `pq009` with `expected=["TODO"]`).
+- **40 questions** in `eval/questions.jsonl` (26 `palika_guide` + 3 `other` out-of-scope + 10 legacy drafts moved; 39 verified with `municipality` + `must_cite`, 1 draft `pq009` with `expected=["TODO"]`). *Update 2026-10-25 (counted in the file):* 37 `palika_guide` (36 verified + draft `pq009`) and 3 `other`, all 40 `pq###`; no legacy questions are in this file (they are in `eval/legacy_questions.jsonl`). 39 verified by Aashish on 2026-10-17 (`ef07ac0`, PR #21).
 - **Legacy sources** tagged `legacy: true, answer_evidence: false` in `data/sources.yaml`; new municipality charter register template added.
 
 ### Not yet verified / Day 1-8
@@ -49,6 +49,14 @@ Khula Gyan (Palika Guide) is intended for people who need help finding informati
 - `eval/questions.jsonl`: 40 records; 39 `verified=true` with `municipality` + `must_cite`; 1 `verified=false` draft (`pq009`).
 - Real LLM (NVIDIA Nemotron) returns empty for prompts with passages — may need provider change.
 - No municipality charters approved yet; written permission required.
+
+*Update 2026-10-25* (checked at `main` `c7fab92`; evidence in `docs/results.md`, Day checklist rows "update 2026-10-25"):
+
+- **Charters fetched and processed, not indexed.** All 12 charter files for Pokhara, Bharatpur, Dhulikhel, Ghorahi and Hetauda were downloaded and processed on 2026-10-15 on aash-crest01's machine into ignored `data/raw/` and `data/processed/`. The Leader's machine could not reach the .gov.np sites (`WinError 10060`/`10061`). The index is still empty by design: all 12 entries have `answer_evidence: false` and no `approval_note`, so `scripts/build_index.py` skips them. It needs a Leader local-only approval in `data/sources.yaml`, then `make index` on a machine that has the files.
+- **Empty Nemotron replies: cause found and fixed.** The model's hidden reasoning used the whole `MAX_API_OUTPUT_TOKENS=1024`, leaving empty content (`finish_reason=length`). Set `LLM_REASONING=off` (`952f058`; empty replies are no longer cached, `4567b75`; both merged via PR #20; see `.env.example`). This sends OpenRouter's `reasoning` parameter and was tested with the OpenRouter base URL (`https://openrouter.ai/api/v1`, model `nvidia/nemotron-3-super-120b-a12b:free`). It is untested with the NVIDIA NIM base URL shown in section 9.
+- **Filter and guard:** tested by the suite (`python -m pytest -q` → 102 passed on aash-crest01's laptop, 2026-10-25), not yet on a real charter index.
+- **Permission:** emails to the 5 municipalities drafted; sending pending; no reply on file.
+- No civic evaluation numbers exist for Palika Guide yet.
 
 ## 5. How it works
 
@@ -152,7 +160,7 @@ $env:PATH = "D:\tx;" + $env:PATH
 | Index (Palika) | ⏳ No municipality charters indexed yet (Day 2) |
 | Test | ✅ **54 passed, 1 skipped** (all legacy tests pass) |
 | Eval (fake LLM) | ✅ Runs; legacy Day 3 baseline recorded |
-| Eval (real LLM) | ⚠️ **Blocked** — NVIDIA Nemotron returns empty for prompts with passages |
+| Eval (real LLM) | ⚠️ **Blocked** — NVIDIA Nemotron returns empty for prompts with passages. *Update 2026-10-25:* cause fixed with `LLM_REASONING=off` (OpenRouter base URL); still blocked by the empty charter index |
 | Streamlit run | ✅ Launches; municipality selector present |
 
 ### Embedding smoke check
@@ -212,6 +220,8 @@ The current source registry is `data/sources.yaml`.
 | Municipality | District | Province | URL | Format | Date seen | Reuse status | Local only | Answer evidence |
 |---|---|---|---|---|---|---|---|---|
 | *(to be filled Day 1)* | | | | | | | | |
+
+*Update 2026-10-25:* filled on 2026-10-15 with 12 files for 5 municipalities (`94341a8`, PR #20). All are `reuse_status: unclear`, `local_only: true`, `answer_evidence: false`. Full table in `docs/data-sources.md`; URLs in `data/sources.yaml`.
 
 All legacy sources tagged `legacy: true, answer_evidence: false` in `data/sources.yaml`. New municipality charter entries will have `service: palika_guide`, `answer_evidence: false` until written permission is recorded.
 
@@ -277,7 +287,9 @@ Latest run: **95 passed, 7 skipped** (verified 2026-10-23 with `--basetemp=.pyte
 ## 14. Known limitations and caveats
 
 - **Real LLM integration blocked**: NVIDIA Nemotron 3 Super returns empty response for prompts containing passage content (even with 1 passage). Fake LLM works for plumbing; real quality evaluation needs fix or provider change.
+  - *Update 2026-10-25:* cause found: hidden reasoning used the whole output limit (`finish_reason=length`). Fix: `LLM_REASONING=off` (`952f058`, `4567b75`, PR #20), tested with the OpenRouter base URL only; untested with the NVIDIA NIM base URL.
 - **No municipality charters indexed yet**: Day 1 feasibility, Day 2 processing, Day 3 indexing.
+  - *Update 2026-10-25:* Day 1-2 done on aash-crest01's machine (12 files fetched and processed, local only). Indexing waits for a Leader local-only approval in `data/sources.yaml`; without it `scripts/build_index.py` skips every charter.
 - **39 verified Palika Guide questions** (26 `palika_guide` + 3 `other` out-of-scope; 1 `verified=false` draft `pq009` with `expected=["TODO"]`). No civic evaluation baseline recorded (`hit@5=-`, `citation_acc=-`, `correct=-`) because no municipality charter is indexed.
 - **No municipality permissions**: Written permission required from each municipality before public demo/deployment.
 - **Search similarities are not probabilities**; refusal threshold (0.35) uncalibrated.

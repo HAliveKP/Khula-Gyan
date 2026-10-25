@@ -25,13 +25,28 @@ The repository records links rather than copies. Government hosting does not by 
 
 ---
 
-## Palika Guide — Municipality Charter Register (to be populated Day 1-2)
+## Palika Guide — Municipality Charter Register
 
-The Palika Guide uses municipality citizen charters (नागरिक बडापत्र). Entries below will be populated on Day 1-2 from the feasibility sheet. **No entry is approved as answer evidence until written permission is recorded.**
+The Palika Guide uses municipality citizen charters (नागरिक बडापत्र). **No entry is approved as answer evidence until written permission is recorded.**
 
-| ID | Municipality | District | Province | URL | Format | Date seen | Reuse status | Local only | Answer evidence |
+*Update 2026-10-25:* the register was filled on 2026-10-15 (Day 2) from a 20-site feasibility check (a local draft, not in the repo) and committed in `94341a8` (merged via PR #20). The table below copies `data/sources.yaml`; that file is authoritative and holds the URLs, titles and exact `reuse_quote` footers. "Year / FY" is what the file title shows ("-" = no date shown). The files were downloaded and processed on 2026-10-15 on aash-crest01's machine only, into ignored `data/raw/` and `data/processed/`; none is committed.
+
+| ID | Municipality | District | Province | Format | Year / FY | Date seen | Reuse status | Local only | Answer evidence |
 |---|---|---|---|---|---|---|---|---|---|
-| *(to be filled Day 1)* | | | | | | | | | |
+| `palika_pokhara_rates_2074_75` | Pokhara | Kaski | Gandaki | text_pdf | FY 2074/75 | 2026-10-15 | unclear | true | false |
+| `palika_pokhara_2075` | Pokhara | Kaski | Gandaki | text_pdf | FY 2075/76 | 2026-10-15 | unclear | true | false |
+| `palika_bharatpur_vital_registration` | Bharatpur | Chitwan | Bagmati | text_pdf | 2082 | 2026-10-15 | unclear | true | false |
+| `palika_bharatpur_general_admin` | Bharatpur | Chitwan | Bagmati | text_pdf | 2082 | 2026-10-15 | unclear | true | false |
+| `palika_bharatpur_revenue` | Bharatpur | Chitwan | Bagmati | text_pdf | 2082 | 2026-10-15 | unclear | true | false |
+| `palika_bharatpur_health_social` | Bharatpur | Chitwan | Bagmati | text_pdf | 2082 | 2026-10-15 | unclear | true | false |
+| `palika_bharatpur_education` | Bharatpur | Chitwan | Bagmati | text_pdf | 2082 | 2026-10-15 | unclear | true | false |
+| `palika_bharatpur_women_children` | Bharatpur | Chitwan | Bagmati | text_pdf | 2082 | 2026-10-15 | unclear | true | false |
+| `palika_bharatpur_ngo_coordination` | Bharatpur | Chitwan | Bagmati | text_pdf | 2082 | 2026-10-15 | unclear | true | false |
+| `palika_dhulikhel` | Dhulikhel | Kavrepalanchok | Bagmati | html | - | 2026-10-15 | unclear | true | false |
+| `palika_ghorahi` | Ghorahi | Dang | Lumbini | text_pdf | - (PDF created 2021-04-13) | 2026-10-15 | unclear | true | false |
+| `palika_hetauda_2083_84` | Hetauda | Makwanpur | Bagmati | legacy_font_pdf | FY 2083/84 | 2026-10-15 | unclear | true | false |
+
+All 12 have `approval_note: null`, so `scripts/build_index.py` does not index them.
 
 ### Corrections (2026-10-11, Legacy)
 
