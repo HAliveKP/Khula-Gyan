@@ -4,6 +4,8 @@
 
 Palika Guide answers questions about Nepali **municipal services** (birth and death registration, recommendations, business registration, fees, time limits, responsible office) from each municipality's citizen charter (नागरिक बडापत्र), in Nepali or English. Every answer cites the document and page it came from. When the charter does not support an answer, or the question's municipality has no indexed charter, it returns `not_found` instead of guessing or using another municipality's charter. It is a retrieval-augmented generation (RAG) prototype built during a student hackathon (October 2026); the repository is named Khula Gyan.
 
+Demonstration Video:https://youtu.be/-JgkMY7osqQ
+
 > **Read this first:** the municipal charters used during development are **not** in this repository (no reuse permission yet). A fresh clone installs, passes its tests and runs the UI, but answers `not_found` until you add documents you are allowed to use. See [Data: use your own documents](#data-use-your-own-documents).
 
 ## Features
