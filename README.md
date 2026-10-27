@@ -37,6 +37,97 @@ flowchart LR
 
 Code path: `src/ingest/` → `scripts/build_index.py` → `src/retrieval/search.py` → `src/generation/answer.py` → `src/pipeline.py` `ask()` → `frontend/app.py`. The search `score` is cosine similarity mapped to 0–1. It is not a probability.
 
+## Architecture
+
+Khula Gyan indexes charter documents into a Chroma vector store, retrieves relevant passages for a question, and generates an evidence-checked answer. An evaluation harness scores answer quality.
+
+```mermaid
+flowchart TD
+
+subgraph group_ingestion["Charter ingestion"]
+  node_indexer["Index builder<br/>[build_index.py]"]
+  node_document_processing["Document processing"]
+  node_extraction["Page extraction<br/>[extract.py]"]
+  node_cleaning["Text repair<br/>[clean.py]"]
+  node_chunking["Chunk creation<br/>[chunk.py]"]
+  node_embedding_store["Embedding store<br/>[embed_store.py]"]
+end
+
+subgraph group_retrieval["Passage retrieval"]
+  node_search["Filtered dense search<br/>[search.py]"]
+end
+
+subgraph group_generation["Answer generation"]
+  node_answer["Answer generation<br/>[answer.py]"]
+  node_prompt["Prompt construction<br/>[prompt.py]"]
+  node_llm["LLM client<br/>[llm.py]"]
+  node_spend["Spend reservation<br/>[spend.py]"]
+  node_fake["Fake generator<br/>[fake_llm.py]"]
+  node_guard["Evidence guard<br/>[guard.py]"]
+  node_schema["Response validation<br/>[schema.py]"]
+  node_language["Language detection<br/>[language.py]"]
+end
+
+subgraph group_interface["User interface"]
+  node_frontend["Streamlit interface<br/>[app.py]"]
+  node_pipeline["Ask pipeline<br/>[pipeline.py]"]
+end
+
+subgraph group_evaluation["Evaluation"]
+  node_eval_runner["Evaluation runner<br/>[run_eval.py]"]
+  node_judge["Answer judge<br/>[judge.py]"]
+  node_results["Evaluation results log<br/>[results_log.py]"]
+end
+
+node_user(("Questioner"))
+node_charters["Charter files"]
+node_chroma[("Chroma index")]
+node_provider{{"Chat API"}}
+node_ocr{{"Tesseract OCR"}}
+
+node_user -->|"asks"| node_frontend
+node_charters -->|"indexes"| node_indexer
+node_indexer -->|"processes"| node_document_processing
+node_document_processing -->|"extracts pages"| node_extraction
+node_document_processing -->|"repairs text"| node_cleaning
+node_indexer -->|"creates chunks"| node_chunking
+node_indexer -->|"stores embeddings"| node_embedding_store
+node_embedding_store -->|"writes index"| node_chroma
+node_frontend -->|"calls ask"| node_pipeline
+node_pipeline -->|"retrieves passages"| node_search
+node_chroma -->|"supplies passages"| node_search
+node_pipeline -->|"generates response"| node_answer
+node_answer -->|"detects language"| node_language
+node_answer -->|"builds messages"| node_prompt
+node_answer -->|"requests completion"| node_llm
+node_llm -->|"calls API"| node_provider
+node_llm -->|"reserves cost"| node_spend
+node_llm -.->|"dispatches offline"| node_fake
+node_answer -->|"validates response"| node_schema
+node_answer -->|"checks evidence"| node_guard
+node_document_processing -.->|"uses for scans"| node_ocr
+node_eval_runner -->|"retrieves passages"| node_search
+node_eval_runner -->|"evaluates answers"| node_answer
+node_eval_runner -->|"optionally judges"| node_judge
+node_eval_runner -->|"logs runs"| node_results
+
+classDef toneNeutral fill:#f8fafc,stroke:#334155,stroke-width:1.5px,color:#0f172a
+classDef toneBlue fill:#dbeafe,stroke:#2563eb,stroke-width:1.5px,color:#172554
+classDef toneAmber fill:#fef3c7,stroke:#d97706,stroke-width:1.5px,color:#78350f
+classDef toneMint fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#14532d
+classDef toneRose fill:#ffe4e6,stroke:#e11d48,stroke-width:1.5px,color:#881337
+classDef toneIndigo fill:#e0e7ff,stroke:#4f46e5,stroke-width:1.5px,color:#312e81
+classDef toneTeal fill:#ccfbf1,stroke:#0f766e,stroke-width:1.5px,color:#134e4a
+class node_indexer,node_document_processing,node_extraction,node_cleaning,node_chunking,node_embedding_store toneBlue
+class node_search,node_chroma toneAmber
+class node_answer,node_prompt,node_llm,node_spend,node_fake,node_guard,node_schema,node_language,node_provider toneMint
+class node_frontend,node_pipeline toneRose
+class node_eval_runner,node_judge,node_results,node_user,node_ocr toneIndigo
+class node_charters toneTeal
+```
+
+**Legend:** solid arrows are the main flow, dashed arrows are optional or fallback paths (OCR for scanned pages, the fake generator for offline runs).
+
 ## Tech stack
 
 Python 3.12 · PyMuPDF and fontTools (extraction, glyph repair) · Tesseract via pytesseract (optional OCR) · sentence-transformers with `BAAI/bge-m3` · ChromaDB · OpenAI Python client for any OpenAI-compatible chat API · Streamlit · pytest. Exact versions are pinned in [requirements.txt](requirements.txt). CPU-only PyTorch is installed first.
